@@ -9,6 +9,9 @@ overrides:
   '@types/react-dom': 19.0.4
 
 dependencies:
+  '@stripe/stripe-js':
+    specifier: ^9.0.1
+    version: 9.0.1
   '@supabase/ssr':
     specifier: 0.10.0
     version: 0.10.0(@supabase/supabase-js@2.101.1)
@@ -603,6 +606,11 @@ packages:
   /@rushstack/eslint-patch@1.11.0:
     resolution: {integrity: sha512-zxnHvoMQVqewTJr/W4pKjF0bMGiKJv1WX7bSrkl46Hg0QjESbzBROWK0Wg4RphzSOS5Jiy7eFimmM3UgMrMZbQ==}
     dev: true
+
+  /@stripe/stripe-js@9.0.1:
+    resolution: {integrity: sha512-un0URSosrW7wNr7xZ5iI2mC9mdeXZ3KERoVlA2RdmeLXYxHUPXq0yHzir2n/MtyXXEdSaELtz4WXGS6dzPEeKA==}
+    engines: {node: '>=12.16'}
+    dev: false
 
   /@supabase/auth-js@2.101.1:
     resolution: {integrity: sha512-Kd0Wey+RkFHgyVep7adS6UOE2pN6MJ3mZ32PAXSvfw6IjUkFRC7IQpdZZjUOcUe5pXr1ejufCRgF6lsGINe4Tw==}
