@@ -63,15 +63,22 @@ export default function WorkerDashboard() {
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
-      setJobs(listings || []);
-      setFilteredJobs(listings || []);
+      const typedListings = (listings || []).map((item: any) => ({
+        ...item,
+        businesses: Array.isArray(item.businesses)
+          ? item.businesses[0] ?? null
+          : item.businesses ?? null,
+      })) as Job[];
+
+      setJobs(typedListings);
+      setFilteredJobs(typedListings);
 
       const { data: apps } = await supabase
         .from("applications")
         .select("job_id")
         .eq("worker_id", user.id);
 
-      setAppliedJobs(apps?.map((a) => a.job_id) || []);
+      setAppliedJobs(apps?.map((a: any) => a.job_id) || []);
       setLoading(false);
     }
     loadData();
@@ -84,7 +91,7 @@ export default function WorkerDashboard() {
         (j) =>
           j.title.toLowerCase().includes(search.toLowerCase()) ||
           j.location.toLowerCase().includes(search.toLowerCase()) ||
-          j.businesses?.company_name
+          (j.businesses?.company_name ?? "")
             .toLowerCase()
             .includes(search.toLowerCase())
       );
@@ -100,13 +107,11 @@ export default function WorkerDashboard() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-
     await supabase.from("applications").insert({
       job_id: jobId,
       worker_id: user.id,
       status: "pending",
     });
-
     setAppliedJobs([...appliedJobs, jobId]);
   }
 
@@ -279,7 +284,6 @@ export default function WorkerDashboard() {
                   border: "1px solid var(--border)",
                   borderRadius: 16,
                   padding: "1.8rem",
-                  transition: "border-color 0.2s",
                 }}
               >
                 <div
@@ -291,7 +295,6 @@ export default function WorkerDashboard() {
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    {/* Company & verified badge */}
                     <div
                       style={{
                         display: "flex",
@@ -321,7 +324,6 @@ export default function WorkerDashboard() {
                         </span>
                       )}
                     </div>
-
                     <h3
                       style={{
                         fontFamily: "'Syne', sans-serif",
@@ -332,7 +334,6 @@ export default function WorkerDashboard() {
                     >
                       {job.title}
                     </h3>
-
                     <div
                       style={{
                         display: "flex",
@@ -368,8 +369,6 @@ export default function WorkerDashboard() {
                         </span>
                       )}
                     </div>
-
-                    {/* Qualifications */}
                     {job.qualifications?.length > 0 && (
                       <div
                         style={{
@@ -396,8 +395,6 @@ export default function WorkerDashboard() {
                       </div>
                     )}
                   </div>
-
-                  {/* Apply button */}
                   <div style={{ display: "flex", alignItems: "flex-start" }}>
                     <button
                       onClick={() => handleApply(job.id)}
