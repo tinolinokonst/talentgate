@@ -58,7 +58,7 @@ export default function Home() {
             Pricing
           </Link>
           <Link
-            href="/signup"
+            href="/auth/signup"
             style={{
               background: "var(--accent)",
               color: "#04080F",
@@ -158,7 +158,7 @@ export default function Home() {
           }}
         >
           <Link
-            href="/signup?type=business"
+            href="/auth/signup?type=business"
             style={{
               background: "var(--accent)",
               color: "#04080F",
@@ -173,7 +173,7 @@ export default function Home() {
             Post a Role — $39/mo
           </Link>
           <Link
-            href="/signup?type=worker"
+            href="/auth/signup?type=worker"
             style={{
               background: "transparent",
               color: "var(--text)",
@@ -430,7 +430,7 @@ export default function Home() {
               ))}
             </ul>
             <Link
-              href="/signup?type=worker"
+              href="/auth/signup?type=worker"
               style={{
                 display: "block",
                 textAlign: "center",
@@ -546,7 +546,7 @@ export default function Home() {
               ))}
             </ul>
             <Link
-              href="/signup?type=business"
+              href="/auth/signup?type=business"
               style={{
                 display: "block",
                 textAlign: "center",

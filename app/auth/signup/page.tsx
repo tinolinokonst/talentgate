@@ -272,7 +272,7 @@ export default function SignupPage() {
           >
             Already have an account?{" "}
             <Link
-              href="/login"
+              href="/auth/login"
               style={{
                 color: "var(--accent)",
                 textDecoration: "none",
