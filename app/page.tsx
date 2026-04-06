@@ -21,7 +21,7 @@ export default function Home() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "1.2rem 5%",
-          background: "rgba(4,8,15,0.75)",
+          background: 'var(--bg)',
           backdropFilter: "blur(14px)",
           borderBottom: "1px solid var(--border)",
         }}

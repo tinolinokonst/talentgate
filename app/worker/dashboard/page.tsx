@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "../../../lib/supabase/client";
+import { createClient } from '../../lib/supabase/client'
 
 type Business = {
   company_name: string;
@@ -356,16 +356,15 @@ export default function WorkerDashboard() {
                         <span
                           style={{ color: "var(--muted)", fontSize: "0.85rem" }}
                         >
-                          💰 ${job.salary_min.toLocaleString()} – $
-                          {job.salary_max.toLocaleString()}/yr
+                          ${job.salary_min} – ${job.salary_max}/yr
                         </span>
                       )}
                       {job.deadline && (
                         <span
                           style={{ color: "var(--muted)", fontSize: "0.85rem" }}
                         >
-                          ⏰ Deadline:{" "}
-                          {new Date(job.deadline).toLocaleDateString()}
+                          ⏰ Deadline: 
+                          {job.deadline}
                         </span>
                       )}
                     </div>
