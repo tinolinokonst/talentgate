@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from '../../lib/supabase/client'
+import { createClient } from "../../lib/supabase/client";
 
 type Job = {
   id: string;
@@ -46,13 +46,15 @@ export default function BusinessDashboard() {
 
       setBusiness(biz);
 
-      const { data: listings } = await supabase
-        .from("job_listings")
-        .select("id, title, location, status, created_at, industry")
-        .eq("business_id", biz?.id)
-        .order("created_at", { ascending: false });
+      if (biz) {
+        const { data: listings } = await supabase
+          .from("job_listings")
+          .select("id, title, location, status, created_at, industry")
+          .eq("business_id", biz.id)
+          .order("created_at", { ascending: false });
+        setJobs(listings || []);
+      }
 
-      setJobs(listings || []);
       setLoading(false);
     }
     loadData();
@@ -74,18 +76,30 @@ export default function BusinessDashboard() {
     );
   }
 
+  async function deleteJob(jobId: string) {
+    await supabase.from("job_listings").delete().eq("id", jobId);
+    setJobs(jobs.filter((j) => j.id !== jobId));
+  }
+
   if (loading)
     return (
       <main
         style={{
           minHeight: "100vh",
-          background: "var(--bg)",
+          background: "#000",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <p style={{ color: "var(--muted)" }}>Loading your dashboard...</p>
+        <p
+          style={{
+            color: "rgba(255,255,255,0.4)",
+            fontFamily: "-apple-system, sans-serif",
+          }}
+        >
+          Loading...
+        </p>
       </main>
     );
 
@@ -93,46 +107,53 @@ export default function BusinessDashboard() {
     <main
       style={{
         minHeight: "100vh",
-        background: "var(--bg)",
-        fontFamily: "'DM Sans', sans-serif",
+        background: "#000",
+        color: "#f5f5f7",
+        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
       {/* NAV */}
       <nav
         style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "1.2rem 5%",
-          background: "var(--surface)",
-          borderBottom: "1px solid var(--border)",
+          padding: "0 2rem",
+          height: "52px",
+          background: "rgba(0,0,0,0.85)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
         <span
           style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: "1.3rem",
-            fontWeight: 800,
-            color: "var(--text)",
+            fontSize: "1rem",
+            fontWeight: 600,
+            letterSpacing: "-0.01em",
           }}
         >
-          Talent<span style={{ color: "var(--accent)" }}>gate</span>
+          Talentgate
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+          <span
+            style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem" }}
+          >
             {business?.company_name}
           </span>
           <button
             onClick={handleSignOut}
             style={{
               background: "transparent",
-              border: "1px solid var(--border)",
-              color: "var(--muted)",
-              padding: "0.4rem 1rem",
-              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.6)",
+              padding: "0.35rem 0.9rem",
+              borderRadius: "980px",
               cursor: "pointer",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.85rem",
+              fontFamily: "-apple-system, sans-serif",
+              fontSize: "0.8rem",
             }}
           >
             Sign out
@@ -140,14 +161,14 @@ export default function BusinessDashboard() {
         </div>
       </nav>
 
-      <div style={{ padding: "3rem 5%", maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "3rem 2rem" }}>
         {/* Header */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
-            marginBottom: "2.5rem",
+            marginBottom: "3rem",
             flexWrap: "wrap",
             gap: "1rem",
           }}
@@ -155,95 +176,40 @@ export default function BusinessDashboard() {
           <div>
             <h1
               style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: "1.8rem",
-                fontWeight: 800,
+                fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
+                fontWeight: 700,
+                letterSpacing: "-0.03em",
+                marginBottom: "0.5rem",
               }}
             >
-              Welcome back, {business?.company_name} 👋
+              {business?.company_name}
             </h1>
-            <p style={{ color: "var(--muted)", marginTop: "0.3rem" }}>
-              Manage your job listings and applications
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem" }}>
+              Manage your roles and find the right people.
             </p>
           </div>
           <Link
             href="/business/post-role"
             style={{
-              background: "var(--accent)",
-              color: "#04080F",
-              padding: "0.75rem 1.5rem",
-              borderRadius: 10,
-              fontWeight: 700,
+              background: "#fff",
+              color: "#000",
+              padding: "0.7rem 1.5rem",
+              borderRadius: "980px",
+              fontWeight: 500,
               fontSize: "0.9rem",
               textDecoration: "none",
             }}
           >
-            + Post New Role
+            + Post new role
           </Link>
-        </div>
-
-        {/* Status cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "1rem",
-            marginBottom: "2.5rem",
-          }}
-        >
-          {[
-            {
-              label: "Active Listings",
-              value: jobs.filter((j) => j.status === "active").length,
-            },
-            {
-              label: "Paused Listings",
-              value: jobs.filter((j) => j.status === "paused").length,
-            },
-            {
-              label: "Filled Roles",
-              value: jobs.filter((j) => j.status === "filled").length,
-            },
-            { label: "Total Posted", value: jobs.length },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: 16,
-                padding: "1.5rem",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontSize: "2rem",
-                  fontWeight: 800,
-                  color: "var(--accent)",
-                }}
-              >
-                {stat.value}
-              </div>
-              <div
-                style={{
-                  color: "var(--muted)",
-                  fontSize: "0.85rem",
-                  marginTop: "0.3rem",
-                }}
-              >
-                {stat.label}
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Verification banner */}
         {!business?.verified && (
           <div
             style={{
-              background: "rgba(255,200,0,0.08)",
-              border: "1px solid rgba(255,200,0,0.25)",
+              background: "rgba(255,200,0,0.05)",
+              border: "1px solid rgba(255,200,0,0.15)",
               borderRadius: 12,
               padding: "1rem 1.5rem",
               marginBottom: "2rem",
@@ -252,158 +218,229 @@ export default function BusinessDashboard() {
               gap: "1rem",
             }}
           >
-            <span style={{ fontSize: "1.2rem" }}>⚠️</span>
+            <span>⚠️</span>
             <div>
               <p
                 style={{
                   fontWeight: 600,
-                  color: "#ffc800",
-                  fontSize: "0.9rem",
+                  color: "rgba(255,200,0,0.8)",
+                  fontSize: "0.88rem",
                 }}
               >
                 Business verification pending
               </p>
-              <p style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
-                Your business is being reviewed. You can still post roles but
-                they won't be visible until verified.
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.35)",
+                  fontSize: "0.82rem",
+                  marginTop: "0.2rem",
+                }}
+              >
+                Your roles won't be visible to workers until your business is
+                verified.
               </p>
             </div>
           </div>
         )}
 
-        {/* Job listings */}
-        <div>
-          <h2
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: "1.2rem",
-              fontWeight: 700,
-              marginBottom: "1.2rem",
-            }}
-          >
-            Your Job Listings
-          </h2>
-
-          {jobs.length === 0 ? (
+        {/* Stats */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "1px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 16,
+            overflow: "hidden",
+            marginBottom: "2.5rem",
+          }}
+        >
+          {[
+            {
+              label: "Active roles",
+              value: jobs.filter((j) => j.status === "active").length,
+            },
+            {
+              label: "Paused",
+              value: jobs.filter((j) => j.status === "paused").length,
+            },
+            {
+              label: "Filled",
+              value: jobs.filter((j) => j.status === "filled").length,
+            },
+            { label: "Total posted", value: jobs.length },
+          ].map((stat) => (
             <div
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: 16,
-                padding: "3rem",
-                textAlign: "center",
-              }}
+              key={stat.label}
+              style={{ background: "#111", padding: "1.5rem" }}
             >
-              <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>📋</p>
-              <p style={{ color: "var(--muted)", marginBottom: "1.5rem" }}>
-                You haven't posted any roles yet.
-              </p>
-              <Link
-                href="/business/post-role"
+              <div
                 style={{
-                  background: "var(--accent)",
-                  color: "#04080F",
-                  padding: "0.75rem 1.5rem",
-                  borderRadius: 10,
+                  fontSize: "2rem",
                   fontWeight: 700,
-                  fontSize: "0.9rem",
-                  textDecoration: "none",
+                  letterSpacing: "-0.03em",
+                  marginBottom: "0.3rem",
                 }}
               >
-                Post your first role
-              </Link>
+                {stat.value}
+              </div>
+              <div
+                style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.8rem" }}
+              >
+                {stat.label}
+              </div>
             </div>
-          ) : (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          ))}
+        </div>
+
+        {/* Job listings */}
+        <h2
+          style={{
+            fontSize: "1rem",
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.5)",
+            marginBottom: "1rem",
+            letterSpacing: "0.02em",
+            textTransform: "uppercase",
+            fontSize: "0.75rem",
+          }}
+        >
+          Your listings
+        </h2>
+
+        {jobs.length === 0 ? (
+          <div
+            style={{
+              background: "#111",
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 16,
+              padding: "4rem",
+              textAlign: "center",
+            }}
+          >
+            <p
+              style={{ color: "rgba(255,255,255,0.3)", marginBottom: "1.5rem" }}
             >
-              {jobs.map((job) => (
-                <div
-                  key={job.id}
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 16,
-                    padding: "1.5rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    flexWrap: "wrap",
-                    gap: "1rem",
-                  }}
-                >
-                  <div>
-                    <h3
-                      style={{
-                        fontFamily: "'Syne', sans-serif",
-                        fontWeight: 700,
-                        fontSize: "1rem",
-                      }}
-                    >
-                      {job.title}
-                    </h3>
-                    <p
-                      style={{
-                        color: "var(--muted)",
-                        fontSize: "0.85rem",
-                        marginTop: "0.3rem",
-                      }}
-                    >
-                      {job.location} · {job.industry} · Posted{" "}
-                      {new Date(job.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div
+              No roles posted yet.
+            </p>
+            <Link
+              href="/business/post-role"
+              style={{
+                background: "#fff",
+                color: "#000",
+                padding: "0.7rem 1.5rem",
+                borderRadius: "980px",
+                fontWeight: 500,
+                fontSize: "0.9rem",
+                textDecoration: "none",
+              }}
+            >
+              Post your first role
+            </Link>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1px",
+              background: "rgba(255,255,255,0.06)",
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
+            {jobs.map((job) => (
+              <div
+                key={job.id}
+                style={{
+                  background: "#111",
+                  padding: "1.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <div>
+                  <h3
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.75rem",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      marginBottom: "0.3rem",
                     }}
                   >
-                    <span
-                      style={{
-                        padding: "0.3rem 0.8rem",
-                        borderRadius: 100,
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                        background:
-                          job.status === "active"
-                            ? "rgba(0,229,255,0.1)"
-                            : "rgba(255,255,255,0.05)",
-                        color:
-                          job.status === "active"
-                            ? "var(--accent)"
-                            : "var(--muted)",
-                        border: `1px solid ${
-                          job.status === "active"
-                            ? "rgba(0,229,255,0.3)"
-                            : "var(--border)"
-                        }`,
-                      }}
-                    >
-                      {job.status}
-                    </span>
-                    <button
-                      onClick={() => toggleJobStatus(job.id, job.status)}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid var(--border)",
-                        color: "var(--muted)",
-                        padding: "0.3rem 0.8rem",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {job.status === "active" ? "Pause" : "Activate"}
-                    </button>
-                  </div>
+                    {job.title}
+                  </h3>
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.35)",
+                      fontSize: "0.82rem",
+                    }}
+                  >
+                    {job.location} · {job.industry} · Posted{" "}
+                    {new Date(job.created_at).toLocaleDateString()}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <span
+                    style={{
+                      padding: "0.25rem 0.75rem",
+                      borderRadius: "980px",
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      background:
+                        job.status === "active"
+                          ? "rgba(255,255,255,0.08)"
+                          : "rgba(255,255,255,0.04)",
+                      color:
+                        job.status === "active"
+                          ? "rgba(255,255,255,0.7)"
+                          : "rgba(255,255,255,0.3)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    {job.status}
+                  </span>
+                  <button
+                    onClick={() => toggleJobStatus(job.id, job.status)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      color: "rgba(255,255,255,0.5)",
+                      padding: "0.25rem 0.75rem",
+                      borderRadius: "980px",
+                      cursor: "pointer",
+                      fontSize: "0.78rem",
+                      fontFamily: "-apple-system, sans-serif",
+                    }}
+                  >
+                    {job.status === "active" ? "Pause" : "Activate"}
+                  </button>
+                  <button
+                    onClick={() => deleteJob(job.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "rgba(255,80,80,0.5)",
+                      cursor: "pointer",
+                      fontSize: "0.78rem",
+                      fontFamily: "-apple-system, sans-serif",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
