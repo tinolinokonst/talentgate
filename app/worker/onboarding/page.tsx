@@ -20,7 +20,7 @@ export default function WorkerOnboarding() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 
