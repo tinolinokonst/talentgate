@@ -31,18 +31,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect business routes
-  if (request.nextUrl.pathname.startsWith("/business")) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
-
-  // Protect worker routes
-  if (request.nextUrl.pathname.startsWith("/worker")) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  if (
+    !user &&
+    (request.nextUrl.pathname.startsWith("/business") ||
+      request.nextUrl.pathname.startsWith("/worker"))
+  ) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   return supabaseResponse;
