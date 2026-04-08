@@ -25,6 +25,10 @@ export default function WorkerOnboarding() {
   const [skills, setSkills] = useState<string[]>([]);
   const [whatYouGoodAt, setWhatYouGoodAt] = useState("");
 
+  // Step 4 — Verify identity
+  const [docType, setDocType] = useState("");
+  const [docFile, setDocFile] = useState<File | null>(null);
+
   const supabase = createClient();
 
   function addSkill() {
@@ -100,6 +104,13 @@ export default function WorkerOnboarding() {
     "Open to anything",
   ];
 
+  const steps = [
+    "About you",
+    "Your experience",
+    "Your skills",
+    "Verify identity",
+  ];
+
   return (
     <main
       style={{
@@ -131,12 +142,7 @@ export default function WorkerOnboarding() {
               marginBottom: "0.75rem",
             }}
           >
-            {[
-              "About you",
-              "Your experience",
-              "Your skills",
-              "Verify identity",
-            ].map((s, i) => (
+            {steps.map((s, i) => (
               <span
                 key={s}
                 style={{
@@ -196,7 +202,6 @@ export default function WorkerOnboarding() {
               Tell us a little about where you are and what kind of work you're
               looking for.
             </p>
-
             <div
               style={{
                 display: "flex",
@@ -223,7 +228,6 @@ export default function WorkerOnboarding() {
                   style={inputStyle}
                 />
               </div>
-
               <div>
                 <label
                   style={{
@@ -264,7 +268,6 @@ export default function WorkerOnboarding() {
                 </div>
               </div>
             </div>
-
             <button
               onClick={() => setStep(2)}
               disabled={!location || !jobType}
@@ -322,7 +325,6 @@ export default function WorkerOnboarding() {
               kind of work you've been part of. Businesses want to understand
               who you are — not read a document.
             </p>
-
             <div
               style={{
                 display: "flex",
@@ -349,7 +351,6 @@ export default function WorkerOnboarding() {
                   style={textareaStyle}
                 />
               </div>
-
               <div>
                 <label
                   style={{
@@ -362,14 +363,13 @@ export default function WorkerOnboarding() {
                   What kinds of roles or industries have you worked in?
                 </label>
                 <textarea
-                  placeholder="e.g. Retail, customer service, some freelance graphic design work. I've also done some volunteer work organising community events..."
+                  placeholder="e.g. Retail, customer service, some freelance graphic design work..."
                   value={previousRoles}
                   onChange={(e) => setPreviousRoles(e.target.value)}
                   rows={3}
                   style={textareaStyle}
                 />
               </div>
-
               <div>
                 <label
                   style={{
@@ -383,7 +383,7 @@ export default function WorkerOnboarding() {
                   experience?
                 </label>
                 <textarea
-                  placeholder="e.g. I helped redesign the customer onboarding process at my last job which reduced complaints by about 30%..."
+                  placeholder="e.g. I helped redesign the customer onboarding process at my last job..."
                   value={biggestAchievement}
                   onChange={(e) => setBiggestAchievement(e.target.value)}
                   rows={3}
@@ -391,7 +391,6 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
-
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
@@ -456,9 +455,8 @@ export default function WorkerOnboarding() {
               }}
             >
               Add the skills you've built through your experience — technical or
-              not. Then tell us what you genuinely excel at.
+              not.
             </p>
-
             <div
               style={{
                 display: "flex",
@@ -497,14 +495,12 @@ export default function WorkerOnboarding() {
                       cursor: "pointer",
                       fontWeight: 600,
                       fontSize: "1.2rem",
-                      fontFamily:
-                        "-apple-system, BlinkMacSystemFont, sans-serif",
+                      fontFamily: "-apple-system, sans-serif",
                     }}
                   >
                     +
                   </button>
                 </div>
-
                 {skills.length > 0 && (
                   <div
                     style={{
@@ -549,7 +545,6 @@ export default function WorkerOnboarding() {
                   </div>
                 )}
               </div>
-
               <div>
                 <label
                   style={{
@@ -562,7 +557,7 @@ export default function WorkerOnboarding() {
                   What do you genuinely excel at?
                 </label>
                 <textarea
-                  placeholder="e.g. I'm really good at staying calm under pressure and making quick decisions. I tend to be the person people come to when something goes wrong because I'm good at problem-solving on the spot..."
+                  placeholder="e.g. I'm really good at staying calm under pressure and making quick decisions..."
                   value={whatYouGoodAt}
                   onChange={(e) => setWhatYouGoodAt(e.target.value)}
                   rows={4}
@@ -570,7 +565,6 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
-
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
@@ -638,50 +632,217 @@ export default function WorkerOnboarding() {
               }}
             >
               To keep Talentgate trusted and safe, we need to confirm you're a
-              real person. This takes less than 2 minutes.
+              real person. Select your document type and upload a clear photo or
+              scan.
             </p>
 
+            {/* Document type selector */}
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.75rem",
-                marginBottom: "2rem",
+                marginBottom: "1.5rem",
               }}
             >
               {[
                 {
-                  icon: "🪪",
-                  label: "Government-issued ID (passport, driver's licence)",
+                  id: "passport",
+                  label: "Passport",
+                  sub: "Any country, must be valid",
                 },
-                { icon: "📄", label: "Birth certificate" },
-                { icon: "🌍", label: "National identity card" },
-              ].map((item) => (
-                <div
-                  key={item.label}
+                {
+                  id: "drivers_licence",
+                  label: "Driver's licence",
+                  sub: "Front and back required",
+                },
+                {
+                  id: "birth_certificate",
+                  label: "Birth certificate",
+                  sub: "Official government issued",
+                },
+                {
+                  id: "national_id",
+                  label: "National identity card",
+                  sub: "Front and back required",
+                },
+              ].map((doc) => (
+                <button
+                  key={doc.id}
+                  onClick={() => setDocType(doc.id)}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "1rem",
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    justifyContent: "space-between",
+                    background:
+                      docType === doc.id
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${
+                      docType === doc.id
+                        ? "rgba(255,255,255,0.3)"
+                        : "rgba(255,255,255,0.08)"
+                    }`,
                     borderRadius: 12,
                     padding: "1rem 1.2rem",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+                    transition: "all 0.15s",
+                    width: "100%",
                   }}
                 >
-                  <span style={{ fontSize: "1.3rem" }}>{item.icon}</span>
-                  <span
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "0.92rem",
+                        fontWeight: 500,
+                        color: "#f5f5f7",
+                        marginBottom: "0.2rem",
+                      }}
+                    >
+                      {doc.label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "rgba(255,255,255,0.35)",
+                      }}
+                    >
+                      {doc.sub}
+                    </div>
+                  </div>
+                  <div
                     style={{
-                      fontSize: "0.88rem",
-                      color: "rgba(255,255,255,0.7)",
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      border: `2px solid ${
+                        docType === doc.id ? "#fff" : "rgba(255,255,255,0.2)"
+                      }`,
+                      background: docType === doc.id ? "#fff" : "transparent",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    {item.label}
-                  </span>
-                </div>
+                    {docType === doc.id && (
+                      <div
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: "#000",
+                        }}
+                      />
+                    )}
+                  </div>
+                </button>
               ))}
             </div>
 
+            {/* File upload */}
+            {docType && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label
+                  style={{
+                    fontSize: "0.82rem",
+                    color: "rgba(255,255,255,0.45)",
+                    display: "block",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Upload your document
+                </label>
+                <label
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: `2px dashed ${
+                      docFile
+                        ? "rgba(255,255,255,0.3)"
+                        : "rgba(255,255,255,0.1)"
+                    }`,
+                    borderRadius: 12,
+                    padding: "2rem",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    background: docFile
+                      ? "rgba(255,255,255,0.04)"
+                      : "transparent",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+                    style={{ display: "none" }}
+                  />
+                  {docFile ? (
+                    <>
+                      <div
+                        style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}
+                      >
+                        ✓
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.88rem",
+                          color: "#f5f5f7",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {docFile.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "rgba(255,255,255,0.35)",
+                          marginTop: "0.3rem",
+                        }}
+                      >
+                        Click to change
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          fontSize: "1.5rem",
+                          marginBottom: "0.5rem",
+                          color: "rgba(255,255,255,0.3)",
+                        }}
+                      >
+                        ↑
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.88rem",
+                          color: "rgba(255,255,255,0.5)",
+                        }}
+                      >
+                        Click to upload
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "rgba(255,255,255,0.25)",
+                          marginTop: "0.3rem",
+                        }}
+                      >
+                        JPG, PNG or PDF · Max 10MB
+                      </div>
+                    </>
+                  )}
+                </label>
+              </div>
+            )}
+
+            {/* Security note */}
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
@@ -694,17 +855,20 @@ export default function WorkerOnboarding() {
                 alignItems: "flex-start",
               }}
             >
-              <span>🔒</span>
+              <span style={{ fontSize: "0.9rem", marginTop: "0.1rem" }}>
+                🔒
+              </span>
               <p
                 style={{
-                  fontSize: "0.82rem",
-                  color: "rgba(255,255,255,0.35)",
+                  fontSize: "0.78rem",
+                  color: "rgba(255,255,255,0.3)",
                   lineHeight: 1.6,
                   margin: 0,
                 }}
               >
-                Your documents are handled securely. We never store raw ID
-                images — verification is powered by Stripe Identity.
+                Your documents are encrypted and handled securely. We never
+                store raw ID images — verification is powered by Stripe
+                Identity.
               </p>
             </div>
 
@@ -744,7 +908,7 @@ export default function WorkerOnboarding() {
               </button>
               <button
                 onClick={handleComplete}
-                disabled={loading}
+                disabled={loading || !docType || !docFile}
                 style={{
                   flex: 2,
                   padding: "0.9rem",
@@ -752,8 +916,9 @@ export default function WorkerOnboarding() {
                   background: "#fff",
                   color: "#000",
                   border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  opacity: loading ? 0.5 : 1,
+                  cursor:
+                    loading || !docType || !docFile ? "not-allowed" : "pointer",
+                  opacity: loading || !docType || !docFile ? 0.4 : 1,
                   fontWeight: 500,
                   fontSize: "0.95rem",
                   fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
