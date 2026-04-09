@@ -12,6 +12,39 @@ export default function Home() {
         overflowX: "hidden",
       }}
     >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap');
+        .tg-title {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: clamp(5rem, 14vw, 13rem);
+          font-weight: 300;
+          letter-spacing: -0.02em;
+          line-height: 0.9;
+          color: #fff;
+          margin: 0;
+        }
+        .tg-title span {
+          font-weight: 600;
+          font-style: italic;
+        }
+        .tg-logo {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: 1.4rem;
+          font-weight: 600;
+          font-style: italic;
+          color: #f5f5f7;
+          letter-spacing: 0.01em;
+          text-decoration: none;
+        }
+        .tg-stat-num {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: 2.2rem;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          color: #fff;
+        }
+      `}</style>
+
       {/* NAV */}
       <nav
         style={{
@@ -30,15 +63,9 @@ export default function Home() {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <span
-          style={{
-            fontSize: "1.1rem",
-            fontWeight: 600,
-            letterSpacing: "-0.01em",
-          }}
-        >
+        <Link href="/" className="tg-logo">
           Talentgate
-        </span>
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
           <Link
             href="#how"
@@ -97,66 +124,102 @@ export default function Home() {
           justifyContent: "center",
           textAlign: "center",
           padding: "8rem 2rem 4rem",
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(100,100,255,0.08) 0%, transparent 70%)",
+          position: "relative",
+          overflow: "hidden",
+          background: "#000",
         }}
       >
         <div
           style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            background:
+              "radial-gradient(ellipse 60% 40% at 50% 60%, rgba(255,255,255,0.03) 0%, transparent 70%)",
+          }}
+        />
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
             display: "inline-block",
             background: "rgba(255,255,255,0.06)",
             border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: "980px",
             padding: "0.3rem 1rem",
-            fontSize: "0.8rem",
-            color: "rgba(255,255,255,0.6)",
-            marginBottom: "2rem",
-            letterSpacing: "0.02em",
+            fontSize: "0.75rem",
+            color: "rgba(255,255,255,0.5)",
+            marginBottom: "3rem",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase" as const,
           }}
         >
-          Verified hiring. Real experience. Global talent.
+          Verified hiring · Real experience · Global talent
         </div>
 
-        <h1
-          style={{
-            fontSize: "clamp(3rem, 8vw, 6.5rem)",
-            fontWeight: 700,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.05,
-            maxWidth: 900,
-            marginBottom: "1.5rem",
-            background:
-              "linear-gradient(180deg, #fff 60%, rgba(255,255,255,0.4))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
+        <div
+          style={{ position: "relative", zIndex: 1, marginBottom: "1.5rem" }}
         >
-          Hire and be hired.
-          <br />
-          Based on who you are.
-        </h1>
+          <h1 className="tg-title">
+            Talent<span>gate</span>
+          </h1>
+        </div>
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: 80,
+            height: 1,
+            background: "rgba(255,255,255,0.3)",
+            margin: "0 auto 2rem",
+          }}
+        />
 
         <p
           style={{
-            fontSize: "clamp(1rem, 2vw, 1.3rem)",
-            color: "rgba(255,255,255,0.55)",
-            maxWidth: 580,
-            lineHeight: 1.6,
-            marginBottom: "2.5rem",
+            position: "relative",
+            zIndex: 1,
+            fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
+            color: "rgba(255,255,255,0.45)",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase" as const,
             fontWeight: 400,
+            marginBottom: "2rem",
+            maxWidth: 500,
+            lineHeight: 1.8,
           }}
         >
-          Talentgate connects verified businesses with real people — not CVs.
-          Workers share their experience, skills, and story. Businesses post
-          roles and find the right fit.
+          Where verified businesses meet real talent
+        </p>
+
+        <p
+          style={{
+            position: "relative",
+            zIndex: 1,
+            fontSize: "clamp(1rem, 2vw, 1.15rem)",
+            color: "rgba(255,255,255,0.5)",
+            maxWidth: 560,
+            lineHeight: 1.7,
+            marginBottom: "3rem",
+            fontWeight: 300,
+          }}
+        >
+          Talentgate connects companies actively hiring with real, verified
+          people — not CVs. Workers share their experience, skills, and story.
+          Businesses find the right fit.
         </p>
 
         <div
           style={{
+            position: "relative",
+            zIndex: 1,
             display: "flex",
             gap: "1rem",
             flexWrap: "wrap",
             justifyContent: "center",
+            marginBottom: "5rem",
           }}
         >
           <Link
@@ -164,12 +227,12 @@ export default function Home() {
             style={{
               background: "#fff",
               color: "#000",
-              padding: "0.85rem 2rem",
+              padding: "0.85rem 2.5rem",
               borderRadius: "980px",
               fontWeight: 500,
-              fontSize: "1rem",
+              fontSize: "0.9rem",
               textDecoration: "none",
-              transition: "opacity 0.2s",
+              letterSpacing: "0.03em",
             }}
           >
             Post a role — $39/mo
@@ -177,26 +240,27 @@ export default function Home() {
           <Link
             href="/auth/signup?type=worker"
             style={{
-              background: "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.15)",
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.2)",
               color: "#fff",
-              padding: "0.85rem 2rem",
+              padding: "0.85rem 2.5rem",
               borderRadius: "980px",
-              fontWeight: 500,
-              fontSize: "1rem",
+              fontWeight: 400,
+              fontSize: "0.9rem",
               textDecoration: "none",
+              letterSpacing: "0.03em",
             }}
           >
             Find work — Free
           </Link>
         </div>
 
-        {/* Stats */}
         <div
           style={{
+            position: "relative",
+            zIndex: 1,
             display: "flex",
             gap: "4rem",
-            marginTop: "5rem",
             borderTop: "1px solid rgba(255,255,255,0.08)",
             paddingTop: "3rem",
             flexWrap: "wrap",
@@ -210,20 +274,14 @@ export default function Home() {
             { num: "Global", label: "All industries" },
           ].map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
+              <div className="tg-stat-num">{s.num}</div>
               <div
                 style={{
-                  fontSize: "2rem",
-                  fontWeight: 700,
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                {s.num}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.85rem",
-                  color: "rgba(255,255,255,0.45)",
+                  fontSize: "0.78rem",
+                  color: "rgba(255,255,255,0.35)",
                   marginTop: "0.3rem",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase" as const,
                 }}
               >
                 {s.label}
@@ -243,7 +301,7 @@ export default function Home() {
               color: "rgba(255,255,255,0.45)",
               fontSize: "0.9rem",
               letterSpacing: "0.05em",
-              textTransform: "uppercase",
+              textTransform: "uppercase" as const,
               marginBottom: "1rem",
             }}
           >
@@ -310,10 +368,7 @@ export default function Home() {
           ].map((f) => (
             <div
               key={f.title}
-              style={{
-                background: "#111",
-                padding: "2.5rem",
-              }}
+              style={{ background: "#111", padding: "2.5rem" }}
             >
               <div
                 style={{
@@ -357,7 +412,7 @@ export default function Home() {
                 color: "rgba(255,255,255,0.45)",
                 fontSize: "0.9rem",
                 letterSpacing: "0.05em",
-                textTransform: "uppercase",
+                textTransform: "uppercase" as const,
                 marginBottom: "1rem",
               }}
             >
@@ -381,7 +436,6 @@ export default function Home() {
               gap: "2rem",
             }}
           >
-            {/* Business side */}
             <div
               style={{
                 background: "#111",
@@ -394,7 +448,7 @@ export default function Home() {
                 style={{
                   fontSize: "0.75rem",
                   letterSpacing: "0.1em",
-                  textTransform: "uppercase",
+                  textTransform: "uppercase" as const,
                   color: "rgba(255,255,255,0.35)",
                   marginBottom: "1.5rem",
                 }}
@@ -482,7 +536,6 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Worker side */}
             <div
               style={{
                 background: "#111",
@@ -495,7 +548,7 @@ export default function Home() {
                 style={{
                   fontSize: "0.75rem",
                   letterSpacing: "0.1em",
-                  textTransform: "uppercase",
+                  textTransform: "uppercase" as const,
                   color: "rgba(255,255,255,0.35)",
                   marginBottom: "1.5rem",
                 }}
@@ -595,7 +648,7 @@ export default function Home() {
               color: "rgba(255,255,255,0.45)",
               fontSize: "0.9rem",
               letterSpacing: "0.05em",
-              textTransform: "uppercase",
+              textTransform: "uppercase" as const,
               marginBottom: "1rem",
             }}
           >
@@ -619,14 +672,13 @@ export default function Home() {
               gap: "1.5rem",
             }}
           >
-            {/* Worker */}
             <div
               style={{
                 background: "#111",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: 20,
                 padding: "2.5rem",
-                textAlign: "left",
+                textAlign: "left" as const,
               }}
             >
               <div
@@ -634,7 +686,7 @@ export default function Home() {
                   fontSize: "0.8rem",
                   color: "rgba(255,255,255,0.4)",
                   marginBottom: "1rem",
-                  textTransform: "uppercase",
+                  textTransform: "uppercase" as const,
                   letterSpacing: "0.05em",
                 }}
               >
@@ -696,7 +748,7 @@ export default function Home() {
                 href="/auth/signup?type=worker"
                 style={{
                   display: "block",
-                  textAlign: "center",
+                  textAlign: "center" as const,
                   border: "1px solid rgba(255,255,255,0.2)",
                   color: "#fff",
                   padding: "0.85rem",
@@ -710,20 +762,19 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Business */}
             <div
               style={{
                 background: "#1d1d1f",
                 border: "1px solid rgba(255,255,255,0.15)",
                 borderRadius: 20,
                 padding: "2.5rem",
-                textAlign: "left",
-                position: "relative",
+                textAlign: "left" as const,
+                position: "relative" as const,
               }}
             >
               <div
                 style={{
-                  position: "absolute",
+                  position: "absolute" as const,
                   top: "1.5rem",
                   right: "1.5rem",
                   background: "#fff",
@@ -742,7 +793,7 @@ export default function Home() {
                   fontSize: "0.8rem",
                   color: "rgba(255,255,255,0.4)",
                   marginBottom: "1rem",
-                  textTransform: "uppercase",
+                  textTransform: "uppercase" as const,
                   letterSpacing: "0.05em",
                 }}
               >
@@ -814,7 +865,7 @@ export default function Home() {
                 href="/auth/signup?type=business"
                 style={{
                   display: "block",
-                  textAlign: "center",
+                  textAlign: "center" as const,
                   background: "#fff",
                   color: "#000",
                   padding: "0.85rem",
@@ -845,7 +896,7 @@ export default function Home() {
           margin: "0 auto",
         }}
       >
-        <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>Talentgate</span>
+        <span className="tg-logo">Talentgate</span>
         <div style={{ display: "flex", gap: "2rem" }}>
           {["Privacy Policy", "Terms of Service", "Contact"].map((l) => (
             <Link
