@@ -13,28 +13,34 @@ export default function Home() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap');
         .tg-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: clamp(5rem, 14vw, 13rem);
-          font-weight: 300;
+          font-weight: 700;
           letter-spacing: -0.02em;
           line-height: 0.9;
-          color: #fff;
           margin: 0;
+          background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
         .tg-title span {
-          font-weight: 600;
           font-style: italic;
         }
         .tg-logo {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 1.4rem;
-          font-weight: 600;
+          font-weight: 700;
           font-style: italic;
-          color: #f5f5f7;
           letter-spacing: 0.01em;
           text-decoration: none;
+          background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-align: center;
         }
         .tg-stat-num {
           font-family: 'Cormorant Garamond', Georgia, serif;
@@ -53,9 +59,9 @@ export default function Home() {
           left: 0,
           right: 0,
           zIndex: 100,
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
-          justifyContent: "space-between",
           padding: "0 2rem",
           height: "52px",
           background: "rgba(0,0,0,0.85)",
@@ -63,9 +69,6 @@ export default function Home() {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <Link href="/" className="tg-logo">
-          Talentgate
-        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
           <Link
             href="#how"
@@ -87,6 +90,18 @@ export default function Home() {
           >
             Pricing
           </Link>
+        </div>
+        <Link href="/" className="tg-logo">
+          Talentgate
+        </Link>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "1.5rem",
+            justifyContent: "flex-end",
+          }}
+        >
           <Link
             href="/auth/login"
             style={{
