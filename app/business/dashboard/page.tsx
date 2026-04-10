@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from '../../../lib/supabase/client'
+import { createClient } from "../../../lib/supabase/client";
 
 type Job = {
   id: string;
@@ -296,7 +296,6 @@ export default function BusinessDashboard() {
         {/* Job listings */}
         <h2
           style={{
-            fontSize: "1rem",
             fontWeight: 600,
             color: "rgba(255,255,255,0.5)",
             marginBottom: "1rem",
