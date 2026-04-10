@@ -1,19 +1,15 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-import { useState, Suspense } from "react";
+
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "../../../lib/supabase/client";
 
-function SignupForm() {
+export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const type = searchParams.get("type") || "worker";
-
-  const [userType, setUserType] = useState<"business" | "worker">(
-    type as "business" | "worker"
-  );
+  const [userType, setUserType] = useState<"business" | "worker">("worker");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -69,7 +65,6 @@ function SignupForm() {
     fontSize: "0.95rem",
     outline: "none",
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-    transition: "border-color 0.2s",
   };
 
   return (
@@ -260,7 +255,6 @@ function SignupForm() {
                 opacity: loading || !fullName || !email || !password ? 0.5 : 1,
                 fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                 marginTop: "0.5rem",
-                transition: "opacity 0.2s",
               }}
             >
               {loading
@@ -317,15 +311,5 @@ function SignupForm() {
         )}
       </div>
     </main>
-  );
-}
-
-export default function SignupPage() {
-  return (
-    <Suspense
-      fallback={<div style={{ background: "#000", minHeight: "100vh" }} />}
-    >
-      <SignupForm />
-    </Suspense>
   );
 }
