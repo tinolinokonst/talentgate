@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "../../../lib/supabase/client";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams.get("type") || "worker";
@@ -319,5 +319,15 @@ export default function SignupPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={<div style={{ background: "#000", minHeight: "100vh" }} />}
+    >
+      <SignupForm />
+    </Suspense>
   );
 }
