@@ -19,8 +19,9 @@ export default function Home() {
           font-size: clamp(5rem, 14vw, 13rem);
           font-weight: 700;
           letter-spacing: -0.02em;
-          line-height: 0.9;
+          line-height: 1.1;
           margin: 0;
+          padding-bottom: 0.15em;
           background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.1) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
