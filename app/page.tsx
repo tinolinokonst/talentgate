@@ -27,13 +27,13 @@ export default function Home() {
           background-clip: text;
         }
         .tg-title span {
-          font-style: italic;
+          font-style: normal;
         }
         .tg-logo {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 1.4rem;
           font-weight: 700;
-          font-style: italic;
+          font-style: normal;
           letter-spacing: 0.01em;
           text-decoration: none;
           background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
@@ -71,7 +71,7 @@ export default function Home() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
           <Link
-            href="#how"
+            href="/how-it-works"
             style={{
               color: "rgba(255,255,255,0.7)",
               textDecoration: "none",
@@ -81,7 +81,7 @@ export default function Home() {
             How it works
           </Link>
           <Link
-            href="#pricing"
+            href="/pricing"
             style={{
               color: "rgba(255,255,255,0.7)",
               textDecoration: "none",
