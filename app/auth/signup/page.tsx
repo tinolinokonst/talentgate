@@ -85,7 +85,6 @@ function SignupForm() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 420 }}>
-        {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
             <span
@@ -101,7 +100,6 @@ function SignupForm() {
           </Link>
         </div>
 
-        {/* Toggle */}
         <div
           style={{
             display: "flex",
@@ -135,7 +133,6 @@ function SignupForm() {
           ))}
         </div>
 
-        {/* Card */}
         <div
           style={{
             background: "#111",
@@ -301,7 +298,7 @@ function SignupForm() {
               lineHeight: 1.5,
             }}
           >
-            🔒 You'll verify your business and pay $39/month after signup
+            You will verify your business and pay $39/month after signup
           </p>
         )}
         {userType === "worker" && (
@@ -314,7 +311,7 @@ function SignupForm() {
               lineHeight: 1.5,
             }}
           >
-            🔒 A quick identity check keeps the platform safe for everyone
+            A quick identity check keeps the platform safe for everyone
           </p>
         )}
       </div>
