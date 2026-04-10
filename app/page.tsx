@@ -13,7 +13,7 @@ export default function Home() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&display=swap');
         .tg-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: clamp(5rem, 14vw, 13rem);
@@ -21,7 +21,7 @@ export default function Home() {
           letter-spacing: -0.02em;
           line-height: 0.9;
           margin: 0;
-          background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.1) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -36,7 +36,7 @@ export default function Home() {
           font-style: normal;
           letter-spacing: 0.01em;
           text-decoration: none;
-          background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -45,9 +45,12 @@ export default function Home() {
         .tg-stat-num {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 2.2rem;
-          font-weight: 600;
+          font-weight: 700;
           letter-spacing: -0.02em;
-          color: #fff;
+          background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
       `}</style>
 
@@ -187,7 +190,7 @@ export default function Home() {
             zIndex: 1,
             width: 80,
             height: 1,
-            background: "rgba(255,255,255,0.3)",
+            background: "rgba(255,255,255,0.2)",
             margin: "0 auto 2rem",
           }}
         />
@@ -197,7 +200,7 @@ export default function Home() {
             position: "relative",
             zIndex: 1,
             fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
-            color: "rgba(255,255,255,0.45)",
+            color: "rgba(255,255,255,0.4)",
             letterSpacing: "0.15em",
             textTransform: "uppercase" as const,
             fontWeight: 400,
@@ -214,7 +217,7 @@ export default function Home() {
             position: "relative",
             zIndex: 1,
             fontSize: "clamp(1rem, 2vw, 1.15rem)",
-            color: "rgba(255,255,255,0.5)",
+            color: "rgba(255,255,255,0.45)",
             maxWidth: 560,
             lineHeight: 1.7,
             marginBottom: "3rem",
@@ -293,7 +296,7 @@ export default function Home() {
               <div
                 style={{
                   fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.35)",
+                  color: "rgba(255,255,255,0.3)",
                   marginTop: "0.3rem",
                   letterSpacing: "0.05em",
                   textTransform: "uppercase" as const,
@@ -308,14 +311,14 @@ export default function Home() {
 
       {/* WHAT MAKES US DIFFERENT */}
       <section
-        style={{ padding: "8rem 2rem", maxWidth: 980, margin: "0 auto" }}
+        style={{ padding: "8rem 2rem", maxWidth: 1100, margin: "0 auto" }}
       >
-        <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <p
             style={{
-              color: "rgba(255,255,255,0.45)",
-              fontSize: "0.9rem",
-              letterSpacing: "0.05em",
+              color: "rgba(255,255,255,0.35)",
+              fontSize: "0.75rem",
+              letterSpacing: "0.1em",
               textTransform: "uppercase" as const,
               marginBottom: "1rem",
             }}
@@ -336,11 +339,11 @@ export default function Home() {
           </h2>
           <p
             style={{
-              color: "rgba(255,255,255,0.5)",
-              fontSize: "1.1rem",
-              maxWidth: 560,
+              color: "rgba(255,255,255,0.45)",
+              fontSize: "1rem",
+              maxWidth: 520,
               margin: "1.5rem auto 0",
-              lineHeight: 1.6,
+              lineHeight: 1.7,
             }}
           >
             Forget uploading a document. Talentgate asks workers to describe
@@ -352,9 +355,9 @@ export default function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "1.5px",
-            background: "rgba(255,255,255,0.08)",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "1px",
+            background: "rgba(255,255,255,0.06)",
             borderRadius: 20,
             overflow: "hidden",
           }}
@@ -363,51 +366,49 @@ export default function Home() {
             {
               icon: "✦",
               title: "Experience, not documents",
-              desc: "Workers describe what they've actually done — the roles they've held, challenges they've faced, and what they've learned along the way.",
+              desc: "Workers describe what they've actually done — the roles, the challenges, and what they've learned.",
             },
             {
               icon: "◈",
               title: "Skills that matter",
-              desc: "From technical abilities to soft skills — workers highlight what they're genuinely good at, not just what fits a job description template.",
+              desc: "From technical abilities to soft skills — workers highlight what they're genuinely good at.",
             },
             {
               icon: "⊕",
               title: "Verified on both sides",
-              desc: "Every business is verified against company registries. Every worker confirms their identity. No fake profiles, no ghost listings.",
+              desc: "Every business and every worker is verified. No fake profiles, no ghost listings.",
             },
             {
               icon: "◎",
               title: "Real roles, right now",
-              desc: "Businesses mark roles as actively hiring, paused, or filled — so workers always see listings that are actually open.",
+              desc: "Businesses mark roles as actively hiring, paused, or filled — always accurate.",
             },
           ].map((f) => (
-            <div
-              key={f.title}
-              style={{ background: "#111", padding: "2.5rem" }}
-            >
+            <div key={f.title} style={{ background: "#111", padding: "2rem" }}>
               <div
                 style={{
-                  fontSize: "1.5rem",
-                  marginBottom: "1.2rem",
-                  color: "rgba(255,255,255,0.4)",
+                  fontSize: "1.2rem",
+                  marginBottom: "1rem",
+                  color: "rgba(255,255,255,0.3)",
                 }}
               >
                 {f.icon}
               </div>
               <h3
                 style={{
-                  fontSize: "1.1rem",
+                  fontSize: "0.95rem",
                   fontWeight: 600,
-                  marginBottom: "0.75rem",
-                  letterSpacing: "-0.02em",
+                  marginBottom: "0.6rem",
+                  letterSpacing: "-0.01em",
+                  lineHeight: 1.3,
                 }}
               >
                 {f.title}
               </h3>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
-                  fontSize: "0.9rem",
+                  color: "rgba(255,255,255,0.4)",
+                  fontSize: "0.82rem",
                   lineHeight: 1.65,
                 }}
               >
@@ -419,14 +420,14 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how" style={{ padding: "8rem 2rem", background: "#0a0a0a" }}>
+      <section style={{ padding: "8rem 2rem", background: "#0a0a0a" }}>
         <div style={{ maxWidth: 980, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "5rem" }}>
             <p
               style={{
-                color: "rgba(255,255,255,0.45)",
-                fontSize: "0.9rem",
-                letterSpacing: "0.05em",
+                color: "rgba(255,255,255,0.35)",
+                fontSize: "0.75rem",
+                letterSpacing: "0.1em",
                 textTransform: "uppercase" as const,
                 marginBottom: "1rem",
               }}
@@ -461,10 +462,10 @@ export default function Home() {
             >
               <div
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.72rem",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase" as const,
-                  color: "rgba(255,255,255,0.35)",
+                  color: "rgba(255,255,255,0.3)",
                   marginBottom: "1.5rem",
                 }}
               >
@@ -502,8 +503,8 @@ export default function Home() {
                 >
                   <div
                     style={{
-                      fontSize: "0.75rem",
-                      color: "rgba(255,255,255,0.25)",
+                      fontSize: "0.72rem",
+                      color: "rgba(255,255,255,0.2)",
                       fontWeight: 600,
                       minWidth: 24,
                       paddingTop: 3,
@@ -515,7 +516,7 @@ export default function Home() {
                     <div
                       style={{
                         fontWeight: 600,
-                        fontSize: "0.95rem",
+                        fontSize: "0.9rem",
                         marginBottom: "0.3rem",
                       }}
                     >
@@ -523,8 +524,8 @@ export default function Home() {
                     </div>
                     <div
                       style={{
-                        color: "rgba(255,255,255,0.45)",
-                        fontSize: "0.85rem",
+                        color: "rgba(255,255,255,0.4)",
+                        fontSize: "0.82rem",
                         lineHeight: 1.5,
                       }}
                     >
@@ -542,7 +543,7 @@ export default function Home() {
                   padding: "0.7rem 1.5rem",
                   borderRadius: "980px",
                   fontWeight: 500,
-                  fontSize: "0.9rem",
+                  fontSize: "0.85rem",
                   textDecoration: "none",
                   marginTop: "0.5rem",
                 }}
@@ -561,10 +562,10 @@ export default function Home() {
             >
               <div
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.72rem",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase" as const,
-                  color: "rgba(255,255,255,0.35)",
+                  color: "rgba(255,255,255,0.3)",
                   marginBottom: "1.5rem",
                 }}
               >
@@ -584,7 +585,7 @@ export default function Home() {
                 {
                   step: "03",
                   title: "Tell your story",
-                  desc: "Describe your experience in your own words. No CV needed — just talk about what you've done, what you know, and what you're good at.",
+                  desc: "Describe your experience in your own words. No CV needed — just talk about what you've done and what you're good at.",
                 },
                 {
                   step: "04",
@@ -602,8 +603,8 @@ export default function Home() {
                 >
                   <div
                     style={{
-                      fontSize: "0.75rem",
-                      color: "rgba(255,255,255,0.25)",
+                      fontSize: "0.72rem",
+                      color: "rgba(255,255,255,0.2)",
                       fontWeight: 600,
                       minWidth: 24,
                       paddingTop: 3,
@@ -615,7 +616,7 @@ export default function Home() {
                     <div
                       style={{
                         fontWeight: 600,
-                        fontSize: "0.95rem",
+                        fontSize: "0.9rem",
                         marginBottom: "0.3rem",
                       }}
                     >
@@ -623,8 +624,8 @@ export default function Home() {
                     </div>
                     <div
                       style={{
-                        color: "rgba(255,255,255,0.45)",
-                        fontSize: "0.85rem",
+                        color: "rgba(255,255,255,0.4)",
+                        fontSize: "0.82rem",
                         lineHeight: 1.5,
                       }}
                     >
@@ -637,13 +638,13 @@ export default function Home() {
                 href="/auth/signup?type=worker"
                 style={{
                   display: "inline-block",
-                  background: "rgba(255,255,255,0.1)",
-                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.12)",
                   color: "#fff",
                   padding: "0.7rem 1.5rem",
                   borderRadius: "980px",
                   fontWeight: 500,
-                  fontSize: "0.9rem",
+                  fontSize: "0.85rem",
                   textDecoration: "none",
                   marginTop: "0.5rem",
                 }}
@@ -656,13 +657,13 @@ export default function Home() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" style={{ padding: "8rem 2rem" }}>
+      <section style={{ padding: "8rem 2rem" }}>
         <div style={{ maxWidth: 780, margin: "0 auto", textAlign: "center" }}>
           <p
             style={{
-              color: "rgba(255,255,255,0.45)",
-              fontSize: "0.9rem",
-              letterSpacing: "0.05em",
+              color: "rgba(255,255,255,0.35)",
+              fontSize: "0.75rem",
+              letterSpacing: "0.1em",
               textTransform: "uppercase" as const,
               marginBottom: "1rem",
             }}
@@ -698,8 +699,8 @@ export default function Home() {
             >
               <div
                 style={{
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.4)",
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.35)",
                   marginBottom: "1rem",
                   textTransform: "uppercase" as const,
                   letterSpacing: "0.05em",
@@ -719,10 +720,10 @@ export default function Home() {
               </div>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
-                  fontSize: "0.9rem",
+                  color: "rgba(255,255,255,0.4)",
+                  fontSize: "0.88rem",
                   marginBottom: "2rem",
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                 }}
               >
                 Finding work should never cost money. Sign up, tell your story,
@@ -733,7 +734,7 @@ export default function Home() {
                   listStyle: "none",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.75rem",
+                  gap: "0.65rem",
                   marginBottom: "2rem",
                 }}
               >
@@ -747,14 +748,21 @@ export default function Home() {
                   <li
                     key={f}
                     style={{
-                      fontSize: "0.88rem",
-                      color: "rgba(255,255,255,0.6)",
+                      fontSize: "0.85rem",
+                      color: "rgba(255,255,255,0.55)",
                       display: "flex",
                       gap: "0.6rem",
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ color: "#fff", fontSize: "0.7rem" }}>✓</span>{" "}
+                    <span
+                      style={{
+                        color: "rgba(255,255,255,0.4)",
+                        fontSize: "0.7rem",
+                      }}
+                    >
+                      ✓
+                    </span>{" "}
                     {f}
                   </li>
                 ))}
@@ -764,12 +772,12 @@ export default function Home() {
                 style={{
                   display: "block",
                   textAlign: "center" as const,
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  border: "1px solid rgba(255,255,255,0.15)",
                   color: "#fff",
                   padding: "0.85rem",
                   borderRadius: "980px",
                   fontWeight: 500,
-                  fontSize: "0.9rem",
+                  fontSize: "0.88rem",
                   textDecoration: "none",
                 }}
               >
@@ -779,7 +787,7 @@ export default function Home() {
 
             <div
               style={{
-                background: "#1d1d1f",
+                background: "#161616",
                 border: "1px solid rgba(255,255,255,0.15)",
                 borderRadius: 20,
                 padding: "2.5rem",
@@ -794,8 +802,8 @@ export default function Home() {
                   right: "1.5rem",
                   background: "#fff",
                   color: "#000",
-                  fontSize: "0.7rem",
-                  fontWeight: 600,
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
                   padding: "0.2rem 0.7rem",
                   borderRadius: "980px",
                   letterSpacing: "0.03em",
@@ -805,8 +813,8 @@ export default function Home() {
               </div>
               <div
                 style={{
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.4)",
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.35)",
                   marginBottom: "1rem",
                   textTransform: "uppercase" as const,
                   letterSpacing: "0.05em",
@@ -826,8 +834,8 @@ export default function Home() {
                 <span
                   style={{
                     fontSize: "1.2rem",
-                    color: "rgba(255,255,255,0.4)",
-                    fontWeight: 400,
+                    color: "rgba(255,255,255,0.35)",
+                    fontWeight: 300,
                   }}
                 >
                   /mo
@@ -835,10 +843,10 @@ export default function Home() {
               </div>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
-                  fontSize: "0.9rem",
+                  color: "rgba(255,255,255,0.4)",
+                  fontSize: "0.88rem",
                   marginBottom: "2rem",
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                 }}
               >
                 One flat fee. Post unlimited roles, access verified worker
@@ -849,7 +857,7 @@ export default function Home() {
                   listStyle: "none",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.75rem",
+                  gap: "0.65rem",
                   marginBottom: "2rem",
                 }}
               >
@@ -864,14 +872,21 @@ export default function Home() {
                   <li
                     key={f}
                     style={{
-                      fontSize: "0.88rem",
-                      color: "rgba(255,255,255,0.6)",
+                      fontSize: "0.85rem",
+                      color: "rgba(255,255,255,0.55)",
                       display: "flex",
                       gap: "0.6rem",
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ color: "#fff", fontSize: "0.7rem" }}>✓</span>{" "}
+                    <span
+                      style={{
+                        color: "rgba(255,255,255,0.4)",
+                        fontSize: "0.7rem",
+                      }}
+                    >
+                      ✓
+                    </span>{" "}
                     {f}
                   </li>
                 ))}
@@ -886,7 +901,7 @@ export default function Home() {
                   padding: "0.85rem",
                   borderRadius: "980px",
                   fontWeight: 500,
-                  fontSize: "0.9rem",
+                  fontSize: "0.88rem",
                   textDecoration: "none",
                 }}
               >
@@ -918,7 +933,7 @@ export default function Home() {
               key={l}
               href="#"
               style={{
-                color: "rgba(255,255,255,0.4)",
+                color: "rgba(255,255,255,0.3)",
                 textDecoration: "none",
                 fontSize: "0.8rem",
               }}
@@ -927,7 +942,7 @@ export default function Home() {
             </Link>
           ))}
         </div>
-        <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem" }}>
+        <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.8rem" }}>
           © 2026 Talentgate
         </span>
       </footer>
