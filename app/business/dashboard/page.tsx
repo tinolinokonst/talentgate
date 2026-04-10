@@ -300,7 +300,7 @@ export default function BusinessDashboard() {
             color: "rgba(255,255,255,0.5)",
             marginBottom: "1rem",
             letterSpacing: "0.02em",
-            textTransform: "uppercase",
+            textTransform: "uppercase" as const,
             fontSize: "0.75rem",
           }}
         >
