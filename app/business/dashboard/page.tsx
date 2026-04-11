@@ -130,9 +130,14 @@ export default function BusinessDashboard() {
       >
         <span
           style={{
-            fontSize: "1rem",
-            fontWeight: 600,
-            letterSpacing: "-0.01em",
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "1.3rem",
+            fontWeight: 700,
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
           }}
         >
           Talentgate

@@ -11,25 +11,62 @@ export default function WorkerOnboarding() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Step 1 — About you
+  // Step 1
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("");
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+  const [otherIndustry, setOtherIndustry] = useState("");
 
-  // Step 2 — Your experience
+  // Step 2
   const [experienceSummary, setExperienceSummary] = useState("");
   const [previousRoles, setPreviousRoles] = useState("");
   const [biggestAchievement, setBiggestAchievement] = useState("");
 
-  // Step 3 — Your skills
+  // Step 3
   const [skill, setSkill] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [whatYouGoodAt, setWhatYouGoodAt] = useState("");
 
-  // Step 4 — Verify identity
+  // Step 4
   const [docType, setDocType] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
 
   const supabase = createClient();
+
+  const jobTypes = [
+    "Full-time",
+    "Part-time",
+    "Contract",
+    "Freelance",
+    "Internship",
+    "Open to anything",
+  ];
+  const industries = [
+    "Technology",
+    "Healthcare",
+    "Finance",
+    "Education",
+    "Retail",
+    "Construction",
+    "Hospitality",
+    "Marketing",
+    "Legal",
+    "Media",
+    "Manufacturing",
+    "Other",
+  ];
+  const steps = [
+    "About you",
+    "Your experience",
+    "Your skills",
+    "Verify identity",
+  ];
+
+  function toggleIndustry(ind: string) {
+    setSelectedIndustries((prev) =>
+      prev.includes(ind) ? prev.filter((i) => i !== ind) : [...prev, ind]
+    );
+  }
 
   function addSkill() {
     if (skill.trim() && !skills.includes(skill.trim())) {
@@ -54,12 +91,18 @@ export default function WorkerOnboarding() {
       return;
     }
 
+    const finalIndustries =
+      selectedIndustries.includes("Other") && otherIndustry
+        ? [...selectedIndustries.filter((i) => i !== "Other"), otherIndustry]
+        : selectedIndustries;
+
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
         verified: true,
         location,
         job_type: jobType,
+        industries: finalIndustries,
         experience_summary: experienceSummary,
         previous_roles: previousRoles,
         biggest_achievement: biggestAchievement,
@@ -95,21 +138,48 @@ export default function WorkerOnboarding() {
     lineHeight: 1.6,
   };
 
-  const jobTypes = [
-    "Full-time",
-    "Part-time",
-    "Contract",
-    "Freelance",
-    "Internship",
-    "Open to anything",
-  ];
+  const pillButton = (active: boolean) => ({
+    padding: "0.5rem 1rem",
+    borderRadius: "980px",
+    border: "1px solid",
+    borderColor: active ? "#fff" : "rgba(255,255,255,0.12)",
+    background: active ? "#fff" : "transparent",
+    color: active ? "#000" : "rgba(255,255,255,0.6)",
+    fontSize: "0.85rem",
+    fontWeight: 500,
+    cursor: "pointer",
+    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+    transition: "all 0.15s",
+  });
 
-  const steps = [
-    "About you",
-    "Your experience",
-    "Your skills",
-    "Verify identity",
-  ];
+  const continueBtn = (disabled: boolean) => ({
+    width: "100%",
+    marginTop: "2.5rem",
+    background: "#fff",
+    color: "#000",
+    padding: "0.9rem",
+    borderRadius: "980px",
+    fontWeight: 500,
+    fontSize: "0.95rem",
+    border: "none",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.4 : 1,
+    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+    transition: "opacity 0.2s",
+  });
+
+  const backBtn = {
+    flex: 1,
+    padding: "0.9rem",
+    borderRadius: "980px",
+    border: "1px solid rgba(255,255,255,0.15)",
+    background: "transparent",
+    color: "rgba(255,255,255,0.6)",
+    fontWeight: 500,
+    fontSize: "0.9rem",
+    cursor: "pointer",
+    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+  };
 
   return (
     <main
@@ -121,19 +191,30 @@ export default function WorkerOnboarding() {
         padding: "2rem",
       }}
     >
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');`}</style>
+
       <div style={{ maxWidth: 600, margin: "0 auto", paddingTop: "3rem" }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
             <span
-              style={{ fontSize: "1.3rem", fontWeight: 600, color: "#f5f5f7" }}
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: "1.6rem",
+                fontWeight: 700,
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
             >
               Talentgate
             </span>
           </Link>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress */}
         <div style={{ marginBottom: "3rem" }}>
           <div
             style={{
@@ -179,7 +260,7 @@ export default function WorkerOnboarding() {
           </div>
         </div>
 
-        {/* STEP 1 — About you */}
+        {/* STEP 1 */}
         {step === 1 && (
           <div>
             <h1
@@ -199,15 +280,12 @@ export default function WorkerOnboarding() {
                 lineHeight: 1.6,
               }}
             >
-              Tell us a little about where you are and what kind of work you're
-              looking for.
+              Tell us where you are, what kind of work you're looking for, and
+              which industries you have experience in.
             </p>
+
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "1.5rem",
-              }}
+              style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
             >
               <div>
                 <label
@@ -228,6 +306,7 @@ export default function WorkerOnboarding() {
                   style={inputStyle}
                 />
               </div>
+
               <div>
                 <label
                   style={{
@@ -246,52 +325,79 @@ export default function WorkerOnboarding() {
                     <button
                       key={t}
                       onClick={() => setJobType(t)}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        borderRadius: "980px",
-                        border: "1px solid",
-                        borderColor:
-                          jobType === t ? "#fff" : "rgba(255,255,255,0.12)",
-                        background: jobType === t ? "#fff" : "transparent",
-                        color: jobType === t ? "#000" : "rgba(255,255,255,0.6)",
-                        fontSize: "0.85rem",
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        fontFamily:
-                          "-apple-system, BlinkMacSystemFont, sans-serif",
-                        transition: "all 0.15s",
-                      }}
+                      style={pillButton(jobType === t) as React.CSSProperties}
                     >
                       {t}
                     </button>
                   ))}
                 </div>
               </div>
+
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "rgba(255,255,255,0.5)",
+                    display: "block",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Which industries have you worked in?{" "}
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      fontSize: "0.78rem",
+                    }}
+                  >
+                    (select all that apply)
+                  </span>
+                </label>
+                <div
+                  style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}
+                >
+                  {industries.map((ind) => (
+                    <button
+                      key={ind}
+                      onClick={() => toggleIndustry(ind)}
+                      style={
+                        pillButton(
+                          selectedIndustries.includes(ind)
+                        ) as React.CSSProperties
+                      }
+                    >
+                      {ind}
+                    </button>
+                  ))}
+                </div>
+                {selectedIndustries.includes("Other") && (
+                  <input
+                    type="text"
+                    placeholder="Please specify your industry..."
+                    value={otherIndustry}
+                    onChange={(e) => setOtherIndustry(e.target.value)}
+                    style={{ ...inputStyle, marginTop: "0.75rem" }}
+                  />
+                )}
+              </div>
             </div>
+
             <button
               onClick={() => setStep(2)}
-              disabled={!location || !jobType}
-              style={{
-                width: "100%",
-                marginTop: "2.5rem",
-                background: "#fff",
-                color: "#000",
-                padding: "0.9rem",
-                borderRadius: "980px",
-                fontWeight: 500,
-                fontSize: "0.95rem",
-                border: "none",
-                cursor: !location || !jobType ? "not-allowed" : "pointer",
-                opacity: !location || !jobType ? 0.4 : 1,
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-              }}
+              disabled={
+                !location || !jobType || selectedIndustries.length === 0
+              }
+              style={
+                continueBtn(
+                  !location || !jobType || selectedIndustries.length === 0
+                ) as React.CSSProperties
+              }
             >
               Continue →
             </button>
           </div>
         )}
 
-        {/* STEP 2 — Your experience */}
+        {/* STEP 2 */}
         {step === 2 && (
           <div>
             <h1
@@ -311,7 +417,7 @@ export default function WorkerOnboarding() {
                 lineHeight: 1.6,
               }}
             >
-              This isn't a CV. Don't list dates and job titles.
+              This is not a CV. Don't list dates and job titles.
             </p>
             <p
               style={{
@@ -325,6 +431,7 @@ export default function WorkerOnboarding() {
               kind of work you've been part of. Businesses want to understand
               who you are — not read a document.
             </p>
+
             <div
               style={{
                 display: "flex",
@@ -391,23 +498,13 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
+
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
               <button
                 onClick={() => setStep(1)}
-                style={{
-                  flex: 1,
-                  padding: "0.9rem",
-                  borderRadius: "980px",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "transparent",
-                  color: "rgba(255,255,255,0.6)",
-                  fontWeight: 500,
-                  fontSize: "0.9rem",
-                  cursor: "pointer",
-                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                }}
+                style={backBtn as React.CSSProperties}
               >
                 ← Back
               </button>
@@ -434,7 +531,7 @@ export default function WorkerOnboarding() {
           </div>
         )}
 
-        {/* STEP 3 — Skills */}
+        {/* STEP 3 */}
         {step === 3 && (
           <div>
             <h1
@@ -457,6 +554,7 @@ export default function WorkerOnboarding() {
               Add the skills you've built through your experience — technical or
               not.
             </p>
+
             <div
               style={{
                 display: "flex",
@@ -495,7 +593,6 @@ export default function WorkerOnboarding() {
                       cursor: "pointer",
                       fontWeight: 600,
                       fontSize: "1.2rem",
-                      fontFamily: "-apple-system, sans-serif",
                     }}
                   >
                     +
@@ -545,6 +642,7 @@ export default function WorkerOnboarding() {
                   </div>
                 )}
               </div>
+
               <div>
                 <label
                   style={{
@@ -565,23 +663,13 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
+
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
               <button
                 onClick={() => setStep(2)}
-                style={{
-                  flex: 1,
-                  padding: "0.9rem",
-                  borderRadius: "980px",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "transparent",
-                  color: "rgba(255,255,255,0.6)",
-                  fontWeight: 500,
-                  fontSize: "0.9rem",
-                  cursor: "pointer",
-                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                }}
+                style={backBtn as React.CSSProperties}
               >
                 ← Back
               </button>
@@ -611,7 +699,7 @@ export default function WorkerOnboarding() {
           </div>
         )}
 
-        {/* STEP 4 — Verify identity */}
+        {/* STEP 4 */}
         {step === 4 && (
           <div>
             <h1
@@ -636,7 +724,6 @@ export default function WorkerOnboarding() {
               scan.
             </p>
 
-            {/* Document type selector */}
             <div
               style={{
                 display: "flex",
@@ -742,7 +829,6 @@ export default function WorkerOnboarding() {
               ))}
             </div>
 
-            {/* File upload */}
             {docType && (
               <div style={{ marginBottom: "1.5rem" }}>
                 <label
@@ -842,7 +928,6 @@ export default function WorkerOnboarding() {
               </div>
             )}
 
-            {/* Security note */}
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
@@ -891,18 +976,7 @@ export default function WorkerOnboarding() {
             <div style={{ display: "flex", gap: "0.75rem" }}>
               <button
                 onClick={() => setStep(3)}
-                style={{
-                  flex: 1,
-                  padding: "0.9rem",
-                  borderRadius: "980px",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "transparent",
-                  color: "rgba(255,255,255,0.6)",
-                  fontWeight: 500,
-                  fontSize: "0.9rem",
-                  cursor: "pointer",
-                  fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                }}
+                style={backBtn as React.CSSProperties}
               >
                 ← Back
               </button>
