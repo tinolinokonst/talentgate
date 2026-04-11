@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../lib/supabase/client";
@@ -13,6 +13,27 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const supabase = createClient();
+
+  useEffect(() => {
+    async function checkSession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        if (profile?.role === "business") {
+          router.push("/business/dashboard");
+        } else {
+          router.push("/worker/dashboard");
+        }
+      }
+    }
+    checkSession();
+  }, []);
 
   async function handleLogin() {
     setLoading(true);
@@ -70,7 +91,6 @@ export default function LoginPage() {
       }}
     >
       <div style={{ width: "100%", maxWidth: 420 }}>
-        {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
             <span
@@ -86,7 +106,6 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Card */}
         <div
           style={{
             background: "#111",
@@ -205,7 +224,7 @@ export default function LoginPage() {
               marginTop: "1.5rem",
             }}
           >
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/auth/signup"
               style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
