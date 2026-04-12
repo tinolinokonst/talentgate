@@ -89,7 +89,7 @@ export default function BusinessDashboard() {
     setSelectedJob(jobId);
     setActiveTab("applicants");
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("applications")
       .select(
         `
@@ -103,6 +103,7 @@ export default function BusinessDashboard() {
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
 
+    if (error) console.error("Error loading applicants:", error);
     setApplicants((data || []) as any);
     setLoadingApplicants(false);
   }
@@ -385,7 +386,7 @@ export default function BusinessDashboard() {
             Your listings ({jobs.length})
           </button>
           <button
-            onClick={() => (selectedJob ? setActiveTab("applicants") : null)}
+            onClick={() => selectedJob && setActiveTab("applicants")}
             style={{
               padding: "0.5rem 1.2rem",
               borderRadius: 10,
@@ -415,7 +416,7 @@ export default function BusinessDashboard() {
               style={{
                 fontSize: "0.75rem",
                 color: "rgba(255,255,255,0.35)",
-                textTransform: "uppercase",
+                textTransform: "uppercase" as const,
                 letterSpacing: "0.05em",
                 marginBottom: "1rem",
               }}
@@ -429,7 +430,7 @@ export default function BusinessDashboard() {
                   border: "1px solid rgba(255,255,255,0.06)",
                   borderRadius: 16,
                   padding: "4rem",
-                  textAlign: "center",
+                  textAlign: "center" as const,
                 }}
               >
                 <p
@@ -472,7 +473,7 @@ export default function BusinessDashboard() {
                     style={{
                       background:
                         selectedJob === job.id
-                          ? "rgba(255,255,255,0.04)"
+                          ? "rgba(255,255,255,0.06)"
                           : "#111",
                       padding: "1.5rem",
                       display: "flex",
@@ -600,7 +601,7 @@ export default function BusinessDashboard() {
                   border: "1px solid rgba(255,255,255,0.06)",
                   borderRadius: 16,
                   padding: "4rem",
-                  textAlign: "center",
+                  textAlign: "center" as const,
                 }}
               >
                 <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>👀</p>
@@ -655,27 +656,18 @@ export default function BusinessDashboard() {
                             .join(" · ")}
                         </p>
                       </div>
-                      <div
+                      <span
                         style={{
-                          display: "flex",
-                          gap: "0.5rem",
-                          alignItems: "center",
+                          background: "rgba(255,255,255,0.06)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: "rgba(255,255,255,0.5)",
+                          padding: "0.25rem 0.75rem",
+                          borderRadius: "980px",
+                          fontSize: "0.75rem",
                         }}
                       >
-                        <span
-                          style={{
-                            background: "rgba(255,255,255,0.06)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            color: "rgba(255,255,255,0.5)",
-                            padding: "0.25rem 0.75rem",
-                            borderRadius: "980px",
-                            fontSize: "0.75rem",
-                          }}
-                        >
-                          Applied{" "}
-                          {new Date(app.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
+                        Applied {new Date(app.created_at).toLocaleDateString()}
+                      </span>
                     </div>
 
                     {app.profiles?.skills?.length > 0 && (
@@ -684,7 +676,7 @@ export default function BusinessDashboard() {
                           style={{
                             fontSize: "0.72rem",
                             color: "rgba(255,255,255,0.3)",
-                            textTransform: "uppercase",
+                            textTransform: "uppercase" as const,
                             letterSpacing: "0.05em",
                             marginBottom: "0.5rem",
                           }}
@@ -723,7 +715,7 @@ export default function BusinessDashboard() {
                           style={{
                             fontSize: "0.72rem",
                             color: "rgba(255,255,255,0.3)",
-                            textTransform: "uppercase",
+                            textTransform: "uppercase" as const,
                             letterSpacing: "0.05em",
                             marginBottom: "0.5rem",
                           }}
@@ -748,7 +740,7 @@ export default function BusinessDashboard() {
                           style={{
                             fontSize: "0.72rem",
                             color: "rgba(255,255,255,0.3)",
-                            textTransform: "uppercase",
+                            textTransform: "uppercase" as const,
                             letterSpacing: "0.05em",
                             marginBottom: "0.5rem",
                           }}
