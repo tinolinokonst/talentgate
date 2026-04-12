@@ -9,9 +9,11 @@ type Job = {
   id: string;
   title: string;
   location: string;
+  country: string;
   status: string;
   created_at: string;
   industry: string;
+  work_type: string;
 };
 
 type Business = {
@@ -21,11 +23,31 @@ type Business = {
   subscription_active: boolean;
 };
 
+type Applicant = {
+  id: string;
+  status: string;
+  created_at: string;
+  profiles: {
+    full_name: string;
+    location: string;
+    skills: string[];
+    experience_summary: string;
+    what_good_at: string;
+    job_type: string;
+  };
+};
+
 export default function BusinessDashboard() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedJob, setSelectedJob] = useState<string | null>(null);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
+  const [activeTab, setActiveTab] = useState<"listings" | "applicants">(
+    "listings"
+  );
   const supabase = createClient();
 
   useEffect(() => {
@@ -49,7 +71,9 @@ export default function BusinessDashboard() {
       if (biz) {
         const { data: listings } = await supabase
           .from("job_listings")
-          .select("id, title, location, status, created_at, industry")
+          .select(
+            "id, title, location, country, status, created_at, industry, work_type"
+          )
           .eq("business_id", biz.id)
           .order("created_at", { ascending: false });
         setJobs(listings || []);
@@ -59,6 +83,29 @@ export default function BusinessDashboard() {
     }
     loadData();
   }, []);
+
+  async function loadApplicants(jobId: string) {
+    setLoadingApplicants(true);
+    setSelectedJob(jobId);
+    setActiveTab("applicants");
+
+    const { data } = await supabase
+      .from("applications")
+      .select(
+        `
+        id, status, created_at,
+        profiles (
+          full_name, location, skills,
+          experience_summary, what_good_at, job_type
+        )
+      `
+      )
+      .eq("job_id", jobId)
+      .order("created_at", { ascending: false });
+
+    setApplicants((data || []) as any);
+    setLoadingApplicants(false);
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -79,7 +126,13 @@ export default function BusinessDashboard() {
   async function deleteJob(jobId: string) {
     await supabase.from("job_listings").delete().eq("id", jobId);
     setJobs(jobs.filter((j) => j.id !== jobId));
+    if (selectedJob === jobId) {
+      setSelectedJob(null);
+      setActiveTab("listings");
+    }
   }
+
+  const selectedJobTitle = jobs.find((j) => j.id === selectedJob)?.title;
 
   if (loading)
     return (
@@ -112,6 +165,8 @@ export default function BusinessDashboard() {
         fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');`}</style>
+
       {/* NAV */}
       <nav
         style={{
@@ -190,7 +245,7 @@ export default function BusinessDashboard() {
               {business?.company_name}
             </h1>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem" }}>
-              Manage your roles and find the right people.
+              Manage your roles and applicants.
             </p>
           </div>
           <Link
@@ -298,152 +353,424 @@ export default function BusinessDashboard() {
           ))}
         </div>
 
-        {/* Job listings */}
-        <h2
+        {/* Tabs */}
+        <div
           style={{
-            fontWeight: 600,
-            color: "rgba(255,255,255,0.5)",
-            marginBottom: "1rem",
-            letterSpacing: "0.02em",
-            textTransform: "uppercase" as const,
-            fontSize: "0.75rem",
+            display: "flex",
+            gap: "0.25rem",
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: "0.25rem",
+            width: "fit-content",
+            marginBottom: "2rem",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
-          Your listings
-        </h2>
-
-        {jobs.length === 0 ? (
-          <div
+          <button
+            onClick={() => setActiveTab("listings")}
             style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 16,
-              padding: "4rem",
-              textAlign: "center",
+              padding: "0.5rem 1.2rem",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "-apple-system, sans-serif",
+              fontWeight: 500,
+              fontSize: "0.85rem",
+              background: activeTab === "listings" ? "#fff" : "transparent",
+              color:
+                activeTab === "listings" ? "#000" : "rgba(255,255,255,0.5)",
+              transition: "all 0.2s",
             }}
           >
+            Your listings ({jobs.length})
+          </button>
+          <button
+            onClick={() => (selectedJob ? setActiveTab("applicants") : null)}
+            style={{
+              padding: "0.5rem 1.2rem",
+              borderRadius: 10,
+              border: "none",
+              cursor: selectedJob ? "pointer" : "not-allowed",
+              fontFamily: "-apple-system, sans-serif",
+              fontWeight: 500,
+              fontSize: "0.85rem",
+              background: activeTab === "applicants" ? "#fff" : "transparent",
+              color:
+                activeTab === "applicants"
+                  ? "#000"
+                  : selectedJob
+                  ? "rgba(255,255,255,0.5)"
+                  : "rgba(255,255,255,0.2)",
+              transition: "all 0.2s",
+            }}
+          >
+            {selectedJob ? `Applicants — ${selectedJobTitle}` : "Applicants"}
+          </button>
+        </div>
+
+        {/* LISTINGS TAB */}
+        {activeTab === "listings" && (
+          <>
             <p
-              style={{ color: "rgba(255,255,255,0.3)", marginBottom: "1.5rem" }}
-            >
-              No roles posted yet.
-            </p>
-            <Link
-              href="/business/post-role"
               style={{
-                background: "#fff",
-                color: "#000",
-                padding: "0.7rem 1.5rem",
-                borderRadius: "980px",
-                fontWeight: 500,
-                fontSize: "0.9rem",
-                textDecoration: "none",
+                fontSize: "0.75rem",
+                color: "rgba(255,255,255,0.35)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "1rem",
               }}
             >
-              Post your first role
-            </Link>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1px",
-              background: "rgba(255,255,255,0.06)",
-              borderRadius: 16,
-              overflow: "hidden",
-            }}
-          >
-            {jobs.map((job) => (
+              Click a role to see its applicants
+            </p>
+            {jobs.length === 0 ? (
               <div
-                key={job.id}
                 style={{
                   background: "#111",
-                  padding: "1.5rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  gap: "1rem",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  padding: "4rem",
+                  textAlign: "center",
                 }}
               >
-                <div>
-                  <h3
-                    style={{
-                      fontSize: "0.95rem",
-                      fontWeight: 600,
-                      marginBottom: "0.3rem",
-                    }}
-                  >
-                    {job.title}
-                  </h3>
-                  <p
-                    style={{
-                      color: "rgba(255,255,255,0.35)",
-                      fontSize: "0.82rem",
-                    }}
-                  >
-                    {job.location} · {job.industry} · Posted{" "}
-                    {new Date(job.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div
+                <p
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
+                    color: "rgba(255,255,255,0.3)",
+                    marginBottom: "1.5rem",
                   }}
                 >
-                  <span
-                    style={{
-                      padding: "0.25rem 0.75rem",
-                      borderRadius: "980px",
-                      fontSize: "0.75rem",
-                      fontWeight: 500,
-                      background:
-                        job.status === "active"
-                          ? "rgba(255,255,255,0.08)"
-                          : "rgba(255,255,255,0.04)",
-                      color:
-                        job.status === "active"
-                          ? "rgba(255,255,255,0.7)"
-                          : "rgba(255,255,255,0.3)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                    }}
-                  >
-                    {job.status}
-                  </span>
-                  <button
-                    onClick={() => toggleJobStatus(job.id, job.status)}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      color: "rgba(255,255,255,0.5)",
-                      padding: "0.25rem 0.75rem",
-                      borderRadius: "980px",
-                      cursor: "pointer",
-                      fontSize: "0.78rem",
-                      fontFamily: "-apple-system, sans-serif",
-                    }}
-                  >
-                    {job.status === "active" ? "Pause" : "Activate"}
-                  </button>
-                  <button
-                    onClick={() => deleteJob(job.id)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "rgba(255,80,80,0.5)",
-                      cursor: "pointer",
-                      fontSize: "0.78rem",
-                      fontFamily: "-apple-system, sans-serif",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
+                  No roles posted yet.
+                </p>
+                <Link
+                  href="/business/post-role"
+                  style={{
+                    background: "#fff",
+                    color: "#000",
+                    padding: "0.7rem 1.5rem",
+                    borderRadius: "980px",
+                    fontWeight: 500,
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                  }}
+                >
+                  Post your first role
+                </Link>
               </div>
-            ))}
-          </div>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1px",
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  overflow: "hidden",
+                }}
+              >
+                {jobs.map((job) => (
+                  <div
+                    key={job.id}
+                    style={{
+                      background:
+                        selectedJob === job.id
+                          ? "rgba(255,255,255,0.04)"
+                          : "#111",
+                      padding: "1.5rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: "1rem",
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                    }}
+                    onClick={() => loadApplicants(job.id)}
+                  >
+                    <div>
+                      <h3
+                        style={{
+                          fontSize: "0.95rem",
+                          fontWeight: 600,
+                          marginBottom: "0.3rem",
+                        }}
+                      >
+                        {job.title}
+                      </h3>
+                      <p
+                        style={{
+                          color: "rgba(255,255,255,0.35)",
+                          fontSize: "0.82rem",
+                        }}
+                      >
+                        {[job.country, job.industry, job.work_type]
+                          .filter(Boolean)
+                          .join(" · ")}{" "}
+                        · Posted {new Date(job.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span
+                        style={{
+                          padding: "0.25rem 0.75rem",
+                          borderRadius: "980px",
+                          fontSize: "0.75rem",
+                          fontWeight: 500,
+                          background:
+                            job.status === "active"
+                              ? "rgba(255,255,255,0.08)"
+                              : "rgba(255,255,255,0.04)",
+                          color:
+                            job.status === "active"
+                              ? "rgba(255,255,255,0.7)"
+                              : "rgba(255,255,255,0.3)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                        }}
+                      >
+                        {job.status}
+                      </span>
+                      <button
+                        onClick={() => toggleJobStatus(job.id, job.status)}
+                        style={{
+                          background: "transparent",
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          color: "rgba(255,255,255,0.5)",
+                          padding: "0.25rem 0.75rem",
+                          borderRadius: "980px",
+                          cursor: "pointer",
+                          fontSize: "0.78rem",
+                          fontFamily: "-apple-system, sans-serif",
+                        }}
+                      >
+                        {job.status === "active" ? "Pause" : "Activate"}
+                      </button>
+                      <button
+                        onClick={() => deleteJob(job.id)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: "rgba(255,80,80,0.5)",
+                          cursor: "pointer",
+                          fontSize: "0.78rem",
+                          fontFamily: "-apple-system, sans-serif",
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* APPLICANTS TAB */}
+        {activeTab === "applicants" && (
+          <>
+            <button
+              onClick={() => setActiveTab("listings")}
+              style={{
+                background: "none",
+                border: "none",
+                color: "rgba(255,255,255,0.4)",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                marginBottom: "1.5rem",
+                fontFamily: "-apple-system, sans-serif",
+                padding: 0,
+              }}
+            >
+              ← Back to listings
+            </button>
+
+            {loadingApplicants ? (
+              <p style={{ color: "rgba(255,255,255,0.4)" }}>
+                Loading applicants...
+              </p>
+            ) : applicants.length === 0 ? (
+              <div
+                style={{
+                  background: "#111",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  padding: "4rem",
+                  textAlign: "center",
+                }}
+              >
+                <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>👀</p>
+                <p style={{ color: "rgba(255,255,255,0.3)" }}>
+                  No one has applied to this role yet.
+                </p>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1px",
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  overflow: "hidden",
+                }}
+              >
+                {applicants.map((app: any) => (
+                  <div
+                    key={app.id}
+                    style={{ background: "#111", padding: "2rem" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "1.2rem",
+                        flexWrap: "wrap",
+                        gap: "1rem",
+                      }}
+                    >
+                      <div>
+                        <h3
+                          style={{
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            marginBottom: "0.3rem",
+                          }}
+                        >
+                          {app.profiles?.full_name}
+                        </h3>
+                        <p
+                          style={{
+                            color: "rgba(255,255,255,0.35)",
+                            fontSize: "0.82rem",
+                          }}
+                        >
+                          {[app.profiles?.location, app.profiles?.job_type]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0.5rem",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            background: "rgba(255,255,255,0.06)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            color: "rgba(255,255,255,0.5)",
+                            padding: "0.25rem 0.75rem",
+                            borderRadius: "980px",
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          Applied{" "}
+                          {new Date(app.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {app.profiles?.skills?.length > 0 && (
+                      <div style={{ marginBottom: "1rem" }}>
+                        <p
+                          style={{
+                            fontSize: "0.72rem",
+                            color: "rgba(255,255,255,0.3)",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            marginBottom: "0.5rem",
+                          }}
+                        >
+                          Skills
+                        </p>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "0.4rem",
+                          }}
+                        >
+                          {app.profiles.skills.map((s: string) => (
+                            <span
+                              key={s}
+                              style={{
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                padding: "0.2rem 0.7rem",
+                                borderRadius: "980px",
+                                fontSize: "0.78rem",
+                                color: "rgba(255,255,255,0.6)",
+                              }}
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {app.profiles?.experience_summary && (
+                      <div style={{ marginBottom: "1rem" }}>
+                        <p
+                          style={{
+                            fontSize: "0.72rem",
+                            color: "rgba(255,255,255,0.3)",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            marginBottom: "0.5rem",
+                          }}
+                        >
+                          Experience
+                        </p>
+                        <p
+                          style={{
+                            color: "rgba(255,255,255,0.55)",
+                            fontSize: "0.88rem",
+                            lineHeight: 1.65,
+                          }}
+                        >
+                          {app.profiles.experience_summary}
+                        </p>
+                      </div>
+                    )}
+
+                    {app.profiles?.what_good_at && (
+                      <div>
+                        <p
+                          style={{
+                            fontSize: "0.72rem",
+                            color: "rgba(255,255,255,0.3)",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            marginBottom: "0.5rem",
+                          }}
+                        >
+                          What they excel at
+                        </p>
+                        <p
+                          style={{
+                            color: "rgba(255,255,255,0.55)",
+                            fontSize: "0.88rem",
+                            lineHeight: 1.65,
+                          }}
+                        >
+                          {app.profiles.what_good_at}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>
