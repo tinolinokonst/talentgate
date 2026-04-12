@@ -13,6 +13,8 @@ type Job = {
   id: string;
   title: string;
   location: string;
+  country: string;
+  region: string;
   industry: string;
   salary_min: number;
   salary_max: number;
@@ -24,6 +26,21 @@ type Job = {
   businesses: Business | null;
 };
 
+const COUNTRIES = [
+  "United Kingdom",
+  "United States",
+  "Canada",
+  "Australia",
+  "Germany",
+  "France",
+  "Netherlands",
+  "Ireland",
+  "Spain",
+  "Italy",
+  "Remote / Anywhere",
+  "Other",
+];
+
 export default function WorkerDashboard() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -31,6 +48,7 @@ export default function WorkerDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [industryFilter, setIndustryFilter] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
   const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
   const [profile, setProfile] = useState<{
     full_name: string;
@@ -60,7 +78,7 @@ export default function WorkerDashboard() {
       .from("job_listings")
       .select(
         `
-        id, title, location, industry,
+        id, title, location, country, region, industry,
         salary_min, salary_max, deadline,
         qualifications, status, description, work_type,
         businesses (company_name, verified)
@@ -90,18 +108,14 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     loadData();
-
     const channel = supabase
       .channel("job_listings_changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "job_listings" },
-        () => {
-          loadData();
-        }
+        () => loadData()
       )
       .subscribe();
-
     return () => {
       supabase.removeChannel(channel);
     };
@@ -113,28 +127,27 @@ export default function WorkerDashboard() {
       filtered = filtered.filter(
         (j) =>
           j.title.toLowerCase().includes(search.toLowerCase()) ||
-          j.location.toLowerCase().includes(search.toLowerCase()) ||
+          j.location?.toLowerCase().includes(search.toLowerCase()) ||
           (j.businesses?.company_name ?? "")
             .toLowerCase()
             .includes(search.toLowerCase())
       );
     }
-    if (industryFilter) {
+    if (industryFilter)
       filtered = filtered.filter((j) => j.industry === industryFilter);
-    }
+    if (countryFilter)
+      filtered = filtered.filter((j) => j.country === countryFilter);
     setFilteredJobs(filtered);
-  }, [search, industryFilter, jobs]);
+  }, [search, industryFilter, countryFilter, jobs]);
 
   async function handleApply(jobId: string) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("applications").insert({
-      job_id: jobId,
-      worker_id: user.id,
-      status: "pending",
-    });
+    await supabase
+      .from("applications")
+      .insert({ job_id: jobId, worker_id: user.id, status: "pending" });
     setAppliedJobs([...appliedJobs, jobId]);
   }
 
@@ -157,6 +170,9 @@ export default function WorkerDashboard() {
   }
 
   const industries = [...new Set(jobs.map((j) => j.industry).filter(Boolean))];
+  const availableCountries = [
+    ...new Set(jobs.map((j) => j.country).filter(Boolean)),
+  ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
   if (loading)
@@ -170,14 +186,7 @@ export default function WorkerDashboard() {
           justifyContent: "center",
         }}
       >
-        <p
-          style={{
-            color: "rgba(255,255,255,0.4)",
-            fontFamily: "-apple-system, sans-serif",
-          }}
-        >
-          Loading...
-        </p>
+        <p style={{ color: "rgba(255,255,255,0.4)" }}>Loading...</p>
       </main>
     );
 
@@ -264,7 +273,7 @@ export default function WorkerDashboard() {
           </p>
         </div>
 
-        {/* Profile snapshot */}
+        {/* Skills snapshot */}
         {profile?.skills && profile.skills.length > 0 && (
           <div
             style={{
@@ -358,7 +367,7 @@ export default function WorkerDashboard() {
 
         {activeTab === "browse" && (
           <>
-            {/* Search & Filter */}
+            {/* Search & Filters */}
             <div
               style={{
                 display: "flex",
@@ -374,7 +383,7 @@ export default function WorkerDashboard() {
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
                   flex: 1,
-                  minWidth: 240,
+                  minWidth: 200,
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 12,
@@ -385,6 +394,28 @@ export default function WorkerDashboard() {
                   fontFamily: "-apple-system, sans-serif",
                 }}
               />
+              <select
+                value={countryFilter}
+                onChange={(e) => setCountryFilter(e.target.value)}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  padding: "0.75rem 1rem",
+                  color: countryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
+                  fontSize: "0.9rem",
+                  outline: "none",
+                  fontFamily: "-apple-system, sans-serif",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="">All countries</option>
+                {availableCountries.map((c) => (
+                  <option key={c} value={c} style={{ background: "#111" }}>
+                    {c}
+                  </option>
+                ))}
+              </select>
               <select
                 value={industryFilter}
                 onChange={(e) => setIndustryFilter(e.target.value)}
@@ -508,11 +539,31 @@ export default function WorkerDashboard() {
                         <div
                           style={{
                             display: "flex",
-                            gap: "1rem",
+                            gap: "0.75rem",
                             flexWrap: "wrap",
                             marginBottom: "0.75rem",
                           }}
                         >
+                          {job.country && (
+                            <span
+                              style={{
+                                color: "rgba(255,255,255,0.35)",
+                                fontSize: "0.82rem",
+                              }}
+                            >
+                              🌍 {job.country}
+                            </span>
+                          )}
+                          {job.region && (
+                            <span
+                              style={{
+                                color: "rgba(255,255,255,0.35)",
+                                fontSize: "0.82rem",
+                              }}
+                            >
+                              · {job.region}
+                            </span>
+                          )}
                           {job.location && (
                             <span
                               style={{
@@ -520,7 +571,7 @@ export default function WorkerDashboard() {
                                 fontSize: "0.82rem",
                               }}
                             >
-                              📍 {job.location}
+                              · {job.location}
                             </span>
                           )}
                           {job.industry && (
@@ -719,8 +770,14 @@ export default function WorkerDashboard() {
                             color: "rgba(255,255,255,0.35)",
                           }}
                         >
-                          {job.location} · {job.industry}{" "}
-                          {job.work_type && `· ${job.work_type}`}
+                          {[
+                            job.country,
+                            job.region,
+                            job.industry,
+                            job.work_type,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </p>
                       </div>
                       <div

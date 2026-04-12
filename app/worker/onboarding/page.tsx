@@ -5,6 +5,47 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
 
+const COUNTRIES: Record<string, string[]> = {
+  "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+  "United States": [
+    "New York",
+    "California",
+    "Texas",
+    "Florida",
+    "Illinois",
+    "Pennsylvania",
+    "Ohio",
+    "Georgia",
+    "North Carolina",
+    "Michigan",
+    "Other",
+  ],
+  Canada: [
+    "Ontario",
+    "Quebec",
+    "British Columbia",
+    "Alberta",
+    "Manitoba",
+    "Other",
+  ],
+  Australia: [
+    "New South Wales",
+    "Victoria",
+    "Queensland",
+    "Western Australia",
+    "South Australia",
+    "Other",
+  ],
+  Germany: ["Berlin", "Bavaria", "Hamburg", "North Rhine-Westphalia", "Other"],
+  France: ["Île-de-France", "Provence", "Auvergne-Rhône-Alpes", "Other"],
+  Netherlands: ["North Holland", "South Holland", "Utrecht", "Other"],
+  Ireland: ["Dublin", "Cork", "Galway", "Other"],
+  Spain: ["Madrid", "Catalonia", "Andalusia", "Other"],
+  Italy: ["Lombardy", "Lazio", "Campania", "Other"],
+  "Remote / Anywhere": [],
+  Other: [],
+};
+
 export default function WorkerOnboarding() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -12,10 +53,14 @@ export default function WorkerOnboarding() {
   const [error, setError] = useState("");
 
   // Step 1
-  const [location, setLocation] = useState("");
+  const [currentCountry, setCurrentCountry] = useState("");
+  const [currentRegion, setCurrentRegion] = useState("");
+  const [currentCity, setCurrentCity] = useState("");
   const [jobType, setJobType] = useState("");
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [otherIndustry, setOtherIndustry] = useState("");
+  const [searchCountries, setSearchCountries] = useState<string[]>([]);
+  const [openToRemote, setOpenToRemote] = useState(false);
 
   // Step 2
   const [experienceSummary, setExperienceSummary] = useState("");
@@ -61,10 +106,19 @@ export default function WorkerOnboarding() {
     "Your skills",
     "Verify identity",
   ];
+  const countryList = Object.keys(COUNTRIES);
 
   function toggleIndustry(ind: string) {
     setSelectedIndustries((prev) =>
       prev.includes(ind) ? prev.filter((i) => i !== ind) : [...prev, ind]
+    );
+  }
+
+  function toggleSearchCountry(country: string) {
+    setSearchCountries((prev) =>
+      prev.includes(country)
+        ? prev.filter((c) => c !== country)
+        : [...prev, country]
     );
   }
 
@@ -96,11 +150,17 @@ export default function WorkerOnboarding() {
         ? [...selectedIndustries.filter((i) => i !== "Other"), otherIndustry]
         : selectedIndustries;
 
+    const location = [currentCity, currentRegion, currentCountry]
+      .filter(Boolean)
+      .join(", ");
+
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
         verified: true,
         location,
+        country: currentCountry,
+        region: currentRegion,
         job_type: jobType,
         industries: finalIndustries,
         experience_summary: experienceSummary,
@@ -108,6 +168,9 @@ export default function WorkerOnboarding() {
         biggest_achievement: biggestAchievement,
         skills,
         what_good_at: whatYouGoodAt,
+        job_search_locations: openToRemote
+          ? [...searchCountries, "Remote"]
+          : searchCountries,
       })
       .eq("id", user.id);
 
@@ -132,6 +195,11 @@ export default function WorkerOnboarding() {
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
   };
 
+  const selectStyle = {
+    ...inputStyle,
+    cursor: "pointer",
+  };
+
   const textareaStyle = {
     ...inputStyle,
     resize: "vertical" as const,
@@ -152,22 +220,6 @@ export default function WorkerOnboarding() {
     transition: "all 0.15s",
   });
 
-  const continueBtn = (disabled: boolean) => ({
-    width: "100%",
-    marginTop: "2.5rem",
-    background: "#fff",
-    color: "#000",
-    padding: "0.9rem",
-    borderRadius: "980px",
-    fontWeight: 500,
-    fontSize: "0.95rem",
-    border: "none",
-    cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.4 : 1,
-    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-    transition: "opacity 0.2s",
-  });
-
   const backBtn = {
     flex: 1,
     padding: "0.9rem",
@@ -180,6 +232,12 @@ export default function WorkerOnboarding() {
     cursor: "pointer",
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
   };
+
+  const step1Valid =
+    currentCountry &&
+    jobType &&
+    selectedIndustries.length > 0 &&
+    searchCountries.length > 0;
 
   return (
     <main
@@ -281,32 +339,13 @@ export default function WorkerOnboarding() {
               }}
             >
               Tell us where you are, what kind of work you're looking for, and
-              which industries you have experience in.
+              where you'd like to work.
             </p>
 
             <div
               style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
             >
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "rgba(255,255,255,0.5)",
-                    display: "block",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Where are you based?
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. London, UK"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-
+              {/* Current location */}
               <div>
                 <label
                   style={{
@@ -316,7 +355,124 @@ export default function WorkerOnboarding() {
                     marginBottom: "0.75rem",
                   }}
                 >
-                  What kind of work are you looking for?
+                  Where are you currently based? *
+                </label>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <select
+                    value={currentCountry}
+                    onChange={(e) => {
+                      setCurrentCountry(e.target.value);
+                      setCurrentRegion("");
+                    }}
+                    style={selectStyle as React.CSSProperties}
+                  >
+                    <option value="">Select your country</option>
+                    {countryList.map((c) => (
+                      <option key={c} value={c} style={{ background: "#111" }}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+
+                  {currentCountry && COUNTRIES[currentCountry]?.length > 0 && (
+                    <select
+                      value={currentRegion}
+                      onChange={(e) => setCurrentRegion(e.target.value)}
+                      style={selectStyle as React.CSSProperties}
+                    >
+                      <option value="">Select your region / state</option>
+                      {COUNTRIES[currentCountry].map((r) => (
+                        <option
+                          key={r}
+                          value={r}
+                          style={{ background: "#111" }}
+                        >
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  <input
+                    type="text"
+                    placeholder="City or town (optional)"
+                    value={currentCity}
+                    onChange={(e) => setCurrentCity(e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              {/* Job search locations */}
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "rgba(255,255,255,0.5)",
+                    display: "block",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Where are you looking for work? *
+                </label>
+                <p
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "rgba(255,255,255,0.3)",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Select all countries you'd consider working in.
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0.5rem",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  {countryList
+                    .filter((c) => c !== "Remote / Anywhere" && c !== "Other")
+                    .map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => toggleSearchCountry(c)}
+                        style={
+                          pillButton(
+                            searchCountries.includes(c)
+                          ) as React.CSSProperties
+                        }
+                      >
+                        {c}
+                      </button>
+                    ))}
+                </div>
+                <button
+                  onClick={() => setOpenToRemote(!openToRemote)}
+                  style={pillButton(openToRemote) as React.CSSProperties}
+                >
+                  🌍 Open to remote
+                </button>
+              </div>
+
+              {/* Job type */}
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "rgba(255,255,255,0.5)",
+                    display: "block",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  What kind of work are you looking for? *
                 </label>
                 <div
                   style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}
@@ -333,6 +489,7 @@ export default function WorkerOnboarding() {
                 </div>
               </div>
 
+              {/* Industries */}
               <div>
                 <label
                   style={{
@@ -342,7 +499,7 @@ export default function WorkerOnboarding() {
                     marginBottom: "0.75rem",
                   }}
                 >
-                  Which industries have you worked in?{" "}
+                  Which industries have you worked in? *{" "}
                   <span
                     style={{
                       color: "rgba(255,255,255,0.3)",
@@ -383,14 +540,21 @@ export default function WorkerOnboarding() {
 
             <button
               onClick={() => setStep(2)}
-              disabled={
-                !location || !jobType || selectedIndustries.length === 0
-              }
-              style={
-                continueBtn(
-                  !location || !jobType || selectedIndustries.length === 0
-                ) as React.CSSProperties
-              }
+              disabled={!step1Valid}
+              style={{
+                width: "100%",
+                marginTop: "2.5rem",
+                background: "#fff",
+                color: "#000",
+                padding: "0.9rem",
+                borderRadius: "980px",
+                fontWeight: 500,
+                fontSize: "0.95rem",
+                border: "none",
+                cursor: !step1Valid ? "not-allowed" : "pointer",
+                opacity: !step1Valid ? 0.4 : 1,
+                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+              }}
             >
               Continue →
             </button>
@@ -428,10 +592,8 @@ export default function WorkerOnboarding() {
               }}
             >
               Just talk about what you've done, what you've learned, and what
-              kind of work you've been part of. Businesses want to understand
-              who you are — not read a document.
+              kind of work you've been part of.
             </p>
-
             <div
               style={{
                 display: "flex",
@@ -451,7 +613,7 @@ export default function WorkerOnboarding() {
                   In your own words, describe your work experience
                 </label>
                 <textarea
-                  placeholder="e.g. I've spent the last few years working in hospitality, mostly front-of-house roles in busy restaurants. I've learned how to handle high-pressure environments, manage customer expectations, and work as part of a team..."
+                  placeholder="e.g. I've spent the last few years working in hospitality..."
                   value={experienceSummary}
                   onChange={(e) => setExperienceSummary(e.target.value)}
                   rows={5}
@@ -490,7 +652,7 @@ export default function WorkerOnboarding() {
                   experience?
                 </label>
                 <textarea
-                  placeholder="e.g. I helped redesign the customer onboarding process at my last job..."
+                  placeholder="e.g. I helped redesign the customer onboarding process..."
                   value={biggestAchievement}
                   onChange={(e) => setBiggestAchievement(e.target.value)}
                   rows={3}
@@ -498,7 +660,6 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
-
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
@@ -554,7 +715,6 @@ export default function WorkerOnboarding() {
               Add the skills you've built through your experience — technical or
               not.
             </p>
-
             <div
               style={{
                 display: "flex",
@@ -642,7 +802,6 @@ export default function WorkerOnboarding() {
                   </div>
                 )}
               </div>
-
               <div>
                 <label
                   style={{
@@ -655,7 +814,7 @@ export default function WorkerOnboarding() {
                   What do you genuinely excel at?
                 </label>
                 <textarea
-                  placeholder="e.g. I'm really good at staying calm under pressure and making quick decisions..."
+                  placeholder="e.g. I'm really good at staying calm under pressure..."
                   value={whatYouGoodAt}
                   onChange={(e) => setWhatYouGoodAt(e.target.value)}
                   rows={4}
@@ -663,7 +822,6 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
-
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
@@ -720,10 +878,8 @@ export default function WorkerOnboarding() {
               }}
             >
               To keep Talentgate trusted and safe, we need to confirm you're a
-              real person. Select your document type and upload a clear photo or
-              scan.
+              real person.
             </p>
-
             <div
               style={{
                 display: "flex",
@@ -859,7 +1015,6 @@ export default function WorkerOnboarding() {
                     background: docFile
                       ? "rgba(255,255,255,0.04)"
                       : "transparent",
-                    transition: "all 0.2s",
                   }}
                 >
                   <input
@@ -951,9 +1106,8 @@ export default function WorkerOnboarding() {
                   margin: 0,
                 }}
               >
-                Your documents are encrypted and handled securely. We never
-                store raw ID images — verification is powered by Stripe
-                Identity.
+                Your documents are encrypted and handled securely. Verification
+                is powered by Stripe Identity.
               </p>
             </div>
 
