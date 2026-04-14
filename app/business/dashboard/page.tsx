@@ -60,7 +60,15 @@ export default function BusinessDashboard() {
       )
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
-    setApplicants(data || []);
+
+    const normalized = (data || []).map((app: any) => ({
+      ...app,
+      profiles: Array.isArray(app.profiles)
+        ? app.profiles[0] ?? null
+        : app.profiles ?? null,
+    }));
+
+    setApplicants(normalized);
     setLoadingApplicants(false);
   }
 
