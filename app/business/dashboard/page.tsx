@@ -61,6 +61,8 @@ export default function BusinessDashboard() {
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
 
+    console.log("RAW APPLICANT DATA:", JSON.stringify(data));
+
     const normalized = (data || []).map((app: any) => ({
       ...app,
       profiles: Array.isArray(app.profiles)
@@ -71,7 +73,6 @@ export default function BusinessDashboard() {
     setApplicants(normalized);
     setLoadingApplicants(false);
   }
-
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/");
