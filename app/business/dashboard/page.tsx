@@ -5,49 +5,18 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
 
-type Job = {
-  id: string;
-  title: string;
-  location: string;
-  country: string;
-  status: string;
-  created_at: string;
-  industry: string;
-  work_type: string;
-};
-
-type Business = {
-  id: string;
-  company_name: string;
-  verified: boolean;
-  subscription_active: boolean;
-};
-
-type Applicant = {
-  id: string;
-  status: string;
-  created_at: string;
-  profiles: {
-    full_name: string;
-    location: string;
-    skills: string[];
-    experience_summary: string;
-    what_good_at: string;
-    job_type: string;
-  };
-};
-
 export default function BusinessDashboard() {
   const router = useRouter();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [business, setBusiness] = useState<Business | null>(null);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [business, setBusiness] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
-  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [applicants, setApplicants] = useState<any[]>([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [activeTab, setActiveTab] = useState<"listings" | "applicants">(
     "listings"
   );
+  const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -59,15 +28,12 @@ export default function BusinessDashboard() {
         router.push("/auth/login");
         return;
       }
-
       const { data: biz } = await supabase
         .from("businesses")
         .select("id, company_name, verified, subscription_active")
         .eq("profile_id", user.id)
         .single();
-
       setBusiness(biz);
-
       if (biz) {
         const { data: listings } = await supabase
           .from("job_listings")
@@ -78,7 +44,6 @@ export default function BusinessDashboard() {
           .order("created_at", { ascending: false });
         setJobs(listings || []);
       }
-
       setLoading(false);
     }
     loadData();
@@ -88,23 +53,14 @@ export default function BusinessDashboard() {
     setLoadingApplicants(true);
     setSelectedJob(jobId);
     setActiveTab("applicants");
-
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("applications")
       .select(
-        `
-        id, status, created_at,
-        profiles (
-          full_name, location, skills,
-          experience_summary, what_good_at, job_type
-        )
-      `
+        "id, status, created_at, profiles(full_name, location, country, skills, experience_summary, what_good_at, job_type, previous_roles, biggest_achievement, industries, cv_url)"
       )
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
-
-    if (error) console.error("Error loading applicants:", error);
-    setApplicants((data || []) as any);
+    setApplicants(data || []);
     setLoadingApplicants(false);
   }
 
@@ -120,20 +76,20 @@ export default function BusinessDashboard() {
       .update({ status: newStatus })
       .eq("id", jobId);
     setJobs(
-      jobs.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j))
+      jobs.map((j: any) => (j.id === jobId ? { ...j, status: newStatus } : j))
     );
   }
 
   async function deleteJob(jobId: string) {
     await supabase.from("job_listings").delete().eq("id", jobId);
-    setJobs(jobs.filter((j) => j.id !== jobId));
+    setJobs(jobs.filter((j: any) => j.id !== jobId));
     if (selectedJob === jobId) {
       setSelectedJob(null);
       setActiveTab("listings");
     }
   }
 
-  const selectedJobTitle = jobs.find((j) => j.id === selectedJob)?.title;
+  const selectedJobTitle = jobs.find((j: any) => j.id === selectedJob)?.title;
 
   if (loading)
     return (
@@ -168,7 +124,294 @@ export default function BusinessDashboard() {
     >
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');`}</style>
 
-      {/* NAV */}
+      {selectedApplicant && (
+        <div
+          onClick={() => setSelectedApplicant(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            background: "rgba(0,0,0,0.85)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#111",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 20,
+              padding: "2.5rem",
+              maxWidth: 640,
+              width: "100%",
+              maxHeight: "85vh",
+              overflowY: "auto",
+              position: "relative",
+            }}
+          >
+            <button
+              onClick={() => setSelectedApplicant(null)}
+              style={{
+                position: "absolute",
+                top: "1.5rem",
+                right: "1.5rem",
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "rgba(255,255,255,0.6)",
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                cursor: "pointer",
+                fontSize: "1rem",
+                fontFamily: "-apple-system, sans-serif",
+              }}
+            >
+              x
+            </button>
+
+            <h2
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                marginBottom: "0.4rem",
+              }}
+            >
+              {selectedApplicant.profiles?.full_name}
+            </h2>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.4)",
+                fontSize: "0.85rem",
+                marginBottom: "0.3rem",
+              }}
+            >
+              {[
+                selectedApplicant.profiles?.location,
+                selectedApplicant.profiles?.country,
+                selectedApplicant.profiles?.job_type,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.3)",
+                fontSize: "0.78rem",
+                marginBottom: "2rem",
+              }}
+            >
+              Applied{" "}
+              {new Date(selectedApplicant.created_at).toLocaleDateString()}
+            </p>
+
+            {selectedApplicant.profiles?.industries?.length > 0 && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(255,255,255,0.3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Industries
+                </p>
+                <div
+                  style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}
+                >
+                  {selectedApplicant.profiles.industries.map((ind: string) => (
+                    <span
+                      key={ind}
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        padding: "0.2rem 0.7rem",
+                        borderRadius: "980px",
+                        fontSize: "0.78rem",
+                        color: "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      {ind}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedApplicant.profiles?.skills?.length > 0 && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(255,255,255,0.3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Skills
+                </p>
+                <div
+                  style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}
+                >
+                  {selectedApplicant.profiles.skills.map((s: string) => (
+                    <span
+                      key={s}
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        padding: "0.2rem 0.7rem",
+                        borderRadius: "980px",
+                        fontSize: "0.78rem",
+                        color: "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedApplicant.profiles?.experience_summary && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(255,255,255,0.3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Experience
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.65)",
+                    fontSize: "0.9rem",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {selectedApplicant.profiles.experience_summary}
+                </p>
+              </div>
+            )}
+
+            {selectedApplicant.profiles?.previous_roles && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(255,255,255,0.3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Previous roles
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.65)",
+                    fontSize: "0.9rem",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {selectedApplicant.profiles.previous_roles}
+                </p>
+              </div>
+            )}
+
+            {selectedApplicant.profiles?.biggest_achievement && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(255,255,255,0.3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Proud of
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.65)",
+                    fontSize: "0.9rem",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {selectedApplicant.profiles.biggest_achievement}
+                </p>
+              </div>
+            )}
+
+            {selectedApplicant.profiles?.what_good_at && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(255,255,255,0.3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  What they excel at
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.65)",
+                    fontSize: "0.9rem",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {selectedApplicant.profiles.what_good_at}
+                </p>
+              </div>
+            )}
+
+            {selectedApplicant.profiles?.cv_url && (
+              <div
+                style={{
+                  marginTop: "1.5rem",
+                  paddingTop: "1.5rem",
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <a
+                  href={selectedApplicant.profiles.cv_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    background: "#fff",
+                    color: "#000",
+                    padding: "0.7rem 1.5rem",
+                    borderRadius: "980px",
+                    fontWeight: 500,
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                  }}
+                >
+                  View CV
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <nav
         style={{
           position: "sticky",
@@ -223,7 +466,6 @@ export default function BusinessDashboard() {
       </nav>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "3rem 2rem" }}>
-        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -265,7 +507,6 @@ export default function BusinessDashboard() {
           </Link>
         </div>
 
-        {/* Verification banner */}
         {!business?.verified && (
           <div
             style={{
@@ -279,7 +520,7 @@ export default function BusinessDashboard() {
               gap: "1rem",
             }}
           >
-            <span>⚠️</span>
+            <span>Warning</span>
             <div>
               <p
                 style={{
@@ -297,14 +538,12 @@ export default function BusinessDashboard() {
                   marginTop: "0.2rem",
                 }}
               >
-                Your roles won't be visible to workers until your business is
-                verified.
+                Your roles will not be visible until verified.
               </p>
             </div>
           </div>
         )}
 
-        {/* Stats */}
         <div
           style={{
             display: "grid",
@@ -319,15 +558,15 @@ export default function BusinessDashboard() {
           {[
             {
               label: "Active roles",
-              value: jobs.filter((j) => j.status === "active").length,
+              value: jobs.filter((j: any) => j.status === "active").length,
             },
             {
               label: "Paused",
-              value: jobs.filter((j) => j.status === "paused").length,
+              value: jobs.filter((j: any) => j.status === "paused").length,
             },
             {
               label: "Filled",
-              value: jobs.filter((j) => j.status === "filled").length,
+              value: jobs.filter((j: any) => j.status === "filled").length,
             },
             { label: "Total posted", value: jobs.length },
           ].map((stat) => (
@@ -354,7 +593,6 @@ export default function BusinessDashboard() {
           ))}
         </div>
 
-        {/* Tabs */}
         <div
           style={{
             display: "flex",
@@ -386,7 +624,9 @@ export default function BusinessDashboard() {
             Your listings ({jobs.length})
           </button>
           <button
-            onClick={() => selectedJob && setActiveTab("applicants")}
+            onClick={() => {
+              if (selectedJob) setActiveTab("applicants");
+            }}
             style={{
               padding: "0.5rem 1.2rem",
               borderRadius: 10,
@@ -405,18 +645,17 @@ export default function BusinessDashboard() {
               transition: "all 0.2s",
             }}
           >
-            {selectedJob ? `Applicants — ${selectedJobTitle}` : "Applicants"}
+            {selectedJob ? `Applicants - ${selectedJobTitle}` : "Applicants"}
           </button>
         </div>
 
-        {/* LISTINGS TAB */}
         {activeTab === "listings" && (
-          <>
+          <div>
             <p
               style={{
                 fontSize: "0.75rem",
                 color: "rgba(255,255,255,0.35)",
-                textTransform: "uppercase" as const,
+                textTransform: "uppercase",
                 letterSpacing: "0.05em",
                 marginBottom: "1rem",
               }}
@@ -430,7 +669,7 @@ export default function BusinessDashboard() {
                   border: "1px solid rgba(255,255,255,0.06)",
                   borderRadius: 16,
                   padding: "4rem",
-                  textAlign: "center" as const,
+                  textAlign: "center",
                 }}
               >
                 <p
@@ -467,7 +706,7 @@ export default function BusinessDashboard() {
                   overflow: "hidden",
                 }}
               >
-                {jobs.map((job) => (
+                {jobs.map((job: any) => (
                   <div
                     key={job.id}
                     style={{
@@ -568,12 +807,11 @@ export default function BusinessDashboard() {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
 
-        {/* APPLICANTS TAB */}
         {activeTab === "applicants" && (
-          <>
+          <div>
             <button
               onClick={() => setActiveTab("listings")}
               style={{
@@ -587,7 +825,7 @@ export default function BusinessDashboard() {
                 padding: 0,
               }}
             >
-              ← Back to listings
+              Back to listings
             </button>
 
             {loadingApplicants ? (
@@ -601,7 +839,7 @@ export default function BusinessDashboard() {
                   border: "1px solid rgba(255,255,255,0.06)",
                   borderRadius: 16,
                   padding: "4rem",
-                  textAlign: "center" as const,
+                  textAlign: "center",
                 }}
               >
                 <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>👀</p>
@@ -623,14 +861,19 @@ export default function BusinessDashboard() {
                 {applicants.map((app: any) => (
                   <div
                     key={app.id}
-                    style={{ background: "#111", padding: "2rem" }}
+                    style={{
+                      background: "#111",
+                      padding: "1.5rem",
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                    }}
+                    onClick={() => setSelectedApplicant(app)}
                   >
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        marginBottom: "1.2rem",
+                        alignItems: "center",
                         flexWrap: "wrap",
                         gap: "1rem",
                       }}
@@ -655,6 +898,44 @@ export default function BusinessDashboard() {
                             .filter(Boolean)
                             .join(" · ")}
                         </p>
+                        {app.profiles?.skills?.length > 0 && (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "0.3rem",
+                              marginTop: "0.5rem",
+                            }}
+                          >
+                            {app.profiles.skills
+                              .slice(0, 4)
+                              .map((s: string) => (
+                                <span
+                                  key={s}
+                                  style={{
+                                    background: "rgba(255,255,255,0.06)",
+                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    padding: "0.15rem 0.6rem",
+                                    borderRadius: "980px",
+                                    fontSize: "0.75rem",
+                                    color: "rgba(255,255,255,0.5)",
+                                  }}
+                                >
+                                  {s}
+                                </span>
+                              ))}
+                            {app.profiles.skills.length > 4 && (
+                              <span
+                                style={{
+                                  fontSize: "0.75rem",
+                                  color: "rgba(255,255,255,0.3)",
+                                }}
+                              >
+                                +{app.profiles.skills.length - 4} more
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <span
                         style={{
@@ -666,103 +947,14 @@ export default function BusinessDashboard() {
                           fontSize: "0.75rem",
                         }}
                       >
-                        Applied {new Date(app.created_at).toLocaleDateString()}
+                        View profile
                       </span>
                     </div>
-
-                    {app.profiles?.skills?.length > 0 && (
-                      <div style={{ marginBottom: "1rem" }}>
-                        <p
-                          style={{
-                            fontSize: "0.72rem",
-                            color: "rgba(255,255,255,0.3)",
-                            textTransform: "uppercase" as const,
-                            letterSpacing: "0.05em",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          Skills
-                        </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "0.4rem",
-                          }}
-                        >
-                          {app.profiles.skills.map((s: string) => (
-                            <span
-                              key={s}
-                              style={{
-                                background: "rgba(255,255,255,0.06)",
-                                border: "1px solid rgba(255,255,255,0.1)",
-                                padding: "0.2rem 0.7rem",
-                                borderRadius: "980px",
-                                fontSize: "0.78rem",
-                                color: "rgba(255,255,255,0.6)",
-                              }}
-                            >
-                              {s}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {app.profiles?.experience_summary && (
-                      <div style={{ marginBottom: "1rem" }}>
-                        <p
-                          style={{
-                            fontSize: "0.72rem",
-                            color: "rgba(255,255,255,0.3)",
-                            textTransform: "uppercase" as const,
-                            letterSpacing: "0.05em",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          Experience
-                        </p>
-                        <p
-                          style={{
-                            color: "rgba(255,255,255,0.55)",
-                            fontSize: "0.88rem",
-                            lineHeight: 1.65,
-                          }}
-                        >
-                          {app.profiles.experience_summary}
-                        </p>
-                      </div>
-                    )}
-
-                    {app.profiles?.what_good_at && (
-                      <div>
-                        <p
-                          style={{
-                            fontSize: "0.72rem",
-                            color: "rgba(255,255,255,0.3)",
-                            textTransform: "uppercase" as const,
-                            letterSpacing: "0.05em",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          What they excel at
-                        </p>
-                        <p
-                          style={{
-                            color: "rgba(255,255,255,0.55)",
-                            fontSize: "0.88rem",
-                            lineHeight: 1.65,
-                          }}
-                        >
-                          {app.profiles.what_good_at}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </main>
