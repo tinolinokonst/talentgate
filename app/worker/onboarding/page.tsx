@@ -1107,6 +1107,7 @@ export default function WorkerOnboarding() {
                 is powered by Stripe Identity.
               </p>
             </div>
+
             {/* CV Upload */}
             <div style={{ marginTop: "2rem" }}>
               <label
@@ -1148,7 +1149,7 @@ export default function WorkerOnboarding() {
                   borderRadius: 12,
                   padding: "2rem",
                   cursor: "pointer",
-                  textAlign: "center",
+                  textAlign: "center" as const,
                   background: cvFile ? "rgba(255,255,255,0.04)" : "transparent",
                 }}
               >
@@ -1205,6 +1206,7 @@ export default function WorkerOnboarding() {
                 )}
               </label>
             </div>
+
             {error && (
               <div
                 style={{
