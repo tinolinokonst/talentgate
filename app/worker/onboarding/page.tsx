@@ -75,6 +75,7 @@ export default function WorkerOnboarding() {
   // Step 4
   const [docType, setDocType] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
+  const [cvFile, setCvFile] = useState<File | null>(null);
 
   const supabase = createClient();
 
@@ -145,32 +146,28 @@ export default function WorkerOnboarding() {
       return;
     }
 
-    const finalIndustries =
-      selectedIndustries.includes("Other") && otherIndustry
-        ? [...selectedIndustries.filter((i) => i !== "Other"), otherIndustry]
-        : selectedIndustries;
-
-    const location = [currentCity, currentRegion, currentCountry]
-      .filter(Boolean)
-      .join(", ");
+    // Upload CV if provided
+    let cvUrl = null;
+    if (cvFile) {
+      const ext = cvFile.name.split(".").pop();
+      const path = `${user.id}/cv.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("cvs")
+        .upload(path, cvFile, { upsert: true });
+      if (uploadError) {
+        setError("CV upload failed: " + uploadError.message);
+        setLoading(false);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("cvs").getPublicUrl(path);
+      cvUrl = urlData.publicUrl;
+    }
 
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
-        verified: true,
-        location,
-        country: currentCountry,
-        region: currentRegion,
-        job_type: jobType,
-        industries: finalIndustries,
-        experience_summary: experienceSummary,
-        previous_roles: previousRoles,
-        biggest_achievement: biggestAchievement,
-        skills,
-        what_good_at: whatYouGoodAt,
-        job_search_locations: openToRemote
-          ? [...searchCountries, "Remote"]
-          : searchCountries,
+        // ...all your existing fields...
+        cv_url: cvUrl,
       })
       .eq("id", user.id);
 
@@ -1082,7 +1079,104 @@ export default function WorkerOnboarding() {
                 </label>
               </div>
             )}
-
+            {/* CV Upload */}
+            <div style={{ marginTop: "2rem" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  color: "rgba(255,255,255,0.5)",
+                  display: "block",
+                  marginBottom: "0.25rem",
+                }}
+              >
+                Upload your CV{" "}
+                <span
+                  style={{
+                    color: "rgba(255,255,255,0.25)",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  (optional)
+                </span>
+              </label>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.25)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                PDF only · Max 10MB
+              </p>
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: `2px dashed ${
+                    cvFile ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)"
+                  }`,
+                  borderRadius: 12,
+                  padding: "2rem",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  background: cvFile ? "rgba(255,255,255,0.04)" : "transparent",
+                }}
+              >
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setCvFile(e.target.files?.[0] || null)}
+                  style={{ display: "none" }}
+                />
+                {cvFile ? (
+                  <>
+                    <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>
+                      ✓
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.88rem",
+                        color: "#f5f5f7",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {cvFile.name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "rgba(255,255,255,0.35)",
+                        marginTop: "0.3rem",
+                      }}
+                    >
+                      Click to change
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      style={{
+                        fontSize: "1.5rem",
+                        marginBottom: "0.5rem",
+                        color: "rgba(255,255,255,0.3)",
+                      }}
+                    >
+                      ↑
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.88rem",
+                        color: "rgba(255,255,255,0.5)",
+                      }}
+                    >
+                      Click to upload CV
+                    </div>
+                  </>
+                )}
+              </label>
+            </div>
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
