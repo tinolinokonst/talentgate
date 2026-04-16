@@ -163,11 +163,33 @@ export default function WorkerOnboarding() {
       cvUrl = urlData.publicUrl;
     }
 
+    const finalIndustries =
+      selectedIndustries.includes("Other") && otherIndustry
+        ? [...selectedIndustries.filter((i) => i !== "Other"), otherIndustry]
+        : selectedIndustries;
+
+    const location = [currentCity, currentRegion, currentCountry]
+      .filter(Boolean)
+      .join(", ");
+
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
-        // ...all your existing fields...
+        verified: true,
+        location,
+        country: currentCountry,
+        region: currentRegion,
+        job_type: jobType,
+        industries: finalIndustries,
+        experience_summary: experienceSummary,
+        previous_roles: previousRoles,
+        biggest_achievement: biggestAchievement,
+        skills,
+        what_good_at: whatYouGoodAt,
         cv_url: cvUrl,
+        job_search_locations: openToRemote
+          ? [...searchCountries, "Remote"]
+          : searchCountries,
       })
       .eq("id", user.id);
 
@@ -192,11 +214,7 @@ export default function WorkerOnboarding() {
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
   };
 
-  const selectStyle = {
-    ...inputStyle,
-    cursor: "pointer",
-  };
-
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
   const textareaStyle = {
     ...inputStyle,
     resize: "vertical" as const,
@@ -496,7 +514,7 @@ export default function WorkerOnboarding() {
                     marginBottom: "0.75rem",
                   }}
                 >
-                  Which industries have you worked in? *{" "}
+                  Which industries have you worked in?{" "}
                   <span
                     style={{
                       color: "rgba(255,255,255,0.3)",
@@ -591,6 +609,7 @@ export default function WorkerOnboarding() {
               Just talk about what you've done, what you've learned, and what
               kind of work you've been part of.
             </p>
+
             <div
               style={{
                 display: "flex",
@@ -657,6 +676,7 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
+
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
@@ -712,6 +732,7 @@ export default function WorkerOnboarding() {
               Add the skills you've built through your experience — technical or
               not.
             </p>
+
             <div
               style={{
                 display: "flex",
@@ -733,7 +754,7 @@ export default function WorkerOnboarding() {
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <input
                     type="text"
-                    placeholder="e.g. Customer service, Python, Project management..."
+                    placeholder="e.g. Customer service, Excel, Team leadership..."
                     value={skill}
                     onChange={(e) => setSkill(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && addSkill()}
@@ -768,12 +789,12 @@ export default function WorkerOnboarding() {
                       <span
                         key={s}
                         style={{
-                          background: "rgba(255,255,255,0.08)",
-                          border: "1px solid rgba(255,255,255,0.12)",
-                          color: "rgba(255,255,255,0.8)",
+                          background: "rgba(255,255,255,0.06)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: "rgba(255,255,255,0.7)",
                           padding: "0.3rem 0.85rem",
                           borderRadius: "980px",
-                          fontSize: "0.85rem",
+                          fontSize: "0.82rem",
                           display: "flex",
                           alignItems: "center",
                           gap: "0.5rem",
@@ -785,7 +806,7 @@ export default function WorkerOnboarding() {
                           style={{
                             background: "none",
                             border: "none",
-                            color: "rgba(255,255,255,0.4)",
+                            color: "rgba(255,255,255,0.35)",
                             cursor: "pointer",
                             fontSize: "1rem",
                             lineHeight: 1,
@@ -799,6 +820,7 @@ export default function WorkerOnboarding() {
                   </div>
                 )}
               </div>
+
               <div>
                 <label
                   style={{
@@ -808,7 +830,7 @@ export default function WorkerOnboarding() {
                     marginBottom: "0.5rem",
                   }}
                 >
-                  What do you genuinely excel at?
+                  In a few sentences, what are you genuinely good at?
                 </label>
                 <textarea
                   placeholder="e.g. I'm really good at staying calm under pressure..."
@@ -819,6 +841,7 @@ export default function WorkerOnboarding() {
                 />
               </div>
             </div>
+
             <div
               style={{ display: "flex", gap: "0.75rem", marginTop: "2.5rem" }}
             >
@@ -877,6 +900,8 @@ export default function WorkerOnboarding() {
               To keep Talentgate trusted and safe, we need to confirm you're a
               real person.
             </p>
+
+            {/* ID Document selection */}
             <div
               style={{
                 display: "flex",
@@ -912,24 +937,22 @@ export default function WorkerOnboarding() {
                   onClick={() => setDocType(doc.id)}
                   style={{
                     display: "flex",
-                    alignItems: "center",
                     justifyContent: "space-between",
-                    background:
-                      docType === doc.id
-                        ? "rgba(255,255,255,0.08)"
-                        : "rgba(255,255,255,0.03)",
+                    alignItems: "center",
+                    padding: "1rem 1.2rem",
+                    borderRadius: 12,
                     border: `1px solid ${
                       docType === doc.id
                         ? "rgba(255,255,255,0.3)"
                         : "rgba(255,255,255,0.08)"
                     }`,
-                    borderRadius: 12,
-                    padding: "1rem 1.2rem",
+                    background:
+                      docType === doc.id
+                        ? "rgba(255,255,255,0.04)"
+                        : "transparent",
                     cursor: "pointer",
-                    textAlign: "left",
-                    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                    transition: "all 0.15s",
-                    width: "100%",
+                    textAlign: "left" as const,
+                    fontFamily: "-apple-system, sans-serif",
                   }}
                 >
                   <div>
@@ -938,7 +961,6 @@ export default function WorkerOnboarding() {
                         fontSize: "0.92rem",
                         fontWeight: 500,
                         color: "#f5f5f7",
-                        marginBottom: "0.2rem",
                       }}
                     >
                       {doc.label}
@@ -947,6 +969,7 @@ export default function WorkerOnboarding() {
                       style={{
                         fontSize: "0.78rem",
                         color: "rgba(255,255,255,0.35)",
+                        marginTop: "0.2rem",
                       }}
                     >
                       {doc.sub}
@@ -982,6 +1005,7 @@ export default function WorkerOnboarding() {
               ))}
             </div>
 
+            {/* ID file upload */}
             {docType && (
               <div style={{ marginBottom: "1.5rem" }}>
                 <label
@@ -1008,7 +1032,7 @@ export default function WorkerOnboarding() {
                     borderRadius: 12,
                     padding: "2rem",
                     cursor: "pointer",
-                    textAlign: "center",
+                    textAlign: "center" as const,
                     background: docFile
                       ? "rgba(255,255,255,0.04)"
                       : "transparent",
@@ -1080,6 +1104,7 @@ export default function WorkerOnboarding() {
               </div>
             )}
 
+            {/* Privacy notice */}
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
@@ -1108,8 +1133,8 @@ export default function WorkerOnboarding() {
               </p>
             </div>
 
-            {/* CV Upload */}
-            <div style={{ marginTop: "2rem" }}>
+            {/* CV upload */}
+            <div style={{ marginBottom: "2rem" }}>
               <label
                 style={{
                   fontSize: "0.85rem",
