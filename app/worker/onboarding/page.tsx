@@ -1079,6 +1079,34 @@ export default function WorkerOnboarding() {
                 </label>
               </div>
             )}
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: 12,
+                padding: "1rem 1.2rem",
+                marginBottom: "2rem",
+                display: "flex",
+                gap: "0.75rem",
+                alignItems: "flex-start",
+              }}
+            >
+              <span style={{ fontSize: "0.9rem", marginTop: "0.1rem" }}>
+                🔒
+              </span>
+              <p
+                style={{
+                  fontSize: "0.78rem",
+                  color: "rgba(255,255,255,0.3)",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                Your documents are encrypted and handled securely. Verification
+                is powered by Stripe Identity.
+              </p>
+            </div>
             {/* CV Upload */}
             <div style={{ marginTop: "2rem" }}>
               <label
@@ -1177,34 +1205,6 @@ export default function WorkerOnboarding() {
                 )}
               </label>
             </div>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 12,
-                padding: "1rem 1.2rem",
-                marginBottom: "2rem",
-                display: "flex",
-                gap: "0.75rem",
-                alignItems: "flex-start",
-              }}
-            >
-              <span style={{ fontSize: "0.9rem", marginTop: "0.1rem" }}>
-                🔒
-              </span>
-              <p
-                style={{
-                  fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.3)",
-                  lineHeight: 1.6,
-                  margin: 0,
-                }}
-              >
-                Your documents are encrypted and handled securely. Verification
-                is powered by Stripe Identity.
-              </p>
-            </div>
-
             {error && (
               <div
                 style={{
