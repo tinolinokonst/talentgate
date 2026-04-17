@@ -451,11 +451,16 @@ export default function BusinessDashboard() {
           Talentgate
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-          <span
-            style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem" }}
+          <Link
+            href="/business/profile"
+            style={{
+              color: "rgba(255,255,255,0.45)",
+              fontSize: "0.85rem",
+              textDecoration: "none",
+            }}
           >
             {business?.company_name}
-          </span>
+          </Link>
           <button
             onClick={handleSignOut}
             style={{

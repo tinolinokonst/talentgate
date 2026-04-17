@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../lib/supabase/client";
@@ -232,11 +233,16 @@ export default function WorkerDashboard() {
           Talentgate
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-          <span
-            style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem" }}
+          <Link
+            href="/worker/profile"
+            style={{
+              color: "rgba(255,255,255,0.45)",
+              fontSize: "0.85rem",
+              textDecoration: "none",
+            }}
           >
             {profile?.full_name}
-          </span>
+          </Link>
           <button
             onClick={handleSignOut}
             style={{
