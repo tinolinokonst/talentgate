@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
 
-type Business = { company_name: string; verified: boolean };
+type Business = {
+  company_name: string;
+  verified: boolean;
+};
 
 type Job = {
   id: string;
@@ -24,42 +26,76 @@ type Job = {
   businesses: Business | null;
 };
 
-const COUNTRY_COORDS: Record<string, [number, number]> = {
-  "United Kingdom": [51.5, -0.1],
-  "United States": [37.1, -95.7],
-  Canada: [56.1, -106.3],
-  Australia: [-25.3, 133.8],
-  Germany: [51.2, 10.5],
-  France: [46.2, 2.2],
-  Netherlands: [52.1, 5.3],
-  Ireland: [53.4, -8.2],
-  Spain: [40.5, -3.7],
-  Italy: [41.9, 12.6],
-};
+// Maps application_id -> interview_status for applied jobs
+type InterviewStatusMap = Record<string, string>;
 
-function getDistanceKm(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+const COUNTRIES = [
+  "United Kingdom",
+  "United States",
+  "Canada",
+  "Australia",
+  "Germany",
+  "France",
+  "Netherlands",
+  "Ireland",
+  "Spain",
+  "Italy",
+  "Remote / Anywhere",
+  "Other",
+];
 
-function formatDistance(km: number): string {
-  if (km < 1) return "< 1 km away";
-  if (km < 10) return `~${Math.round(km)} km away`;
-  if (km < 100) return `~${Math.round(km / 5) * 5} km away`;
-  if (km < 1000) return `~${Math.round(km / 10) * 10} km away`;
-  return `~${Math.round(km / 100) * 100} km away`;
+// Badge shown on applied-tab cards for each interview state
+function InterviewBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; color: string; bg: string }> = {
+    not_started: {
+      label: "Schedule interview",
+      color: "rgba(255,200,60,0.9)",
+      bg: "rgba(255,200,60,0.08)",
+    },
+    invited: {
+      label: "Schedule interview",
+      color: "rgba(255,200,60,0.9)",
+      bg: "rgba(255,200,60,0.08)",
+    },
+    scheduled: {
+      label: "Interview scheduled",
+      color: "rgba(80,200,120,0.9)",
+      bg: "rgba(80,200,120,0.08)",
+    },
+    in_progress: {
+      label: "Interview in progress",
+      color: "rgba(80,160,255,0.9)",
+      bg: "rgba(80,160,255,0.08)",
+    },
+    completed: {
+      label: "Interview complete",
+      color: "rgba(80,200,120,0.9)",
+      bg: "rgba(80,200,120,0.08)",
+    },
+    declined: {
+      label: "Interview declined",
+      color: "rgba(255,255,255,0.3)",
+      bg: "rgba(255,255,255,0.04)",
+    },
+  };
+
+  const s = map[status] ?? map["not_started"];
+  return (
+    <span
+      style={{
+        background: s.bg,
+        border: `1px solid ${s.color}`,
+        color: s.color,
+        fontSize: "0.72rem",
+        fontWeight: 500,
+        padding: "0.2rem 0.65rem",
+        borderRadius: "980px",
+        letterSpacing: "0.02em",
+      }}
+    >
+      {s.label}
+    </span>
+  );
 }
 
 export default function WorkerDashboard() {
@@ -70,16 +106,25 @@ export default function WorkerDashboard() {
   const [search, setSearch] = useState("");
   const [industryFilter, setIndustryFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
+
+  // appliedJobs: job_id[]  (for the browse tab button state)
   const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
+
+  // applicationIds: job_id -> application_id  (needed to link to schedule page)
+  const [applicationIds, setApplicationIds] = useState<Record<string, string>>(
+    {}
+  );
+
+  // interviewStatuses: application_id -> interview_status
+  const [interviewStatuses, setInterviewStatuses] =
+    useState<InterviewStatusMap>({});
+
   const [profile, setProfile] = useState<{
     full_name: string;
     skills: string[];
     location: string;
-    latitude: number | null;
-    longitude: number | null;
   } | null>(null);
   const [activeTab, setActiveTab] = useState<"browse" | "applied">("browse");
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const supabase = createClient();
 
   async function loadData() {
@@ -93,7 +138,7 @@ export default function WorkerDashboard() {
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("full_name, skills, location, latitude, longitude")
+      .select("full_name, skills, location")
       .eq("id", user.id)
       .single();
     setProfile(prof);
@@ -101,7 +146,10 @@ export default function WorkerDashboard() {
     const { data: listings } = await supabase
       .from("job_listings")
       .select(
-        `id, title, location, country, region, industry, salary_min, salary_max, deadline, qualifications, status, description, work_type, businesses (company_name, verified)`
+        `id, title, location, country, region, industry,
+         salary_min, salary_max, deadline,
+         qualifications, status, description, work_type,
+         businesses (company_name, verified)`
       )
       .eq("status", "active")
       .order("created_at", { ascending: false });
@@ -116,11 +164,25 @@ export default function WorkerDashboard() {
     setJobs(typedListings);
     setFilteredJobs(typedListings);
 
+    // Load applications + their interview_status
     const { data: apps } = await supabase
       .from("applications")
-      .select("job_id")
+      .select("id, job_id, interview_status")
       .eq("worker_id", user.id);
-    setAppliedJobs(apps?.map((a: any) => a.job_id) || []);
+
+    if (apps) {
+      setAppliedJobs(apps.map((a: any) => a.job_id));
+
+      const idMap: Record<string, string> = {};
+      const statusMap: InterviewStatusMap = {};
+      apps.forEach((a: any) => {
+        idMap[a.job_id] = a.id;
+        statusMap[a.id] = a.interview_status ?? "not_started";
+      });
+      setApplicationIds(idMap);
+      setInterviewStatuses(statusMap);
+    }
+
     setLoading(false);
   }
 
@@ -141,7 +203,7 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     let filtered = jobs;
-    if (search)
+    if (search) {
       filtered = filtered.filter(
         (j) =>
           j.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -150,6 +212,7 @@ export default function WorkerDashboard() {
             .toLowerCase()
             .includes(search.toLowerCase())
       );
+    }
     if (industryFilter)
       filtered = filtered.filter((j) => j.industry === industryFilter);
     if (countryFilter)
@@ -157,15 +220,47 @@ export default function WorkerDashboard() {
     setFilteredJobs(filtered);
   }, [search, industryFilter, countryFilter, jobs]);
 
+  // ── UPDATED: inserts application + interview row, then redirects ──
   async function handleApply(jobId: string) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase
+
+    // 1. Insert application
+    const { data: newApp, error: appError } = await supabase
       .from("applications")
-      .insert({ job_id: jobId, worker_id: user.id, status: "pending" });
-    setAppliedJobs([...appliedJobs, jobId]);
+      .insert({
+        job_id: jobId,
+        worker_id: user.id,
+        status: "pending",
+        interview_status: "invited",
+      })
+      .select("id")
+      .single();
+
+    if (appError || !newApp) {
+      console.error("Failed to create application:", appError);
+      return;
+    }
+
+    // 2. Insert a placeholder interviews row so the schedule page can
+    //    update it — status will be updated to 'scheduled' once the
+    //    worker picks a time.
+    await supabase.from("interviews").insert({
+      application_id: newApp.id,
+      worker_id: user.id,
+      job_id: jobId,
+      status: "scheduled", // will be properly set on schedule page
+    });
+
+    // 3. Update local state
+    setAppliedJobs((prev) => [...prev, jobId]);
+    setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
+    setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
+
+    // 4. Redirect to scheduling page
+    router.push(`/worker/schedule-interview/${newApp.id}`);
   }
 
   async function handleCancelApplication(jobId: string) {
@@ -178,7 +273,18 @@ export default function WorkerDashboard() {
       .delete()
       .eq("job_id", jobId)
       .eq("worker_id", user.id);
-    setAppliedJobs(appliedJobs.filter((id) => id !== jobId));
+    const appId = applicationIds[jobId];
+    setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
+    setApplicationIds((prev) => {
+      const next = { ...prev };
+      delete next[jobId];
+      return next;
+    });
+    setInterviewStatuses((prev) => {
+      const next = { ...prev };
+      if (appId) delete next[appId];
+      return next;
+    });
   }
 
   async function handleSignOut() {
@@ -186,17 +292,12 @@ export default function WorkerDashboard() {
     router.push("/");
   }
 
-  function getJobDistance(job: Job): string | null {
-    if (!profile?.latitude || !profile?.longitude) return null;
-    const coords = COUNTRY_COORDS[job.country];
-    if (!coords) return null;
-    const km = getDistanceKm(
-      profile.latitude,
-      profile.longitude,
-      coords[0],
-      coords[1]
-    );
-    return formatDistance(km);
+  // Whether the interview is already done / in progress (hide cancel for these)
+  function interviewLocked(jobId: string): boolean {
+    const appId = applicationIds[jobId];
+    if (!appId) return false;
+    const s = interviewStatuses[appId];
+    return s === "in_progress" || s === "completed";
   }
 
   const industries = [...new Set(jobs.map((j) => j.industry).filter(Boolean))];
@@ -231,319 +332,6 @@ export default function WorkerDashboard() {
     >
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');`}</style>
 
-      {/* JOB DETAILS MODAL */}
-      {selectedJob && (
-        <div
-          onClick={() => setSelectedJob(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 200,
-            background: "rgba(0,0,0,0.85)",
-            backdropFilter: "blur(8px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "2rem",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 20,
-              padding: "2.5rem",
-              maxWidth: 640,
-              width: "100%",
-              maxHeight: "85vh",
-              overflowY: "auto",
-              position: "relative",
-            }}
-          >
-            {/* Close */}
-            <button
-              onClick={() => setSelectedJob(null)}
-              style={{
-                position: "absolute",
-                top: "1.5rem",
-                right: "1.5rem",
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.6)",
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                cursor: "pointer",
-                fontSize: "1rem",
-                fontFamily: "-apple-system, sans-serif",
-              }}
-            >
-              ×
-            </button>
-
-            {/* Company */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                marginBottom: "0.75rem",
-              }}
-            >
-              <span
-                style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.4)" }}
-              >
-                {selectedJob.businesses?.company_name}
-              </span>
-              {selectedJob.businesses?.verified && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "rgba(255,255,255,0.5)",
-                    fontSize: "0.68rem",
-                    fontWeight: 600,
-                    padding: "0.1rem 0.5rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  ✓ Verified
-                </span>
-              )}
-            </div>
-
-            {/* Title */}
-            <h2
-              style={{
-                fontSize: "1.6rem",
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                marginBottom: "1rem",
-              }}
-            >
-              {selectedJob.title}
-            </h2>
-
-            {/* Meta tags */}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.5rem",
-                marginBottom: "1.5rem",
-              }}
-            >
-              {selectedJob.location && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.8rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  📍 {selectedJob.location}
-                </span>
-              )}
-              {selectedJob.work_type && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.8rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  {selectedJob.work_type}
-                </span>
-              )}
-              {selectedJob.industry && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.8rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  {selectedJob.industry}
-                </span>
-              )}
-              {selectedJob.salary_min && selectedJob.salary_max && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.8rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  💰 ${selectedJob.salary_min.toLocaleString()} – $
-                  {selectedJob.salary_max.toLocaleString()}/yr
-                </span>
-              )}
-              {selectedJob.deadline && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.8rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  ⏳ Deadline: {selectedJob.deadline}
-                </span>
-              )}
-              {getJobDistance(selectedJob) && (
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.8rem",
-                    borderRadius: "980px",
-                  }}
-                >
-                  📡 {getJobDistance(selectedJob)}
-                </span>
-              )}
-            </div>
-
-            {/* Description */}
-            {selectedJob.description && (
-              <div style={{ marginBottom: "1.5rem" }}>
-                <p
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "rgba(255,255,255,0.3)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  About the role
-                </p>
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.7)",
-                    fontSize: "0.95rem",
-                    lineHeight: 1.8,
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {selectedJob.description}
-                </p>
-              </div>
-            )}
-
-            {/* Qualifications */}
-            {selectedJob.qualifications?.length > 0 && (
-              <div style={{ marginBottom: "2rem" }}>
-                <p
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "rgba(255,255,255,0.3)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  What they're looking for
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5rem",
-                  }}
-                >
-                  {selectedJob.qualifications.map((q, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: "0.6rem",
-                      }}
-                    >
-                      <span
-                        style={{
-                          color: "rgba(255,255,255,0.3)",
-                          marginTop: "0.1rem",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        ✓
-                      </span>
-                      <span
-                        style={{
-                          color: "rgba(255,255,255,0.65)",
-                          fontSize: "0.9rem",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {q}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Apply button */}
-            <div
-              style={{
-                paddingTop: "1.5rem",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <button
-                onClick={() => {
-                  appliedJobs.includes(selectedJob.id)
-                    ? handleCancelApplication(selectedJob.id)
-                    : handleApply(selectedJob.id);
-                }}
-                style={{
-                  width: "100%",
-                  padding: "0.9rem",
-                  borderRadius: "980px",
-                  background: appliedJobs.includes(selectedJob.id)
-                    ? "transparent"
-                    : "#fff",
-                  color: appliedJobs.includes(selectedJob.id)
-                    ? "rgba(255,80,80,0.8)"
-                    : "#000",
-                  border: appliedJobs.includes(selectedJob.id)
-                    ? "1px solid rgba(255,80,80,0.3)"
-                    : "none",
-                  fontWeight: 500,
-                  fontSize: "0.95rem",
-                  cursor: "pointer",
-                  fontFamily: "-apple-system, sans-serif",
-                  transition: "all 0.2s",
-                }}
-              >
-                {appliedJobs.includes(selectedJob.id)
-                  ? "Cancel application"
-                  : "Apply for this role"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* NAV */}
       <nav
         style={{
@@ -575,16 +363,11 @@ export default function WorkerDashboard() {
           Talentgate
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-          <Link
-            href="/worker/profile"
-            style={{
-              color: "rgba(255,255,255,0.45)",
-              fontSize: "0.85rem",
-              textDecoration: "none",
-            }}
+          <span
+            style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem" }}
           >
             {profile?.full_name}
-          </Link>
+          </span>
           <button
             onClick={handleSignOut}
             style={{
@@ -666,35 +449,13 @@ export default function WorkerDashboard() {
                 ))}
               </div>
             </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: "0.25rem",
-              }}
-            >
-              {profile.location && (
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.35)",
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  📍 {profile.location}
-                </p>
-              )}
-              {profile.latitude && profile.longitude && (
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.2)",
-                    fontSize: "0.75rem",
-                  }}
-                >
-                  GPS enabled
-                </p>
-              )}
-            </div>
+            {profile.location && (
+              <p
+                style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}
+              >
+                📍 {profile.location}
+              </p>
+            )}
           </div>
         )}
 
@@ -729,15 +490,15 @@ export default function WorkerDashboard() {
               }}
             >
               {tab === "browse"
-                ? "Browse roles"
+                ? `Browse roles (${filteredJobs.length})`
                 : `Applied (${appliedJobs.length})`}
             </button>
           ))}
         </div>
 
+        {/* ── BROWSE TAB ── */}
         {activeTab === "browse" && (
           <>
-            {/* Filters */}
             <div
               style={{
                 display: "flex",
@@ -748,7 +509,7 @@ export default function WorkerDashboard() {
             >
               <input
                 type="text"
-                placeholder="Search roles, companies..."
+                placeholder="Search roles, companies, locations..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
@@ -756,55 +517,55 @@ export default function WorkerDashboard() {
                   minWidth: 200,
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 10,
-                  padding: "0.6rem 1rem",
+                  borderRadius: 12,
+                  padding: "0.75rem 1rem",
                   color: "#f5f5f7",
-                  fontSize: "0.85rem",
+                  fontSize: "0.9rem",
                   outline: "none",
                   fontFamily: "-apple-system, sans-serif",
                 }}
               />
-              <select
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 10,
-                  padding: "0.6rem 1rem",
-                  color: industryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
-                  fontSize: "0.85rem",
-                  outline: "none",
-                  cursor: "pointer",
-                  fontFamily: "-apple-system, sans-serif",
-                }}
-              >
-                <option value="">All industries</option>
-                {industries.map((i) => (
-                  <option key={i} value={i} style={{ background: "#111" }}>
-                    {i}
-                  </option>
-                ))}
-              </select>
               <select
                 value={countryFilter}
                 onChange={(e) => setCountryFilter(e.target.value)}
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 10,
-                  padding: "0.6rem 1rem",
+                  borderRadius: 12,
+                  padding: "0.75rem 1rem",
                   color: countryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
-                  fontSize: "0.85rem",
+                  fontSize: "0.9rem",
                   outline: "none",
-                  cursor: "pointer",
                   fontFamily: "-apple-system, sans-serif",
+                  cursor: "pointer",
                 }}
               >
                 <option value="">All countries</option>
                 {availableCountries.map((c) => (
                   <option key={c} value={c} style={{ background: "#111" }}>
                     {c}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={industryFilter}
+                onChange={(e) => setIndustryFilter(e.target.value)}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  padding: "0.75rem 1rem",
+                  color: industryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
+                  fontSize: "0.9rem",
+                  outline: "none",
+                  fontFamily: "-apple-system, sans-serif",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="">All industries</option>
+                {industries.map((ind) => (
+                  <option key={ind} value={ind} style={{ background: "#111" }}>
+                    {ind}
                   </option>
                 ))}
               </select>
@@ -821,7 +582,7 @@ export default function WorkerDashboard() {
                 }}
               >
                 <p style={{ color: "rgba(255,255,255,0.3)" }}>
-                  No roles match your search.
+                  No roles match your filters.
                 </p>
               </div>
             ) : (
@@ -835,194 +596,170 @@ export default function WorkerDashboard() {
                   overflow: "hidden",
                 }}
               >
-                {filteredJobs.map((job) => {
-                  const distance = getJobDistance(job);
-                  return (
+                {filteredJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    style={{ background: "#111", padding: "1.5rem" }}
+                  >
                     <div
-                      key={job.id}
-                      style={{ background: "#111", padding: "1.5rem" }}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        flexWrap: "wrap",
+                        gap: "1rem",
+                      }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          flexWrap: "wrap",
-                          gap: "1rem",
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <div
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            marginBottom: "0.4rem",
+                          }}
+                        >
+                          <span
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              marginBottom: "0.4rem",
+                              fontSize: "0.82rem",
+                              color: "rgba(255,255,255,0.4)",
                             }}
                           >
+                            {job.businesses?.company_name}
+                          </span>
+                          {job.businesses?.verified && (
                             <span
                               style={{
-                                fontSize: "0.82rem",
-                                color: "rgba(255,255,255,0.4)",
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                color: "rgba(255,255,255,0.5)",
+                                fontSize: "0.68rem",
+                                fontWeight: 600,
+                                padding: "0.1rem 0.5rem",
+                                borderRadius: "980px",
                               }}
                             >
-                              {job.businesses?.company_name}
+                              ✓ Verified
                             </span>
-                            {job.businesses?.verified && (
-                              <span
-                                style={{
-                                  background: "rgba(255,255,255,0.06)",
-                                  border: "1px solid rgba(255,255,255,0.1)",
-                                  color: "rgba(255,255,255,0.5)",
-                                  fontSize: "0.68rem",
-                                  fontWeight: 600,
-                                  padding: "0.1rem 0.5rem",
-                                  borderRadius: "980px",
-                                }}
-                              >
-                                ✓ Verified
-                              </span>
-                            )}
-                          </div>
-                          <h3
+                          )}
+                        </div>
+                        <h3
+                          style={{
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            letterSpacing: "-0.01em",
+                            marginBottom: "0.5rem",
+                          }}
+                        >
+                          {job.title}
+                        </h3>
+                        {job.description && (
+                          <p
                             style={{
-                              fontSize: "1rem",
-                              fontWeight: 600,
-                              letterSpacing: "-0.01em",
-                              marginBottom: "0.5rem",
+                              color: "rgba(255,255,255,0.4)",
+                              fontSize: "0.85rem",
+                              lineHeight: 1.5,
+                              marginBottom: "0.75rem",
+                              maxWidth: 500,
                             }}
                           >
-                            {job.title}
-                          </h3>
+                            {job.description.length > 120
+                              ? job.description.slice(0, 120) + "…"
+                              : job.description}
+                          </p>
+                        )}
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "0.4rem",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.78rem",
+                            color: "rgba(255,255,255,0.3)",
+                          }}
+                        >
+                          {job.location && <span>{job.location}</span>}
+                          {job.work_type && <span>· {job.work_type}</span>}
+                          {job.salary_min && job.salary_max && (
+                            <span>
+                              · ${job.salary_min.toLocaleString()}–$
+                              {job.salary_max.toLocaleString()}
+                            </span>
+                          )}
+                          {job.deadline && (
+                            <span>· Deadline: {job.deadline}</span>
+                          )}
+                        </div>
+                        {job.qualifications?.length > 0 && (
                           <div
                             style={{
                               display: "flex",
                               flexWrap: "wrap",
-                              alignItems: "center",
                               gap: "0.4rem",
                             }}
                           >
-                            {job.location && (
+                            {job.qualifications.map((q, i) => (
                               <span
-                                style={{
-                                  color: "rgba(255,255,255,0.35)",
-                                  fontSize: "0.82rem",
-                                }}
-                              >
-                                📍 {job.location}
-                              </span>
-                            )}
-                            {distance && (
-                              <span
+                                key={i}
                                 style={{
                                   background: "rgba(255,255,255,0.04)",
                                   border: "1px solid rgba(255,255,255,0.08)",
-                                  color: "rgba(255,255,255,0.4)",
+                                  color: "rgba(255,255,255,0.45)",
                                   fontSize: "0.75rem",
-                                  padding: "0.15rem 0.6rem",
+                                  padding: "0.2rem 0.6rem",
                                   borderRadius: "980px",
                                 }}
                               >
-                                {distance}
+                                {q}
                               </span>
-                            )}
-                            {job.industry && (
-                              <span
-                                style={{
-                                  color: "rgba(255,255,255,0.35)",
-                                  fontSize: "0.82rem",
-                                }}
-                              >
-                                · {job.industry}
-                              </span>
-                            )}
-                            {job.work_type && (
-                              <span
-                                style={{
-                                  color: "rgba(255,255,255,0.35)",
-                                  fontSize: "0.82rem",
-                                }}
-                              >
-                                · {job.work_type}
-                              </span>
-                            )}
-                            {job.salary_min && job.salary_max && (
-                              <span
-                                style={{
-                                  color: "rgba(255,255,255,0.35)",
-                                  fontSize: "0.82rem",
-                                }}
-                              >
-                                · ${job.salary_min.toLocaleString()} – $
-                                {job.salary_max.toLocaleString()}/yr
-                              </span>
-                            )}
+                            ))}
                           </div>
-                        </div>
-                        {/* Buttons */}
-                        <div
+                        )}
+                      </div>
+
+                      <div
+                        style={{ display: "flex", alignItems: "flex-start" }}
+                      >
+                        <button
+                          onClick={() =>
+                            appliedJobs.includes(job.id)
+                              ? handleCancelApplication(job.id)
+                              : handleApply(job.id)
+                          }
                           style={{
-                            display: "flex",
-                            gap: "0.5rem",
-                            alignItems: "flex-start",
-                            flexShrink: 0,
+                            background: appliedJobs.includes(job.id)
+                              ? "transparent"
+                              : "#fff",
+                            color: appliedJobs.includes(job.id)
+                              ? "rgba(255,80,80,0.8)"
+                              : "#000",
+                            border: appliedJobs.includes(job.id)
+                              ? "1px solid rgba(255,80,80,0.3)"
+                              : "none",
+                            padding: "0.6rem 1.3rem",
+                            borderRadius: "980px",
+                            fontWeight: 500,
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
+                            fontFamily: "-apple-system, sans-serif",
+                            whiteSpace: "nowrap",
+                            transition: "all 0.2s",
                           }}
                         >
-                          <button
-                            onClick={() => setSelectedJob(job)}
-                            style={{
-                              background: "transparent",
-                              border: "1px solid rgba(255,255,255,0.15)",
-                              color: "rgba(255,255,255,0.6)",
-                              padding: "0.6rem 1.1rem",
-                              borderRadius: "980px",
-                              fontWeight: 500,
-                              fontSize: "0.85rem",
-                              cursor: "pointer",
-                              fontFamily: "-apple-system, sans-serif",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            View details
-                          </button>
-                          <button
-                            onClick={() =>
-                              appliedJobs.includes(job.id)
-                                ? handleCancelApplication(job.id)
-                                : handleApply(job.id)
-                            }
-                            style={{
-                              background: appliedJobs.includes(job.id)
-                                ? "transparent"
-                                : "#fff",
-                              color: appliedJobs.includes(job.id)
-                                ? "rgba(255,80,80,0.8)"
-                                : "#000",
-                              border: appliedJobs.includes(job.id)
-                                ? "1px solid rgba(255,80,80,0.3)"
-                                : "none",
-                              padding: "0.6rem 1.3rem",
-                              borderRadius: "980px",
-                              fontWeight: 500,
-                              fontSize: "0.85rem",
-                              cursor: "pointer",
-                              fontFamily: "-apple-system, sans-serif",
-                              whiteSpace: "nowrap",
-                              transition: "all 0.2s",
-                            }}
-                          >
-                            {appliedJobs.includes(job.id) ? "Cancel" : "Apply"}
-                          </button>
-                        </div>
+                          {appliedJobs.includes(job.id)
+                            ? "Cancel application"
+                            : "Apply"}
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </>
         )}
 
+        {/* ── APPLIED TAB ── */}
         {activeTab === "applied" && (
           <div>
             {appliedJobsList.length === 0 ? (
@@ -1071,102 +808,132 @@ export default function WorkerDashboard() {
                   overflow: "hidden",
                 }}
               >
-                {appliedJobsList.map((job) => (
-                  <div
-                    key={job.id}
-                    style={{ background: "#111", padding: "1.5rem" }}
-                  >
+                {appliedJobsList.map((job) => {
+                  const appId = applicationIds[job.id];
+                  const ivStatus = appId
+                    ? interviewStatuses[appId] ?? "not_started"
+                    : "not_started";
+                  const locked = interviewLocked(job.id);
+                  const needsScheduling =
+                    ivStatus === "not_started" || ivStatus === "invited";
+
+                  return (
                     <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        flexWrap: "wrap",
-                        gap: "1rem",
-                      }}
+                      key={job.id}
+                      style={{ background: "#111", padding: "1.5rem" }}
                     >
-                      <div>
-                        <span
-                          style={{
-                            fontSize: "0.78rem",
-                            color: "rgba(255,255,255,0.35)",
-                          }}
-                        >
-                          {job.businesses?.company_name}
-                        </span>
-                        <h3
-                          style={{
-                            fontSize: "1rem",
-                            fontWeight: 600,
-                            marginBottom: "0.3rem",
-                          }}
-                        >
-                          {job.title}
-                        </h3>
-                        <p
-                          style={{
-                            color: "rgba(255,255,255,0.35)",
-                            fontSize: "0.82rem",
-                          }}
-                        >
-                          {job.location}
-                          {job.country ? ` · ${job.country}` : ""}
-                        </p>
-                      </div>
                       <div
                         style={{
                           display: "flex",
-                          gap: "0.5rem",
-                          alignItems: "center",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          flexWrap: "wrap",
+                          gap: "1rem",
                         }}
                       >
-                        <button
-                          onClick={() => setSelectedJob(job)}
+                        <div style={{ flex: 1 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              marginBottom: "0.3rem",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "0.82rem",
+                                color: "rgba(255,255,255,0.4)",
+                              }}
+                            >
+                              {job.businesses?.company_name}
+                            </span>
+                            {job.businesses?.verified && (
+                              <span
+                                style={{
+                                  background: "rgba(255,255,255,0.06)",
+                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  color: "rgba(255,255,255,0.5)",
+                                  fontSize: "0.68rem",
+                                  fontWeight: 600,
+                                  padding: "0.1rem 0.5rem",
+                                  borderRadius: "980px",
+                                }}
+                              >
+                                ✓ Verified
+                              </span>
+                            )}
+                          </div>
+                          <h3
+                            style={{
+                              fontSize: "1rem",
+                              fontWeight: 600,
+                              letterSpacing: "-0.01em",
+                              marginBottom: "0.6rem",
+                            }}
+                          >
+                            {job.title}
+                          </h3>
+                          <InterviewBadge status={ivStatus} />
+                        </div>
+
+                        <div
                           style={{
-                            background: "transparent",
-                            border: "1px solid rgba(255,255,255,0.15)",
-                            color: "rgba(255,255,255,0.6)",
-                            padding: "0.3rem 0.8rem",
-                            borderRadius: "980px",
-                            fontSize: "0.78rem",
-                            cursor: "pointer",
-                            fontFamily: "-apple-system, sans-serif",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.5rem",
+                            alignItems: "flex-end",
                           }}
                         >
-                          View details
-                        </button>
-                        <span
-                          style={{
-                            background: "rgba(255,255,255,0.06)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            color: "rgba(255,255,255,0.5)",
-                            padding: "0.3rem 0.8rem",
-                            borderRadius: "980px",
-                            fontSize: "0.78rem",
-                            fontWeight: 500,
-                          }}
-                        >
-                          Applied
-                        </span>
-                        <button
-                          onClick={() => handleCancelApplication(job.id)}
-                          style={{
-                            background: "transparent",
-                            border: "1px solid rgba(255,80,80,0.3)",
-                            color: "rgba(255,80,80,0.7)",
-                            padding: "0.3rem 0.8rem",
-                            borderRadius: "980px",
-                            fontSize: "0.78rem",
-                            cursor: "pointer",
-                            fontFamily: "-apple-system, sans-serif",
-                          }}
-                        >
-                          Cancel
-                        </button>
+                          {/* Schedule / reschedule button */}
+                          {needsScheduling && appId && (
+                            <button
+                              onClick={() =>
+                                router.push(
+                                  `/worker/schedule-interview/${appId}`
+                                )
+                              }
+                              style={{
+                                background: "#fff",
+                                color: "#000",
+                                border: "none",
+                                padding: "0.5rem 1.1rem",
+                                borderRadius: "980px",
+                                fontWeight: 500,
+                                fontSize: "0.82rem",
+                                cursor: "pointer",
+                                fontFamily: "-apple-system, sans-serif",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Schedule interview →
+                            </button>
+                          )}
+
+                          {/* Cancel — hidden once interview is locked */}
+                          {!locked && (
+                            <button
+                              onClick={() => handleCancelApplication(job.id)}
+                              style={{
+                                background: "transparent",
+                                border: "1px solid rgba(255,80,80,0.3)",
+                                color: "rgba(255,80,80,0.7)",
+                                padding: "0.3rem 0.8rem",
+                                borderRadius: "980px",
+                                fontSize: "0.78rem",
+                                cursor: "pointer",
+                                fontFamily: "-apple-system, sans-serif",
+                              }}
+                            >
+                              Cancel application
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
