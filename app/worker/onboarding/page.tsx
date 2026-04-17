@@ -61,6 +61,12 @@ export default function WorkerOnboarding() {
   const [otherIndustry, setOtherIndustry] = useState("");
   const [searchCountries, setSearchCountries] = useState<string[]>([]);
   const [openToRemote, setOpenToRemote] = useState(false);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "success" | "denied">(
+    "idle"
+  );
 
   // Step 2
   const [experienceSummary, setExperienceSummary] = useState("");
@@ -108,6 +114,64 @@ export default function WorkerOnboarding() {
     "Verify identity",
   ];
   const countryList = Object.keys(COUNTRIES);
+
+  async function handleUseMyLocation() {
+    if (!navigator.geolocation) {
+      setGpsStatus("denied");
+      return;
+    }
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setLatitude(lat);
+        setLongitude(lng);
+
+        // Reverse geocode using OpenStreetMap Nominatim (free, no API key)
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const addr = data.address || {};
+
+          // Map country name to our COUNTRIES list
+          const countryName = addr.country || "";
+          const matchedCountry =
+            countryList.find(
+              (c) => c.toLowerCase() === countryName.toLowerCase()
+            ) || "Other";
+          setCurrentCountry(matchedCountry);
+
+          // Try to match region
+          const regionRaw = addr.state || addr.county || "";
+          if (matchedCountry && COUNTRIES[matchedCountry]?.length > 0) {
+            const matchedRegion = COUNTRIES[matchedCountry].find(
+              (r) => r.toLowerCase() === regionRaw.toLowerCase()
+            );
+            setCurrentRegion(matchedRegion || "Other");
+          }
+
+          // Set city
+          const city =
+            addr.city || addr.town || addr.village || addr.hamlet || "";
+          setCurrentCity(city);
+
+          setGpsStatus("success");
+        } catch {
+          // Even if reverse geocode fails, we still have coordinates
+          setGpsStatus("success");
+        }
+        setGpsLoading(false);
+      },
+      () => {
+        setGpsStatus("denied");
+        setGpsLoading(false);
+      }
+    );
+  }
 
   function toggleIndustry(ind: string) {
     setSelectedIndustries((prev) =>
@@ -187,6 +251,8 @@ export default function WorkerOnboarding() {
         skills,
         what_good_at: whatYouGoodAt,
         cv_url: cvUrl,
+        latitude,
+        longitude,
         job_search_locations: openToRemote
           ? [...searchCountries, "Remote"]
           : searchCountries,
@@ -198,7 +264,6 @@ export default function WorkerOnboarding() {
       setLoading(false);
       return;
     }
-
     router.push("/worker/dashboard");
   }
 
@@ -372,6 +437,57 @@ export default function WorkerOnboarding() {
                 >
                   Where are you currently based? *
                 </label>
+
+                {/* GPS button */}
+                <button
+                  onClick={handleUseMyLocation}
+                  disabled={gpsLoading}
+                  style={{
+                    width: "100%",
+                    marginBottom: "0.75rem",
+                    padding: "0.85rem 1rem",
+                    borderRadius: 12,
+                    border: `1px solid ${
+                      gpsStatus === "success"
+                        ? "rgba(60,255,120,0.3)"
+                        : gpsStatus === "denied"
+                        ? "rgba(255,60,60,0.3)"
+                        : "rgba(255,255,255,0.12)"
+                    }`,
+                    background:
+                      gpsStatus === "success"
+                        ? "rgba(60,255,120,0.06)"
+                        : gpsStatus === "denied"
+                        ? "rgba(255,60,60,0.06)"
+                        : "rgba(255,255,255,0.04)",
+                    color:
+                      gpsStatus === "success"
+                        ? "rgba(60,255,120,0.9)"
+                        : gpsStatus === "denied"
+                        ? "rgba(255,100,100,0.9)"
+                        : "rgba(255,255,255,0.7)",
+                    fontSize: "0.88rem",
+                    fontWeight: 500,
+                    cursor: gpsLoading ? "not-allowed" : "pointer",
+                    fontFamily: "-apple-system, sans-serif",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {gpsLoading ? (
+                    <>⏳ Detecting location...</>
+                  ) : gpsStatus === "success" ? (
+                    <>✓ Location detected — fields filled below</>
+                  ) : gpsStatus === "denied" ? (
+                    <>✕ Location access denied — please fill in manually</>
+                  ) : (
+                    <>📍 Use my current location</>
+                  )}
+                </button>
+
                 <div
                   style={{
                     display: "flex",
@@ -416,7 +532,7 @@ export default function WorkerOnboarding() {
 
                   <input
                     type="text"
-                    placeholder="City or town (optional)"
+                    placeholder="City or town"
                     value={currentCity}
                     onChange={(e) => setCurrentCity(e.target.value)}
                     style={inputStyle}
@@ -820,7 +936,6 @@ export default function WorkerOnboarding() {
                   </div>
                 )}
               </div>
-
               <div>
                 <label
                   style={{

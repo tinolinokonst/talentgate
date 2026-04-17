@@ -1,14 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
 
-type Business = {
-  company_name: string;
-  verified: boolean;
-};
+type Business = { company_name: string; verified: boolean };
 
 type Job = {
   id: string;
@@ -26,6 +23,46 @@ type Job = {
   work_type: string;
   businesses: Business | null;
 };
+
+// Approximate country centroids for distance calculation
+const COUNTRY_COORDS: Record<string, [number, number]> = {
+  "United Kingdom": [51.5, -0.1],
+  "United States": [37.1, -95.7],
+  Canada: [56.1, -106.3],
+  Australia: [-25.3, 133.8],
+  Germany: [51.2, 10.5],
+  France: [46.2, 2.2],
+  Netherlands: [52.1, 5.3],
+  Ireland: [53.4, -8.2],
+  Spain: [40.5, -3.7],
+  Italy: [41.9, 12.6],
+};
+
+// Haversine formula — returns distance in km
+function getDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDistance(km: number): string {
+  if (km < 1) return "< 1 km away";
+  if (km < 10) return `~${Math.round(km)} km away`;
+  if (km < 100) return `~${Math.round(km / 5) * 5} km away`;
+  if (km < 1000) return `~${Math.round(km / 10) * 10} km away`;
+  return `~${Math.round(km / 100) * 100} km away`;
+}
 
 const COUNTRIES = [
   "United Kingdom",
@@ -55,6 +92,8 @@ export default function WorkerDashboard() {
     full_name: string;
     skills: string[];
     location: string;
+    latitude: number | null;
+    longitude: number | null;
   } | null>(null);
   const [activeTab, setActiveTab] = useState<"browse" | "applied">("browse");
   const supabase = createClient();
@@ -70,7 +109,7 @@ export default function WorkerDashboard() {
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("full_name, skills, location")
+      .select("full_name, skills, location, latitude, longitude")
       .eq("id", user.id)
       .single();
     setProfile(prof);
@@ -78,12 +117,7 @@ export default function WorkerDashboard() {
     const { data: listings } = await supabase
       .from("job_listings")
       .select(
-        `
-        id, title, location, country, region, industry,
-        salary_min, salary_max, deadline,
-        qualifications, status, description, work_type,
-        businesses (company_name, verified)
-      `
+        `id, title, location, country, region, industry, salary_min, salary_max, deadline, qualifications, status, description, work_type, businesses (company_name, verified)`
       )
       .eq("status", "active")
       .order("created_at", { ascending: false });
@@ -102,7 +136,6 @@ export default function WorkerDashboard() {
       .from("applications")
       .select("job_id")
       .eq("worker_id", user.id);
-
     setAppliedJobs(apps?.map((a: any) => a.job_id) || []);
     setLoading(false);
   }
@@ -124,7 +157,7 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     let filtered = jobs;
-    if (search) {
+    if (search)
       filtered = filtered.filter(
         (j) =>
           j.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -133,7 +166,6 @@ export default function WorkerDashboard() {
             .toLowerCase()
             .includes(search.toLowerCase())
       );
-    }
     if (industryFilter)
       filtered = filtered.filter((j) => j.industry === industryFilter);
     if (countryFilter)
@@ -168,6 +200,19 @@ export default function WorkerDashboard() {
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/");
+  }
+
+  function getJobDistance(job: Job): string | null {
+    if (!profile?.latitude || !profile?.longitude) return null;
+    const coords = COUNTRY_COORDS[job.country];
+    if (!coords) return null;
+    const km = getDistanceKm(
+      profile.latitude,
+      profile.longitude,
+      coords[0],
+      coords[1]
+    );
+    return formatDistance(km);
   }
 
   const industries = [...new Set(jobs.map((j) => j.industry).filter(Boolean))];
@@ -324,13 +369,35 @@ export default function WorkerDashboard() {
                 ))}
               </div>
             </div>
-            {profile.location && (
-              <p
-                style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}
-              >
-                📍 {profile.location}
-              </p>
-            )}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: "0.25rem",
+              }}
+            >
+              {profile.location && (
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  📍 {profile.location}
+                </p>
+              )}
+              {profile.latitude && profile.longitude && (
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.2)",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  GPS enabled
+                </p>
+              )}
+            </div>
           </div>
         )}
 
@@ -365,7 +432,7 @@ export default function WorkerDashboard() {
               }}
             >
               {tab === "browse"
-                ? `Browse roles (${filteredJobs.length})`
+                ? "Browse roles"
                 : `Applied (${appliedJobs.length})`}
             </button>
           ))}
@@ -373,7 +440,7 @@ export default function WorkerDashboard() {
 
         {activeTab === "browse" && (
           <>
-            {/* Search & Filters */}
+            {/* Filters */}
             <div
               style={{
                 display: "flex",
@@ -384,7 +451,7 @@ export default function WorkerDashboard() {
             >
               <input
                 type="text"
-                placeholder="Search roles, companies, locations..."
+                placeholder="Search roles, companies..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
@@ -392,55 +459,55 @@ export default function WorkerDashboard() {
                   minWidth: 200,
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "0.75rem 1rem",
+                  borderRadius: 10,
+                  padding: "0.6rem 1rem",
                   color: "#f5f5f7",
-                  fontSize: "0.9rem",
+                  fontSize: "0.85rem",
                   outline: "none",
                   fontFamily: "-apple-system, sans-serif",
                 }}
               />
-              <select
-                value={countryFilter}
-                onChange={(e) => setCountryFilter(e.target.value)}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "0.75rem 1rem",
-                  color: countryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
-                  fontSize: "0.9rem",
-                  outline: "none",
-                  fontFamily: "-apple-system, sans-serif",
-                  cursor: "pointer",
-                }}
-              >
-                <option value="">All countries</option>
-                {availableCountries.map((c) => (
-                  <option key={c} value={c} style={{ background: "#111" }}>
-                    {c}
-                  </option>
-                ))}
-              </select>
               <select
                 value={industryFilter}
                 onChange={(e) => setIndustryFilter(e.target.value)}
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "0.75rem 1rem",
+                  borderRadius: 10,
+                  padding: "0.6rem 1rem",
                   color: industryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
-                  fontSize: "0.9rem",
+                  fontSize: "0.85rem",
                   outline: "none",
-                  fontFamily: "-apple-system, sans-serif",
                   cursor: "pointer",
+                  fontFamily: "-apple-system, sans-serif",
                 }}
               >
                 <option value="">All industries</option>
                 {industries.map((i) => (
                   <option key={i} value={i} style={{ background: "#111" }}>
                     {i}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={countryFilter}
+                onChange={(e) => setCountryFilter(e.target.value)}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 10,
+                  padding: "0.6rem 1rem",
+                  color: countryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
+                  fontSize: "0.85rem",
+                  outline: "none",
+                  cursor: "pointer",
+                  fontFamily: "-apple-system, sans-serif",
+                }}
+              >
+                <option value="">All countries</option>
+                {availableCountries.map((c) => (
+                  <option key={c} value={c} style={{ background: "#111" }}>
+                    {c}
                   </option>
                 ))}
               </select>
@@ -457,7 +524,7 @@ export default function WorkerDashboard() {
                 }}
               >
                 <p style={{ color: "rgba(255,255,255,0.3)" }}>
-                  No roles found matching your search.
+                  No roles match your search.
                 </p>
               </div>
             ) : (
@@ -471,185 +538,181 @@ export default function WorkerDashboard() {
                   overflow: "hidden",
                 }}
               >
-                {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    style={{ background: "#111", padding: "1.8rem" }}
-                  >
+                {filteredJobs.map((job) => {
+                  const distance = getJobDistance(job);
+                  return (
                     <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: "1rem",
-                      }}
+                      key={job.id}
+                      style={{ background: "#111", padding: "1.5rem" }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            marginBottom: "0.4rem",
-                          }}
-                        >
-                          <span
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          flexWrap: "wrap",
+                          gap: "1rem",
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <div
                             style={{
-                              fontSize: "0.82rem",
-                              color: "rgba(255,255,255,0.4)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              marginBottom: "0.4rem",
                             }}
                           >
-                            {job.businesses?.company_name}
-                          </span>
-                          {job.businesses?.verified && (
                             <span
                               style={{
-                                background: "rgba(255,255,255,0.06)",
-                                border: "1px solid rgba(255,255,255,0.1)",
-                                color: "rgba(255,255,255,0.5)",
-                                fontSize: "0.68rem",
-                                fontWeight: 600,
-                                padding: "0.1rem 0.5rem",
-                                borderRadius: "980px",
+                                fontSize: "0.82rem",
+                                color: "rgba(255,255,255,0.4)",
                               }}
                             >
-                              ✓ Verified
+                              {job.businesses?.company_name}
                             </span>
-                          )}
-                        </div>
-                        <h3
-                          style={{
-                            fontSize: "1rem",
-                            fontWeight: 600,
-                            letterSpacing: "-0.01em",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          {job.title}
-                        </h3>
-                        {job.description && (
-                          <p
+                            {job.businesses?.verified && (
+                              <span
+                                style={{
+                                  background: "rgba(255,255,255,0.06)",
+                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  color: "rgba(255,255,255,0.5)",
+                                  fontSize: "0.68rem",
+                                  fontWeight: 600,
+                                  padding: "0.1rem 0.5rem",
+                                  borderRadius: "980px",
+                                }}
+                              >
+                                ✓ Verified
+                              </span>
+                            )}
+                          </div>
+                          <h3
                             style={{
-                              color: "rgba(255,255,255,0.4)",
-                              fontSize: "0.85rem",
-                              lineHeight: 1.5,
-                              marginBottom: "0.75rem",
-                              maxWidth: 500,
+                              fontSize: "1rem",
+                              fontWeight: 600,
+                              letterSpacing: "-0.01em",
+                              marginBottom: "0.5rem",
                             }}
                           >
-                            {job.description.length > 120
-                              ? job.description.slice(0, 120) + "..."
-                              : job.description}
-                          </p>
-                        )}
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "0.75rem",
-                            flexWrap: "wrap",
-                            marginBottom: "0.75rem",
-                          }}
-                        >
-                          {job.country && (
-                            <span
+                            {job.title}
+                          </h3>
+                          {job.description && (
+                            <p
                               style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
+                                color: "rgba(255,255,255,0.4)",
+                                fontSize: "0.85rem",
+                                lineHeight: 1.5,
+                                marginBottom: "0.75rem",
+                                maxWidth: 500,
                               }}
                             >
-                              🌍 {job.country}
-                            </span>
+                              {job.description.length > 120
+                                ? job.description.slice(0, 120) + "..."
+                                : job.description}
+                            </p>
                           )}
-                          {job.region && (
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
-                              }}
-                            >
-                              · {job.region}
-                            </span>
-                          )}
-                          {job.location && (
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
-                              }}
-                            >
-                              · {job.location}
-                            </span>
-                          )}
-                          {job.industry && (
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
-                              }}
-                            >
-                              · {job.industry}
-                            </span>
-                          )}
-                          {job.work_type && (
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
-                              }}
-                            >
-                              · {job.work_type}
-                            </span>
-                          )}
-                          {job.salary_min && job.salary_max && (
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
-                              }}
-                            >
-                              · ${job.salary_min} – ${job.salary_max}/yr
-                            </span>
-                          )}
-                          {job.deadline && (
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.35)",
-                                fontSize: "0.82rem",
-                              }}
-                            >
-                              · Deadline: {job.deadline}
-                            </span>
-                          )}
-                        </div>
-                        {job.qualifications?.length > 0 && (
                           <div
                             style={{
                               display: "flex",
                               flexWrap: "wrap",
+                              alignItems: "center",
                               gap: "0.4rem",
+                              marginBottom: "0.75rem",
                             }}
                           >
-                            {job.qualifications.map((q, i) => (
+                            {job.location && (
                               <span
-                                key={i}
+                                style={{
+                                  color: "rgba(255,255,255,0.35)",
+                                  fontSize: "0.82rem",
+                                }}
+                              >
+                                📍 {job.location}
+                              </span>
+                            )}
+                            {distance && (
+                              <span
                                 style={{
                                   background: "rgba(255,255,255,0.04)",
                                   border: "1px solid rgba(255,255,255,0.08)",
-                                  color: "rgba(255,255,255,0.45)",
+                                  color: "rgba(255,255,255,0.4)",
                                   fontSize: "0.75rem",
-                                  padding: "0.2rem 0.6rem",
+                                  padding: "0.15rem 0.6rem",
                                   borderRadius: "980px",
                                 }}
                               >
-                                {q}
+                                {distance}
                               </span>
-                            ))}
+                            )}
+                            {job.industry && (
+                              <span
+                                style={{
+                                  color: "rgba(255,255,255,0.35)",
+                                  fontSize: "0.82rem",
+                                }}
+                              >
+                                · {job.industry}
+                              </span>
+                            )}
+                            {job.work_type && (
+                              <span
+                                style={{
+                                  color: "rgba(255,255,255,0.35)",
+                                  fontSize: "0.82rem",
+                                }}
+                              >
+                                · {job.work_type}
+                              </span>
+                            )}
+                            {job.salary_min && job.salary_max && (
+                              <span
+                                style={{
+                                  color: "rgba(255,255,255,0.35)",
+                                  fontSize: "0.82rem",
+                                }}
+                              >
+                                · ${job.salary_min.toLocaleString()} – $
+                                {job.salary_max.toLocaleString()}/yr
+                              </span>
+                            )}
+                            {job.deadline && (
+                              <span
+                                style={{
+                                  color: "rgba(255,255,255,0.35)",
+                                  fontSize: "0.82rem",
+                                }}
+                              >
+                                · Deadline: {job.deadline}
+                              </span>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div
-                        style={{ display: "flex", alignItems: "flex-start" }}
-                      >
+                          {job.qualifications?.length > 0 && (
+                            <div
+                              style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "0.4rem",
+                              }}
+                            >
+                              {job.qualifications.map((q, i) => (
+                                <span
+                                  key={i}
+                                  style={{
+                                    background: "rgba(255,255,255,0.04)",
+                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    color: "rgba(255,255,255,0.45)",
+                                    fontSize: "0.75rem",
+                                    padding: "0.2rem 0.6rem",
+                                    borderRadius: "980px",
+                                  }}
+                                >
+                                  {q}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <button
                           onClick={() =>
                             appliedJobs.includes(job.id)
@@ -682,8 +745,8 @@ export default function WorkerDashboard() {
                         </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -752,45 +815,38 @@ export default function WorkerDashboard() {
                       }}
                     >
                       <div>
-                        <p
+                        <span
                           style={{
-                            fontSize: "0.82rem",
-                            color: "rgba(255,255,255,0.4)",
-                            marginBottom: "0.3rem",
+                            fontSize: "0.78rem",
+                            color: "rgba(255,255,255,0.35)",
                           }}
                         >
                           {job.businesses?.company_name}
-                        </p>
+                        </span>
                         <h3
                           style={{
                             fontSize: "1rem",
                             fontWeight: 600,
-                            marginBottom: "0.4rem",
+                            marginBottom: "0.3rem",
                           }}
                         >
                           {job.title}
                         </h3>
                         <p
                           style={{
-                            fontSize: "0.82rem",
                             color: "rgba(255,255,255,0.35)",
+                            fontSize: "0.82rem",
                           }}
                         >
-                          {[
-                            job.country,
-                            job.region,
-                            job.industry,
-                            job.work_type,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {job.location}
+                          {job.country ? ` · ${job.country}` : ""}
                         </p>
                       </div>
                       <div
                         style={{
                           display: "flex",
+                          gap: "0.5rem",
                           alignItems: "center",
-                          gap: "0.75rem",
                         }}
                       >
                         <span
