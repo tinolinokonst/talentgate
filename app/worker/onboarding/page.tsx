@@ -213,6 +213,18 @@ export default function WorkerOnboarding() {
     // Upload CV if provided
     let cvUrl = null;
     if (cvFile) {
+      const allowedTypes = ["application/pdf"];
+      const maxSize = 5 * 1024 * 1024;
+      if (!allowedTypes.includes(cvFile.type)) {
+        setError("CV must be a PDF file.");
+        setLoading(false);
+        return;
+      }
+      if (cvFile.size > maxSize) {
+        setError("CV must be smaller than 5MB.");
+        setLoading(false);
+        return;
+      }
       const ext = cvFile.name.split(".").pop();
       const path = `${user.id}/cv.${ext}`;
       const { error: uploadError } = await supabase.storage
