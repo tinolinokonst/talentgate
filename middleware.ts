@@ -1,27 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isRateLimited } from "./lib/rate-limit";
 
-// --- Rate limiter ---
-const attempts = new Map<string, { count: number; resetAt: number }>();
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_ATTEMPTS = 5;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = attempts.get(ip);
-
-  if (!record || now > record.resetAt) {
-    attempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return false;
-  }
-
-  if (record.count >= MAX_ATTEMPTS) return true;
-
-  record.count++;
-  return false;
-}
-
-// --- Middleware ---
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -43,10 +23,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Supabase session handling
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -73,11 +50,17 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirect unauthenticated users away from protected routes
   if (
     !user &&
     (pathname.startsWith("/business") || pathname.startsWith("/worker"))
   ) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  // Redirect already logged-in users away from auth pages
+  if (user && pathname.startsWith("/auth")) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return supabaseResponse;
