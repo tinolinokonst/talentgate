@@ -1,5 +1,6 @@
 "use client";
 
+import { postRoleSchema } from "../../../lib/schema";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -86,9 +87,23 @@ export default function PostRole() {
   }
 
   async function handleSubmit() {
-    setLoading(true);
     setError("");
 
+    const result = postRoleSchema.safeParse({
+      title,
+      description,
+      location,
+      salaryMin: salaryMin ? parseInt(salaryMin) : null,
+      salaryMax: salaryMax ? parseInt(salaryMax) : null,
+      qualifications,
+      deadline,
+    });
+    if (!result.success) {
+      setError(result.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+
+    setLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();

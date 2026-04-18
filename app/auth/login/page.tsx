@@ -1,5 +1,6 @@
 "use client";
 
+import { loginSchema } from "../../../lib/schema";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,8 +37,15 @@ export default function LoginPage() {
   }, []);
 
   async function handleLogin() {
-    setLoading(true);
     setError("");
+
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      setError(result.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+
+    setLoading(true);
 
     const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
@@ -95,144 +103,105 @@ export default function LoginPage() {
           <Link href="/" style={{ textDecoration: "none" }}>
             <span
               style={{
-                fontSize: "1.3rem",
-                fontWeight: 600,
-                color: "#f5f5f7",
-                letterSpacing: "-0.02em",
+                fontFamily: "Georgia, serif",
+                fontSize: "1.8rem",
+                fontWeight: 700,
+                color: "#fff",
               }}
             >
               Talentgate
             </span>
           </Link>
+          <p
+            style={{
+              color: "rgba(255,255,255,0.35)",
+              fontSize: "0.9rem",
+              marginTop: "0.5rem",
+            }}
+          >
+            Welcome back
+          </p>
         </div>
 
         <div
           style={{
-            background: "#111",
+            background: "rgba(255,255,255,0.03)",
             border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: 20,
             padding: "2rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
           }}
         >
-          <h1
-            style={{
-              fontSize: "1.4rem",
-              fontWeight: 600,
-              marginBottom: "0.4rem",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Welcome back
-          </h1>
-          <p
-            style={{
-              color: "rgba(255,255,255,0.4)",
-              fontSize: "0.88rem",
-              marginBottom: "1.8rem",
-            }}
-          >
-            Log in to your Talentgate account.
-          </p>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
+          />
 
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}
-          >
-            <div>
-              <label
-                style={{
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.45)",
-                  display: "block",
-                  marginBottom: "0.4rem",
-                }}
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="john@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                style={inputStyle}
-              />
-            </div>
-            <div>
-              <label
-                style={{
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.45)",
-                  display: "block",
-                  marginBottom: "0.4rem",
-                }}
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="Your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                style={inputStyle}
-              />
-            </div>
-
-            {error && (
-              <div
-                style={{
-                  background: "rgba(255,60,60,0.1)",
-                  border: "1px solid rgba(255,60,60,0.2)",
-                  borderRadius: 10,
-                  padding: "0.75rem 1rem",
-                  color: "#ff6b6b",
-                  fontSize: "0.85rem",
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            <button
-              onClick={handleLogin}
-              disabled={loading || !email || !password}
+          {error && (
+            <div
               style={{
-                background: "#fff",
-                color: "#000",
-                padding: "0.9rem",
-                borderRadius: "980px",
-                fontWeight: 500,
-                fontSize: "0.95rem",
-                border: "none",
-                cursor:
-                  loading || !email || !password ? "not-allowed" : "pointer",
-                opacity: loading || !email || !password ? 0.5 : 1,
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                marginTop: "0.5rem",
-                transition: "opacity 0.2s",
+                background: "rgba(255,60,60,0.1)",
+                border: "1px solid rgba(255,60,60,0.2)",
+                borderRadius: 10,
+                padding: "0.75rem 1rem",
+                color: "#ff6b6b",
+                fontSize: "0.85rem",
               }}
             >
-              {loading ? "Logging in..." : "Log in →"}
-            </button>
-          </div>
+              {error}
+            </div>
+          )}
 
-          <p
+          <button
+            onClick={handleLogin}
+            disabled={loading || !email || !password}
             style={{
-              textAlign: "center",
-              color: "rgba(255,255,255,0.35)",
-              fontSize: "0.82rem",
-              marginTop: "1.5rem",
+              background: "#fff",
+              color: "#000",
+              padding: "0.9rem",
+              borderRadius: "980px",
+              fontWeight: 500,
+              fontSize: "0.95rem",
+              border: "none",
+              cursor:
+                loading || !email || !password ? "not-allowed" : "pointer",
+              opacity: loading || !email || !password ? 0.5 : 1,
+              fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+              marginTop: "0.5rem",
             }}
           >
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/auth/signup"
-              style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
-            >
-              Sign up
-            </Link>
-          </p>
+            {loading ? "Logging in..." : "Log in →"}
+          </button>
         </div>
+
+        <p
+          style={{
+            textAlign: "center",
+            color: "rgba(255,255,255,0.35)",
+            fontSize: "0.82rem",
+            marginTop: "1.5rem",
+          }}
+        >
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/auth/signup"
+            style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
+          >
+            Sign up
+          </Link>
+        </p>
       </div>
     </main>
   );

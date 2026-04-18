@@ -1,5 +1,6 @@
 "use client";
 
+import { businessProfileSchema } from "../../../lib/schema";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -62,10 +63,20 @@ export default function BusinessProfile() {
   }, []);
 
   async function handleSave() {
-    setSaving(true);
     setError("");
     setSuccess(false);
 
+    const result = businessProfileSchema.safeParse({
+      companyName,
+      description,
+      website,
+    });
+    if (!result.success) {
+      setError(result.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+
+    setSaving(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();

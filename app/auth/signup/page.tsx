@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { signupSchema } from "../../../lib/schema";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,8 +20,15 @@ export default function SignupPage() {
   const supabase = createClient();
 
   async function handleSignup() {
-    setLoading(true);
     setError("");
+
+    const result = signupSchema.safeParse({ email, password, fullName });
+    if (!result.success) {
+      setError(result.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+
+    setLoading(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
