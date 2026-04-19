@@ -1096,37 +1096,54 @@ export default function BusinessDashboard() {
             >
               Click a role to see its applicants
             </p>
+
+            {/* ── IMPROVED empty state: no roles posted ── */}
             {jobs.length === 0 ? (
               <div
                 style={{
                   background: "#111",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  padding: "4rem",
+                  borderRadius: 20,
+                  padding: "5rem 2rem",
                   textAlign: "center",
                 }}
               >
+                <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>📋</p>
                 <p
                   style={{
-                    color: "rgba(255,255,255,0.3)",
-                    marginBottom: "1.5rem",
+                    fontWeight: 600,
+                    fontSize: "1.05rem",
+                    marginBottom: "0.5rem",
                   }}
                 >
-                  No roles posted yet.
+                  Post your first role to get started
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "0.88rem",
+                    lineHeight: 1.6,
+                    maxWidth: 360,
+                    margin: "0 auto 1.75rem",
+                  }}
+                >
+                  Once you post a role, candidates can apply and complete an
+                  AI-powered first-round interview — so you only spend time on
+                  the best fits.
                 </p>
                 <Link
                   href="/business/post-role"
                   style={{
                     background: "#fff",
                     color: "#000",
-                    padding: "0.7rem 1.5rem",
+                    padding: "0.7rem 1.6rem",
                     borderRadius: "980px",
                     fontWeight: 500,
-                    fontSize: "0.88rem",
+                    fontSize: "0.9rem",
                     textDecoration: "none",
                   }}
                 >
-                  Post your first role
+                  Post a role →
                 </Link>
               </div>
             ) : (
@@ -1321,19 +1338,54 @@ export default function BusinessDashboard() {
                 Loading applicants…
               </p>
             ) : applicants.length === 0 ? (
+              /* ── IMPROVED empty state: no applicants yet ── */
               <div
                 style={{
                   background: "#111",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  padding: "4rem",
+                  borderRadius: 20,
+                  padding: "5rem 2rem",
                   textAlign: "center",
                 }}
               >
                 <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>👀</p>
-                <p style={{ color: "rgba(255,255,255,0.3)" }}>
-                  No one has applied to this role yet.
+                <p
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "1.05rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  No applicants yet for this role
                 </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "0.88rem",
+                    lineHeight: 1.6,
+                    maxWidth: 360,
+                    margin: "0 auto 1.75rem",
+                  }}
+                >
+                  Once candidates apply, they'll complete an AI first-round
+                  interview automatically. Their summaries will appear here when
+                  ready.
+                </p>
+                <button
+                  onClick={() => setActiveTab("listings")}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    color: "rgba(255,255,255,0.5)",
+                    padding: "0.6rem 1.4rem",
+                    borderRadius: "980px",
+                    cursor: "pointer",
+                    fontFamily: "-apple-system, sans-serif",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  ← Back to listings
+                </button>
               </div>
             ) : filteredApplicants.length === 0 ? (
               <div

@@ -28,21 +28,6 @@ type Job = {
 
 type InterviewStatusMap = Record<string, string>;
 
-const COUNTRIES = [
-  "United Kingdom",
-  "United States",
-  "Canada",
-  "Australia",
-  "Germany",
-  "France",
-  "Netherlands",
-  "Ireland",
-  "Spain",
-  "Italy",
-  "Remote / Anywhere",
-  "Other",
-];
-
 // ── Progress Pipeline ──────────────────────────────────────────
 const PIPELINE_STEPS = ["Applied", "Interview", "AI Review", "Decision"];
 
@@ -72,7 +57,6 @@ function stepSubLabel(i: number, status: string): string {
 function ProgressPipeline({ status }: { status: string }) {
   const activeStep = statusToStep(status);
   const declined = status === "declined";
-
   const stepComplete = (i: number) => !declined && i < activeStep;
   const stepActive = (i: number) => !declined && i === activeStep;
 
@@ -88,7 +72,6 @@ function ProgressPipeline({ status }: { status: string }) {
         const complete = stepComplete(i);
         const active = stepActive(i);
         const isLast = i === PIPELINE_STEPS.length - 1;
-
         const dotColor = declined
           ? i === 0
             ? "rgba(255,255,255,0.2)"
@@ -98,11 +81,9 @@ function ProgressPipeline({ status }: { status: string }) {
           : active
           ? "#fff"
           : "rgba(255,255,255,0.12)";
-
         const lineColor = complete
           ? "rgba(80,200,120,0.5)"
           : "rgba(255,255,255,0.08)";
-
         const labelColor = declined
           ? i === 0
             ? "rgba(255,255,255,0.3)"
@@ -112,7 +93,6 @@ function ProgressPipeline({ status }: { status: string }) {
           : active
           ? "rgba(255,255,255,0.9)"
           : "rgba(255,255,255,0.2)";
-
         const subColor =
           active && !declined
             ? status === "invited" || status === "not_started"
@@ -225,7 +205,6 @@ function InterviewBadge({ status }: { status: string }) {
       bg: "rgba(255,255,255,0.04)",
     },
   };
-
   const s = map[status] ?? map["not_started"];
   return (
     <span
@@ -254,14 +233,12 @@ export default function WorkerDashboard() {
   const [search, setSearch] = useState("");
   const [industryFilter, setIndustryFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
-
   const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
   const [applicationIds, setApplicationIds] = useState<Record<string, string>>(
     {}
   );
   const [interviewStatuses, setInterviewStatuses] =
     useState<InterviewStatusMap>({});
-
   const [profile, setProfile] = useState<{
     full_name: string;
     skills: string[];
@@ -290,10 +267,7 @@ export default function WorkerDashboard() {
     const { data: listings } = await supabase
       .from("job_listings")
       .select(
-        `id, title, location, country, region, industry,
-         salary_min, salary_max, deadline,
-         qualifications, status, description, work_type,
-         businesses (company_name, verified)`
+        `id, title, location, country, region, industry, salary_min, salary_max, deadline, qualifications, status, description, work_type, businesses (company_name, verified)`
       )
       .eq("status", "active")
       .order("created_at", { ascending: false });
@@ -324,7 +298,6 @@ export default function WorkerDashboard() {
       setApplicationIds(idMap);
       setInterviewStatuses(statusMap);
     }
-
     setLoading(false);
   }
 
@@ -367,7 +340,6 @@ export default function WorkerDashboard() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-
     const { data: newApp, error: appError } = await supabase
       .from("applications")
       .insert({
@@ -378,23 +350,21 @@ export default function WorkerDashboard() {
       })
       .select("id")
       .single();
-
     if (appError || !newApp) {
       console.error("Failed to create application:", appError);
       return;
     }
-
-    await supabase.from("interviews").insert({
-      application_id: newApp.id,
-      worker_id: user.id,
-      job_id: jobId,
-      status: "scheduled",
-    });
-
+    await supabase
+      .from("interviews")
+      .insert({
+        application_id: newApp.id,
+        worker_id: user.id,
+        job_id: jobId,
+        status: "scheduled",
+      });
     setAppliedJobs((prev) => [...prev, jobId]);
     setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
     setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
-
     router.push(`/worker/schedule-interview/${newApp.id}`);
   }
 
@@ -440,7 +410,6 @@ export default function WorkerDashboard() {
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
-  // ── Shared styles ──────────────────────────────────────────
   const metaPill: React.CSSProperties = {
     fontSize: "0.75rem",
     color: "rgba(255,255,255,0.4)",
@@ -745,19 +714,58 @@ export default function WorkerDashboard() {
               </select>
             </div>
 
+            {/* ── Empty state: no filter results ── */}
             {filteredJobs.length === 0 ? (
               <div
                 style={{
                   background: "#111",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  padding: "4rem",
+                  borderRadius: 20,
+                  padding: "4rem 2rem",
                   textAlign: "center",
                 }}
               >
-                <p style={{ color: "rgba(255,255,255,0.3)" }}>
-                  No roles match your filters.
+                <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>🔍</p>
+                <p
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  No roles match your search
                 </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "0.88rem",
+                    marginBottom: "1.5rem",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Try adjusting your filters or clearing the search to see all
+                  available roles.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setIndustryFilter("");
+                    setCountryFilter("");
+                  }}
+                  style={{
+                    background: "#fff",
+                    color: "#000",
+                    padding: "0.6rem 1.5rem",
+                    borderRadius: "980px",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "-apple-system, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  Clear filters
+                </button>
               </div>
             ) : (
               <div
@@ -800,7 +808,6 @@ export default function WorkerDashboard() {
                           fontWeight: 700,
                           color: "rgba(255,255,255,0.5)",
                           flexShrink: 0,
-                          letterSpacing: "-0.01em",
                         }}
                       >
                         {(job.businesses?.company_name ?? "?")[0].toUpperCase()}
@@ -853,7 +860,7 @@ export default function WorkerDashboard() {
                           {job.title}
                         </h3>
 
-                        {/* Salary — prominent */}
+                        {/* Salary */}
                         {job.salary_min && job.salary_max && (
                           <p
                             style={{
@@ -1012,39 +1019,55 @@ export default function WorkerDashboard() {
         {/* ── APPLIED TAB ── */}
         {activeTab === "applied" && (
           <div>
+            {/* ── Empty state: no applications yet ── */}
             {appliedJobsList.length === 0 ? (
               <div
                 style={{
                   background: "#111",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  padding: "4rem",
+                  borderRadius: 20,
+                  padding: "4rem 2rem",
                   textAlign: "center",
                 }}
               >
+                <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>✦</p>
                 <p
                   style={{
-                    color: "rgba(255,255,255,0.3)",
-                    marginBottom: "1rem",
+                    fontWeight: 600,
+                    fontSize: "1.05rem",
+                    marginBottom: "0.5rem",
                   }}
                 >
-                  You haven't applied to any roles yet.
+                  Your applications will live here
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "0.88rem",
+                    lineHeight: 1.6,
+                    marginBottom: "1.75rem",
+                    maxWidth: 340,
+                    margin: "0 auto 1.75rem",
+                  }}
+                >
+                  Once you apply to a role, you'll be able to track your
+                  interview progress right here — step by step.
                 </p>
                 <button
                   onClick={() => setActiveTab("browse")}
                   style={{
                     background: "#fff",
                     color: "#000",
-                    padding: "0.6rem 1.5rem",
+                    padding: "0.65rem 1.6rem",
                     borderRadius: "980px",
                     border: "none",
                     cursor: "pointer",
                     fontFamily: "-apple-system, sans-serif",
                     fontWeight: 500,
-                    fontSize: "0.85rem",
+                    fontSize: "0.9rem",
                   }}
                 >
-                  Browse roles
+                  Browse open roles →
                 </button>
               </div>
             ) : (
@@ -1116,8 +1139,6 @@ export default function WorkerDashboard() {
                               </span>
                             )}
                           </div>
-
-                          {/* Title */}
                           <h3
                             style={{
                               fontSize: "1rem",
@@ -1128,11 +1149,7 @@ export default function WorkerDashboard() {
                           >
                             {job.title}
                           </h3>
-
-                          {/* Progress pipeline */}
                           <ProgressPipeline status={ivStatus} />
-
-                          {/* Status badge */}
                           <div style={{ marginTop: "0.6rem" }}>
                             <InterviewBadge status={ivStatus} />
                           </div>
