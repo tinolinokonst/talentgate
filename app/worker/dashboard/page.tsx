@@ -44,115 +44,211 @@ const COUNTRIES = [
   "Other",
 ];
 
-const PIPELINE_STEPS = [
-  { key: "applied", label: "Applied" },
-  { key: "interview", label: "Interview" },
-  { key: "completed", label: "AI review done" },
-  { key: "decision", label: "Under review" },
-];
+// ── Progress Pipeline ──────────────────────────────────────────
+const PIPELINE_STEPS = ["Applied", "Interview", "AI Review", "Decision"];
 
 function statusToStep(status: string): number {
-  // Returns the index of the FURTHEST completed step (0-based)
-  if (status === "declined") return -1; // special case
-  if (status === "not_started" || status === "invited") return 0;
-  if (status === "scheduled" || status === "in_progress") return 1;
-  if (status === "completed") return 2;
+  if (status === "not_started" || status === "invited") return 1;
+  if (status === "scheduled") return 1;
+  if (status === "in_progress") return 2;
+  if (status === "completed") return 3;
   return 0;
 }
 
-function ApplicationPipeline({ status }: { status: string }) {
-  if (status === "declined") {
-    return (
-      <p
-        style={{
-          fontSize: "0.78rem",
-          color: "rgba(255,100,100,0.7)",
-          margin: "0.75rem 0 0",
-        }}
-      >
-        Interview declined
-      </p>
-    );
+function stepSubLabel(i: number, status: string): string {
+  if (status === "declined") return i === 0 ? "Submitted" : "";
+  if (i === 0) return "Submitted";
+  if (i === 1) {
+    if (status === "invited" || status === "not_started")
+      return "Action needed";
+    if (status === "scheduled") return "Scheduled";
+    if (status === "in_progress") return "Underway";
+    return "Done";
   }
+  if (i === 2) return status === "completed" ? "Ready" : "";
+  if (i === 3) return status === "completed" ? "Pending" : "";
+  return "";
+}
 
+function ProgressPipeline({ status }: { status: string }) {
   const activeStep = statusToStep(status);
+  const declined = status === "declined";
+
+  const stepComplete = (i: number) => !declined && i < activeStep;
+  const stepActive = (i: number) => !declined && i === activeStep;
 
   return (
-    <div style={{ marginTop: "1rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-        {PIPELINE_STEPS.map((step, i) => {
-          const done = i <= activeStep;
-          const isLast = i === PIPELINE_STEPS.length - 1;
-          return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        margin: "0.9rem 0 0.5rem",
+      }}
+    >
+      {PIPELINE_STEPS.map((label, i) => {
+        const complete = stepComplete(i);
+        const active = stepActive(i);
+        const isLast = i === PIPELINE_STEPS.length - 1;
+
+        const dotColor = declined
+          ? i === 0
+            ? "rgba(255,255,255,0.2)"
+            : "rgba(255,255,255,0.08)"
+          : complete
+          ? "rgba(80,200,120,0.9)"
+          : active
+          ? "#fff"
+          : "rgba(255,255,255,0.12)";
+
+        const lineColor = complete
+          ? "rgba(80,200,120,0.5)"
+          : "rgba(255,255,255,0.08)";
+
+        const labelColor = declined
+          ? i === 0
+            ? "rgba(255,255,255,0.3)"
+            : "rgba(255,255,255,0.12)"
+          : complete
+          ? "rgba(80,200,120,0.8)"
+          : active
+          ? "rgba(255,255,255,0.9)"
+          : "rgba(255,255,255,0.2)";
+
+        const subColor =
+          active && !declined
+            ? status === "invited" || status === "not_started"
+              ? "rgba(255,200,60,0.8)"
+              : "rgba(80,200,120,0.7)"
+            : "rgba(255,255,255,0.2)";
+
+        return (
+          <div
+            key={label}
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              flex: isLast ? 0 : 1,
+            }}
+          >
+            {/* Step column */}
             <div
-              key={step.key}
               style={{
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                flex: isLast ? "none" : 1,
+                minWidth: 56,
               }}
             >
-              {/* Node */}
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "0.35rem",
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: dotColor,
+                  marginBottom: 4,
+                  boxShadow:
+                    active && !declined ? `0 0 6px ${dotColor}` : "none",
+                  transition: "background 0.2s",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  color: labelColor,
+                  fontWeight: active ? 600 : 400,
+                  textAlign: "center",
+                  lineHeight: 1.2,
                 }}
               >
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    background: done ? "#fff" : "rgba(255,255,255,0.12)",
-                    border: done ? "none" : "1px solid rgba(255,255,255,0.18)",
-                    boxShadow:
-                      done && i === activeStep
-                        ? "0 0 6px rgba(255,255,255,0.4)"
-                        : "none",
-                    transition: "all 0.3s",
-                    flexShrink: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    color: done
-                      ? "rgba(255,255,255,0.75)"
-                      : "rgba(255,255,255,0.2)",
-                    whiteSpace: "nowrap",
-                    fontWeight: i === activeStep ? 600 : 400,
-                    transition: "color 0.3s",
-                  }}
-                >
-                  {step.label}
-                </span>
-              </div>
-              {/* Connector line */}
-              {!isLast && (
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    marginBottom: "1rem",
-                    background:
-                      i < activeStep
-                        ? "rgba(255,255,255,0.35)"
-                        : "rgba(255,255,255,0.08)",
-                    transition: "background 0.3s",
-                  }}
-                />
-              )}
+                {label}
+              </span>
+              <span
+                style={{
+                  fontSize: "0.6rem",
+                  color: subColor,
+                  textAlign: "center",
+                  marginTop: 1,
+                  lineHeight: 1.2,
+                  minHeight: 10,
+                }}
+              >
+                {stepSubLabel(i, status)}
+              </span>
             </div>
-          );
-        })}
-      </div>
+            {/* Connector line */}
+            {!isLast && (
+              <div
+                style={{
+                  flex: 1,
+                  height: 1,
+                  background: lineColor,
+                  marginTop: 3.5,
+                  transition: "background 0.2s",
+                }}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
+// ── Interview Badge ────────────────────────────────────────────
+function InterviewBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; color: string; bg: string }> = {
+    not_started: {
+      label: "Schedule interview",
+      color: "rgba(255,200,60,0.9)",
+      bg: "rgba(255,200,60,0.08)",
+    },
+    invited: {
+      label: "Schedule interview",
+      color: "rgba(255,200,60,0.9)",
+      bg: "rgba(255,200,60,0.08)",
+    },
+    scheduled: {
+      label: "Interview scheduled",
+      color: "rgba(80,200,120,0.9)",
+      bg: "rgba(80,200,120,0.08)",
+    },
+    in_progress: {
+      label: "Interview in progress",
+      color: "rgba(80,160,255,0.9)",
+      bg: "rgba(80,160,255,0.08)",
+    },
+    completed: {
+      label: "Interview complete",
+      color: "rgba(80,200,120,0.9)",
+      bg: "rgba(80,200,120,0.08)",
+    },
+    declined: {
+      label: "Interview declined",
+      color: "rgba(255,255,255,0.3)",
+      bg: "rgba(255,255,255,0.04)",
+    },
+  };
+
+  const s = map[status] ?? map["not_started"];
+  return (
+    <span
+      style={{
+        background: s.bg,
+        border: `1px solid ${s.color}`,
+        color: s.color,
+        fontSize: "0.72rem",
+        fontWeight: 500,
+        padding: "0.2rem 0.65rem",
+        borderRadius: "980px",
+        letterSpacing: "0.02em",
+      }}
+    >
+      {s.label}
+    </span>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────
 export default function WorkerDashboard() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -162,15 +258,10 @@ export default function WorkerDashboard() {
   const [industryFilter, setIndustryFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
-  // appliedJobs: job_id[]  (for the browse tab button state)
   const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
-
-  // applicationIds: job_id -> application_id  (needed to link to schedule page)
   const [applicationIds, setApplicationIds] = useState<Record<string, string>>(
     {}
   );
-
-  // interviewStatuses: application_id -> interview_status
   const [interviewStatuses, setInterviewStatuses] =
     useState<InterviewStatusMap>({});
 
@@ -178,6 +269,7 @@ export default function WorkerDashboard() {
     full_name: string;
     skills: string[];
     location: string;
+    open_to_work?: boolean;
   } | null>(null);
   const [activeTab, setActiveTab] = useState<"browse" | "applied">("browse");
   const supabase = createClient();
@@ -219,7 +311,6 @@ export default function WorkerDashboard() {
     setJobs(typedListings);
     setFilteredJobs(typedListings);
 
-    // Load applications + their interview_status
     const { data: apps } = await supabase
       .from("applications")
       .select("id, job_id, interview_status")
@@ -227,7 +318,6 @@ export default function WorkerDashboard() {
 
     if (apps) {
       setAppliedJobs(apps.map((a: any) => a.job_id));
-
       const idMap: Record<string, string> = {};
       const statusMap: InterviewStatusMap = {};
       apps.forEach((a: any) => {
@@ -275,14 +365,12 @@ export default function WorkerDashboard() {
     setFilteredJobs(filtered);
   }, [search, industryFilter, countryFilter, jobs]);
 
-  // ── UPDATED: inserts application + interview row, then redirects ──
   async function handleApply(jobId: string) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 1. Insert application
     const { data: newApp, error: appError } = await supabase
       .from("applications")
       .insert({
@@ -299,22 +387,17 @@ export default function WorkerDashboard() {
       return;
     }
 
-    // 2. Insert a placeholder interviews row so the schedule page can
-    //    update it — status will be updated to 'scheduled' once the
-    //    worker picks a time.
     await supabase.from("interviews").insert({
       application_id: newApp.id,
       worker_id: user.id,
       job_id: jobId,
-      status: "scheduled", // will be properly set on schedule page
+      status: "scheduled",
     });
 
-    // 3. Update local state
     setAppliedJobs((prev) => [...prev, jobId]);
     setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
     setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
 
-    // 4. Redirect to scheduling page
     router.push(`/worker/schedule-interview/${newApp.id}`);
   }
 
@@ -347,7 +430,6 @@ export default function WorkerDashboard() {
     router.push("/");
   }
 
-  // Whether the interview is already done / in progress (hide cancel for these)
   function interviewLocked(jobId: string): boolean {
     const appId = applicationIds[jobId];
     if (!appId) return false;
@@ -523,7 +605,7 @@ export default function WorkerDashboard() {
                   📍 {profile.location}
                 </p>
               )}
-              {(profile as any).open_to_work && (
+              {profile.open_to_work && (
                 <span
                   style={{
                     fontSize: "0.72rem",
@@ -682,158 +764,164 @@ export default function WorkerDashboard() {
                 {filteredJobs.map((job) => (
                   <div
                     key={job.id}
-                    style={{ background: "#111", padding: "1.5rem" }}
+                    style={{
+                      background: "#111",
+                      padding: "1.5rem",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "1.5rem",
+                      flexWrap: "wrap",
+                    }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        flexWrap: "wrap",
-                        gap: "1rem",
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <div
+                    <div style={{ flex: 1 }}>
+                      {/* Company + verified */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          marginBottom: "0.4rem",
+                        }}
+                      >
+                        <span
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            marginBottom: "0.4rem",
+                            fontSize: "0.82rem",
+                            color: "rgba(255,255,255,0.4)",
                           }}
                         >
+                          {job.businesses?.company_name}
+                        </span>
+                        {job.businesses?.verified && (
                           <span
                             style={{
-                              fontSize: "0.82rem",
-                              color: "rgba(255,255,255,0.4)",
+                              background: "rgba(255,255,255,0.06)",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              color: "rgba(255,255,255,0.5)",
+                              fontSize: "0.68rem",
+                              fontWeight: 600,
+                              padding: "0.1rem 0.5rem",
+                              borderRadius: "980px",
                             }}
                           >
-                            {job.businesses?.company_name}
+                            ✓ Verified
                           </span>
-                          {job.businesses?.verified && (
-                            <span
-                              style={{
-                                background: "rgba(255,255,255,0.06)",
-                                border: "1px solid rgba(255,255,255,0.1)",
-                                color: "rgba(255,255,255,0.5)",
-                                fontSize: "0.68rem",
-                                fontWeight: 600,
-                                padding: "0.1rem 0.5rem",
-                                borderRadius: "980px",
-                              }}
-                            >
-                              ✓ Verified
-                            </span>
-                          )}
-                        </div>
-                        <h3
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <h3
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          letterSpacing: "-0.01em",
+                          marginBottom: "0.5rem",
+                        }}
+                      >
+                        {job.title}
+                      </h3>
+
+                      {/* Description */}
+                      {job.description && (
+                        <p
                           style={{
-                            fontSize: "1rem",
-                            fontWeight: 600,
-                            letterSpacing: "-0.01em",
-                            marginBottom: "0.5rem",
+                            color: "rgba(255,255,255,0.4)",
+                            fontSize: "0.85rem",
+                            lineHeight: 1.5,
+                            marginBottom: "0.75rem",
+                            maxWidth: 500,
                           }}
                         >
-                          {job.title}
-                        </h3>
-                        {job.description && (
-                          <p
-                            style={{
-                              color: "rgba(255,255,255,0.4)",
-                              fontSize: "0.85rem",
-                              lineHeight: 1.5,
-                              marginBottom: "0.75rem",
-                              maxWidth: 500,
-                            }}
-                          >
-                            {job.description.length > 120
-                              ? job.description.slice(0, 120) + "…"
-                              : job.description}
-                          </p>
+                          {job.description.length > 120
+                            ? job.description.slice(0, 120) + "…"
+                            : job.description}
+                        </p>
+                      )}
+
+                      {/* Meta row */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "0.4rem",
+                          marginBottom: "0.5rem",
+                          fontSize: "0.78rem",
+                          color: "rgba(255,255,255,0.3)",
+                        }}
+                      >
+                        {job.location && <span>{job.location}</span>}
+                        {job.work_type && <span>· {job.work_type}</span>}
+                        {job.salary_min && job.salary_max && (
+                          <span>
+                            · ${job.salary_min.toLocaleString()}–$
+                            {job.salary_max.toLocaleString()}
+                          </span>
                         )}
+                        {job.deadline && (
+                          <span>· Deadline: {job.deadline}</span>
+                        )}
+                      </div>
+
+                      {/* Qualifications */}
+                      {job.qualifications?.length > 0 && (
                         <div
                           style={{
                             display: "flex",
                             flexWrap: "wrap",
                             gap: "0.4rem",
-                            marginBottom: "0.5rem",
-                            fontSize: "0.78rem",
-                            color: "rgba(255,255,255,0.3)",
                           }}
                         >
-                          {job.location && <span>{job.location}</span>}
-                          {job.work_type && <span>· {job.work_type}</span>}
-                          {job.salary_min && job.salary_max && (
-                            <span>
-                              · ${job.salary_min.toLocaleString()}–$
-                              {job.salary_max.toLocaleString()}
+                          {job.qualifications.map((q, i) => (
+                            <span
+                              key={i}
+                              style={{
+                                background: "rgba(255,255,255,0.04)",
+                                border: "1px solid rgba(255,255,255,0.08)",
+                                color: "rgba(255,255,255,0.45)",
+                                fontSize: "0.75rem",
+                                padding: "0.2rem 0.6rem",
+                                borderRadius: "980px",
+                              }}
+                            >
+                              {q}
                             </span>
-                          )}
-                          {job.deadline && (
-                            <span>· Deadline: {job.deadline}</span>
-                          )}
+                          ))}
                         </div>
-                        {job.qualifications?.length > 0 && (
-                          <div
-                            style={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: "0.4rem",
-                            }}
-                          >
-                            {job.qualifications.map((q, i) => (
-                              <span
-                                key={i}
-                                style={{
-                                  background: "rgba(255,255,255,0.04)",
-                                  border: "1px solid rgba(255,255,255,0.08)",
-                                  color: "rgba(255,255,255,0.45)",
-                                  fontSize: "0.75rem",
-                                  padding: "0.2rem 0.6rem",
-                                  borderRadius: "980px",
-                                }}
-                              >
-                                {q}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      )}
+                    </div>
 
-                      <div
-                        style={{ display: "flex", alignItems: "flex-start" }}
+                    {/* Apply button */}
+                    <div style={{ display: "flex", alignItems: "flex-start" }}>
+                      <button
+                        onClick={() =>
+                          appliedJobs.includes(job.id)
+                            ? handleCancelApplication(job.id)
+                            : handleApply(job.id)
+                        }
+                        style={{
+                          background: appliedJobs.includes(job.id)
+                            ? "transparent"
+                            : "#fff",
+                          color: appliedJobs.includes(job.id)
+                            ? "rgba(255,80,80,0.8)"
+                            : "#000",
+                          border: appliedJobs.includes(job.id)
+                            ? "1px solid rgba(255,80,80,0.3)"
+                            : "none",
+                          padding: "0.6rem 1.3rem",
+                          borderRadius: "980px",
+                          fontWeight: 500,
+                          fontSize: "0.85rem",
+                          cursor: "pointer",
+                          fontFamily: "-apple-system, sans-serif",
+                          whiteSpace: "nowrap",
+                          transition: "all 0.2s",
+                        }}
                       >
-                        <button
-                          onClick={() =>
-                            appliedJobs.includes(job.id)
-                              ? handleCancelApplication(job.id)
-                              : handleApply(job.id)
-                          }
-                          style={{
-                            background: appliedJobs.includes(job.id)
-                              ? "transparent"
-                              : "#fff",
-                            color: appliedJobs.includes(job.id)
-                              ? "rgba(255,80,80,0.8)"
-                              : "#000",
-                            border: appliedJobs.includes(job.id)
-                              ? "1px solid rgba(255,80,80,0.3)"
-                              : "none",
-                            padding: "0.6rem 1.3rem",
-                            borderRadius: "980px",
-                            fontWeight: 500,
-                            fontSize: "0.85rem",
-                            cursor: "pointer",
-                            fontFamily: "-apple-system, sans-serif",
-                            whiteSpace: "nowrap",
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          {appliedJobs.includes(job.id)
-                            ? "Cancel application"
-                            : "Apply"}
-                        </button>
-                      </div>
+                        {appliedJobs.includes(job.id)
+                          ? "Cancel application"
+                          : "Apply"}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -915,6 +1003,7 @@ export default function WorkerDashboard() {
                         }}
                       >
                         <div style={{ flex: 1 }}>
+                          {/* Company + verified */}
                           <div
                             style={{
                               display: "flex",
@@ -948,6 +1037,8 @@ export default function WorkerDashboard() {
                               </span>
                             )}
                           </div>
+
+                          {/* Title */}
                           <h3
                             style={{
                               fontSize: "1rem",
@@ -958,9 +1049,17 @@ export default function WorkerDashboard() {
                           >
                             {job.title}
                           </h3>
-                          <ApplicationPipeline status={ivStatus} />
+
+                          {/* Progress pipeline */}
+                          <ProgressPipeline status={ivStatus} />
+
+                          {/* Status badge */}
+                          <div style={{ marginTop: "0.6rem" }}>
+                            <InterviewBadge status={ivStatus} />
+                          </div>
                         </div>
 
+                        {/* Action buttons */}
                         <div
                           style={{
                             display: "flex",
@@ -969,7 +1068,6 @@ export default function WorkerDashboard() {
                             alignItems: "flex-end",
                           }}
                         >
-                          {/* Schedule / reschedule button */}
                           {needsScheduling && appId && (
                             <button
                               onClick={() =>
@@ -981,35 +1079,35 @@ export default function WorkerDashboard() {
                                 background: "#fff",
                                 color: "#000",
                                 border: "none",
-                                padding: "0.5rem 1.1rem",
+                                padding: "0.6rem 1.3rem",
                                 borderRadius: "980px",
                                 fontWeight: 500,
-                                fontSize: "0.82rem",
+                                fontSize: "0.85rem",
                                 cursor: "pointer",
                                 fontFamily: "-apple-system, sans-serif",
                                 whiteSpace: "nowrap",
                               }}
                             >
-                              Schedule interview →
+                              Schedule →
                             </button>
                           )}
-
-                          {/* Cancel — hidden once interview is locked */}
                           {!locked && (
                             <button
                               onClick={() => handleCancelApplication(job.id)}
                               style={{
                                 background: "transparent",
-                                border: "1px solid rgba(255,80,80,0.3)",
                                 color: "rgba(255,80,80,0.7)",
-                                padding: "0.3rem 0.8rem",
+                                border: "1px solid rgba(255,80,80,0.2)",
+                                padding: "0.5rem 1.1rem",
                                 borderRadius: "980px",
-                                fontSize: "0.78rem",
+                                fontWeight: 400,
+                                fontSize: "0.8rem",
                                 cursor: "pointer",
                                 fontFamily: "-apple-system, sans-serif",
+                                whiteSpace: "nowrap",
                               }}
                             >
-                              Cancel application
+                              Cancel
                             </button>
                           )}
                         </div>
