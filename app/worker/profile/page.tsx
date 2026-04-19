@@ -96,6 +96,7 @@ export default function WorkerProfile() {
   const [whatYouGoodAt, setWhatYouGoodAt] = useState("");
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [existingCvUrl, setExistingCvUrl] = useState<string | null>(null);
+  const [openToWork, setOpenToWork] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -110,7 +111,7 @@ export default function WorkerProfile() {
       const { data: profile } = await supabase
         .from("profiles")
         .select(
-          "full_name, location, country, region, job_type, industries, experience_summary, previous_roles, biggest_achievement, skills, what_good_at, job_search_locations, cv_url"
+          "full_name, location, country, region, job_type, industries, experience_summary, previous_roles, biggest_achievement, skills, what_good_at, job_search_locations, cv_url, open_to_work"
         )
         .eq("id", user.id)
         .single();
@@ -133,6 +134,7 @@ export default function WorkerProfile() {
         setSkills(profile.skills || []);
         setWhatYouGoodAt(profile.what_good_at || "");
         setExistingCvUrl(profile.cv_url || null);
+        setOpenToWork(profile.open_to_work ?? false);
       }
       setLoading(false);
     }
@@ -227,6 +229,7 @@ export default function WorkerProfile() {
         job_search_locations: openToRemote
           ? [...searchCountries, "Remote"]
           : searchCountries,
+        open_to_work: openToWork,
       })
       .eq("id", user.id);
 
@@ -382,6 +385,78 @@ export default function WorkerProfile() {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "3rem" }}>
+          {/* OPEN TO WORK */}
+          <div
+            style={{
+              background: openToWork
+                ? "rgba(80,200,120,0.06)"
+                : "rgba(255,255,255,0.03)",
+              border: `1px solid ${
+                openToWork ? "rgba(80,200,120,0.25)" : "rgba(255,255,255,0.08)"
+              }`,
+              borderRadius: 16,
+              padding: "1.25rem 1.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
+              transition: "all 0.25s",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  fontWeight: 600,
+                  fontSize: "0.95rem",
+                  marginBottom: "0.2rem",
+                }}
+              >
+                Open to work
+              </p>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "rgba(255,255,255,0.4)",
+                  margin: 0,
+                }}
+              >
+                {openToWork
+                  ? "Businesses can discover your profile in the talent directory."
+                  : "Enable this to appear in the talent directory for businesses."}
+              </p>
+            </div>
+            <button
+              onClick={() => setOpenToWork((v) => !v)}
+              style={{
+                width: 48,
+                height: 28,
+                borderRadius: 14,
+                border: "none",
+                cursor: "pointer",
+                background: openToWork
+                  ? "rgba(80,200,120,0.85)"
+                  : "rgba(255,255,255,0.15)",
+                position: "relative",
+                flexShrink: 0,
+                transition: "background 0.25s",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  top: 3,
+                  left: openToWork ? 23 : 3,
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  background: "#fff",
+                  transition: "left 0.25s",
+                  display: "block",
+                }}
+              />
+            </button>
+          </div>
+
           {/* BASICS */}
           <div>
             <span style={sectionLabel}>Basics</span>
