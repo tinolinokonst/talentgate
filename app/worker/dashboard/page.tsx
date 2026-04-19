@@ -44,57 +44,112 @@ const COUNTRIES = [
   "Other",
 ];
 
-// Badge shown on applied-tab cards for each interview state
-function InterviewBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string; bg: string }> = {
-    not_started: {
-      label: "Schedule interview",
-      color: "rgba(255,200,60,0.9)",
-      bg: "rgba(255,200,60,0.08)",
-    },
-    invited: {
-      label: "Schedule interview",
-      color: "rgba(255,200,60,0.9)",
-      bg: "rgba(255,200,60,0.08)",
-    },
-    scheduled: {
-      label: "Interview scheduled",
-      color: "rgba(80,200,120,0.9)",
-      bg: "rgba(80,200,120,0.08)",
-    },
-    in_progress: {
-      label: "Interview in progress",
-      color: "rgba(80,160,255,0.9)",
-      bg: "rgba(80,160,255,0.08)",
-    },
-    completed: {
-      label: "Interview complete",
-      color: "rgba(80,200,120,0.9)",
-      bg: "rgba(80,200,120,0.08)",
-    },
-    declined: {
-      label: "Interview declined",
-      color: "rgba(255,255,255,0.3)",
-      bg: "rgba(255,255,255,0.04)",
-    },
-  };
+const PIPELINE_STEPS = [
+  { key: "applied", label: "Applied" },
+  { key: "interview", label: "Interview" },
+  { key: "completed", label: "AI review done" },
+  { key: "decision", label: "Under review" },
+];
 
-  const s = map[status] ?? map["not_started"];
+function statusToStep(status: string): number {
+  // Returns the index of the FURTHEST completed step (0-based)
+  if (status === "declined") return -1; // special case
+  if (status === "not_started" || status === "invited") return 0;
+  if (status === "scheduled" || status === "in_progress") return 1;
+  if (status === "completed") return 2;
+  return 0;
+}
+
+function ApplicationPipeline({ status }: { status: string }) {
+  if (status === "declined") {
+    return (
+      <p
+        style={{
+          fontSize: "0.78rem",
+          color: "rgba(255,100,100,0.7)",
+          margin: "0.75rem 0 0",
+        }}
+      >
+        Interview declined
+      </p>
+    );
+  }
+
+  const activeStep = statusToStep(status);
+
   return (
-    <span
-      style={{
-        background: s.bg,
-        border: `1px solid ${s.color}`,
-        color: s.color,
-        fontSize: "0.72rem",
-        fontWeight: 500,
-        padding: "0.2rem 0.65rem",
-        borderRadius: "980px",
-        letterSpacing: "0.02em",
-      }}
-    >
-      {s.label}
-    </span>
+    <div style={{ marginTop: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+        {PIPELINE_STEPS.map((step, i) => {
+          const done = i <= activeStep;
+          const isLast = i === PIPELINE_STEPS.length - 1;
+          return (
+            <div
+              key={step.key}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flex: isLast ? "none" : 1,
+              }}
+            >
+              {/* Node */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    background: done ? "#fff" : "rgba(255,255,255,0.12)",
+                    border: done ? "none" : "1px solid rgba(255,255,255,0.18)",
+                    boxShadow:
+                      done && i === activeStep
+                        ? "0 0 6px rgba(255,255,255,0.4)"
+                        : "none",
+                    transition: "all 0.3s",
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.65rem",
+                    color: done
+                      ? "rgba(255,255,255,0.75)"
+                      : "rgba(255,255,255,0.2)",
+                    whiteSpace: "nowrap",
+                    fontWeight: i === activeStep ? 600 : 400,
+                    transition: "color 0.3s",
+                  }}
+                >
+                  {step.label}
+                </span>
+              </div>
+              {/* Connector line */}
+              {!isLast && (
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    marginBottom: "1rem",
+                    background:
+                      i < activeStep
+                        ? "rgba(255,255,255,0.35)"
+                        : "rgba(255,255,255,0.08)",
+                    transition: "background 0.3s",
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -903,7 +958,7 @@ export default function WorkerDashboard() {
                           >
                             {job.title}
                           </h3>
-                          <InterviewBadge status={ivStatus} />
+                          <ApplicationPipeline status={ivStatus} />
                         </div>
 
                         <div
