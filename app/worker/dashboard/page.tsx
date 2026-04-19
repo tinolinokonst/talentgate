@@ -224,6 +224,140 @@ function InterviewBadge({ status }: { status: string }) {
   );
 }
 
+// ── Activity Feed ──────────────────────────────────────────────
+function ActivityFeed({
+  items,
+}: {
+  items: { jobTitle: string; status: string; companyName: string }[];
+}) {
+  if (items.length === 0) return null;
+
+  const config: Record<
+    string,
+    {
+      icon: string;
+      color: string;
+      bg: string;
+      border: string;
+      message: (job: string, company: string) => string;
+    }
+  > = {
+    invited: {
+      icon: "⏳",
+      color: "rgba(255,200,60,0.9)",
+      bg: "rgba(255,200,60,0.05)",
+      border: "rgba(255,200,60,0.15)",
+      message: (job, company) =>
+        `Action needed — schedule your interview for ${job} at ${company}.`,
+    },
+    not_started: {
+      icon: "⏳",
+      color: "rgba(255,200,60,0.9)",
+      bg: "rgba(255,200,60,0.05)",
+      border: "rgba(255,200,60,0.15)",
+      message: (job, company) =>
+        `Action needed — schedule your interview for ${job} at ${company}.`,
+    },
+    scheduled: {
+      icon: "✓",
+      color: "rgba(80,200,120,0.9)",
+      bg: "rgba(80,200,120,0.05)",
+      border: "rgba(80,200,120,0.15)",
+      message: (job, company) =>
+        `Your interview for ${job} at ${company} is confirmed.`,
+    },
+    in_progress: {
+      icon: "◎",
+      color: "rgba(80,160,255,0.9)",
+      bg: "rgba(80,160,255,0.05)",
+      border: "rgba(80,160,255,0.15)",
+      message: (job, company) =>
+        `Your interview for ${job} at ${company} is underway.`,
+    },
+    completed: {
+      icon: "✦",
+      color: "rgba(80,200,120,0.9)",
+      bg: "rgba(80,200,120,0.05)",
+      border: "rgba(80,200,120,0.15)",
+      message: (job, company) =>
+        `Interview complete for ${job} at ${company} — the business is reviewing your summary.`,
+    },
+  };
+
+  const priority: Record<string, number> = {
+    invited: 0,
+    not_started: 0,
+    in_progress: 1,
+    completed: 2,
+    scheduled: 3,
+  };
+  const sorted = [...items].sort(
+    (a, b) => (priority[a.status] ?? 99) - (priority[b.status] ?? 99)
+  );
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.5rem",
+        marginBottom: "1.75rem",
+      }}
+    >
+      <p
+        style={{
+          fontSize: "0.72rem",
+          color: "rgba(255,255,255,0.3)",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          marginBottom: "0.25rem",
+        }}
+      >
+        Activity
+      </p>
+      {sorted.map((item, i) => {
+        const c = config[item.status];
+        if (!c) return null;
+        return (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "0.75rem",
+              background: c.bg,
+              border: `1px solid ${c.border}`,
+              borderRadius: 12,
+              padding: "0.85rem 1rem",
+            }}
+          >
+            <span
+              style={{
+                color: c.color,
+                fontSize: "0.85rem",
+                flexShrink: 0,
+                marginTop: 1,
+              }}
+            >
+              {c.icon}
+            </span>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "0.85rem",
+                lineHeight: 1.5,
+                margin: 0,
+              }}
+            >
+              {c.message(item.jobTitle, item.companyName)}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────
 export default function WorkerDashboard() {
   const router = useRouter();
@@ -298,6 +432,7 @@ export default function WorkerDashboard() {
       setApplicationIds(idMap);
       setInterviewStatuses(statusMap);
     }
+
     setLoading(false);
   }
 
@@ -409,6 +544,29 @@ export default function WorkerDashboard() {
     ...new Set(jobs.map((j) => j.country).filter(Boolean)),
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
+
+  // Build activity feed items from applied jobs
+  const activityItems = appliedJobsList
+    .map((job) => {
+      const appId = applicationIds[job.id];
+      const status = appId
+        ? interviewStatuses[appId] ?? "not_started"
+        : "not_started";
+      return {
+        jobTitle: job.title,
+        companyName: job.businesses?.company_name ?? "the company",
+        status,
+      };
+    })
+    .filter((item) =>
+      [
+        "invited",
+        "not_started",
+        "scheduled",
+        "in_progress",
+        "completed",
+      ].includes(item.status)
+    );
 
   const metaPill: React.CSSProperties = {
     fontSize: "0.75rem",
@@ -714,7 +872,7 @@ export default function WorkerDashboard() {
               </select>
             </div>
 
-            {/* ── Empty state: no filter results ── */}
+            {/* Empty state: no filter results */}
             {filteredJobs.length === 0 ? (
               <div
                 style={{
@@ -739,8 +897,10 @@ export default function WorkerDashboard() {
                   style={{
                     color: "rgba(255,255,255,0.35)",
                     fontSize: "0.88rem",
-                    marginBottom: "1.5rem",
                     lineHeight: 1.6,
+                    marginBottom: "1.5rem",
+                    maxWidth: 340,
+                    margin: "0 auto 1.75rem",
                   }}
                 >
                   Try adjusting your filters or clearing the search to see all
@@ -1019,8 +1179,8 @@ export default function WorkerDashboard() {
         {/* ── APPLIED TAB ── */}
         {activeTab === "applied" && (
           <div>
-            {/* ── Empty state: no applications yet ── */}
             {appliedJobsList.length === 0 ? (
+              /* Empty state: no applications yet */
               <div
                 style={{
                   background: "#111",
@@ -1045,7 +1205,6 @@ export default function WorkerDashboard() {
                     color: "rgba(255,255,255,0.35)",
                     fontSize: "0.88rem",
                     lineHeight: 1.6,
-                    marginBottom: "1.75rem",
                     maxWidth: 340,
                     margin: "0 auto 1.75rem",
                   }}
@@ -1071,147 +1230,159 @@ export default function WorkerDashboard() {
                 </button>
               </div>
             ) : (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1px",
-                  background: "rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  overflow: "hidden",
-                }}
-              >
-                {appliedJobsList.map((job) => {
-                  const appId = applicationIds[job.id];
-                  const ivStatus = appId
-                    ? interviewStatuses[appId] ?? "not_started"
-                    : "not_started";
-                  const locked = interviewLocked(job.id);
-                  const needsScheduling =
-                    ivStatus === "not_started" || ivStatus === "invited";
+              <>
+                {/* Activity feed */}
+                <ActivityFeed items={activityItems} />
 
-                  return (
-                    <div
-                      key={job.id}
-                      style={{ background: "#111", padding: "1.5rem" }}
-                    >
+                {/* Applied job cards */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "1px",
+                    background: "rgba(255,255,255,0.06)",
+                    borderRadius: 16,
+                    overflow: "hidden",
+                  }}
+                >
+                  {appliedJobsList.map((job) => {
+                    const appId = applicationIds[job.id];
+                    const ivStatus = appId
+                      ? interviewStatuses[appId] ?? "not_started"
+                      : "not_started";
+                    const locked = interviewLocked(job.id);
+                    const needsScheduling =
+                      ivStatus === "not_started" || ivStatus === "invited";
+
+                    return (
                       <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          flexWrap: "wrap",
-                          gap: "1rem",
-                        }}
+                        key={job.id}
+                        style={{ background: "#111", padding: "1.5rem" }}
                       >
-                        <div style={{ flex: 1 }}>
-                          {/* Company + verified */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              marginBottom: "0.3rem",
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: "0.82rem",
-                                color: "rgba(255,255,255,0.4)",
-                              }}
-                            >
-                              {job.businesses?.company_name}
-                            </span>
-                            {job.businesses?.verified && (
-                              <span
-                                style={{
-                                  background: "rgba(255,255,255,0.06)",
-                                  border: "1px solid rgba(255,255,255,0.1)",
-                                  color: "rgba(255,255,255,0.5)",
-                                  fontSize: "0.68rem",
-                                  fontWeight: 600,
-                                  padding: "0.1rem 0.5rem",
-                                  borderRadius: "980px",
-                                }}
-                              >
-                                ✓ Verified
-                              </span>
-                            )}
-                          </div>
-                          <h3
-                            style={{
-                              fontSize: "1rem",
-                              fontWeight: 600,
-                              letterSpacing: "-0.01em",
-                              marginBottom: "0.6rem",
-                            }}
-                          >
-                            {job.title}
-                          </h3>
-                          <ProgressPipeline status={ivStatus} />
-                          <div style={{ marginTop: "0.6rem" }}>
-                            <InterviewBadge status={ivStatus} />
-                          </div>
-                        </div>
-
-                        {/* Action buttons */}
                         <div
                           style={{
                             display: "flex",
-                            flexDirection: "column",
-                            gap: "0.5rem",
-                            alignItems: "flex-end",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            flexWrap: "wrap",
+                            gap: "1rem",
                           }}
                         >
-                          {needsScheduling && appId && (
-                            <button
-                              onClick={() =>
-                                router.push(
-                                  `/worker/schedule-interview/${appId}`
-                                )
-                              }
+                          <div style={{ flex: 1 }}>
+                            {/* Company + verified */}
+                            <div
                               style={{
-                                background: "#fff",
-                                color: "#000",
-                                border: "none",
-                                padding: "0.6rem 1.3rem",
-                                borderRadius: "980px",
-                                fontWeight: 500,
-                                fontSize: "0.85rem",
-                                cursor: "pointer",
-                                fontFamily: "-apple-system, sans-serif",
-                                whiteSpace: "nowrap",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                                marginBottom: "0.3rem",
+                                flexWrap: "wrap",
                               }}
                             >
-                              Schedule →
-                            </button>
-                          )}
-                          {!locked && (
-                            <button
-                              onClick={() => handleCancelApplication(job.id)}
+                              <span
+                                style={{
+                                  fontSize: "0.82rem",
+                                  color: "rgba(255,255,255,0.4)",
+                                }}
+                              >
+                                {job.businesses?.company_name}
+                              </span>
+                              {job.businesses?.verified && (
+                                <span
+                                  style={{
+                                    background: "rgba(255,255,255,0.06)",
+                                    border: "1px solid rgba(255,255,255,0.1)",
+                                    color: "rgba(255,255,255,0.5)",
+                                    fontSize: "0.68rem",
+                                    fontWeight: 600,
+                                    padding: "0.1rem 0.5rem",
+                                    borderRadius: "980px",
+                                  }}
+                                >
+                                  ✓ Verified
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Title */}
+                            <h3
                               style={{
-                                background: "transparent",
-                                color: "rgba(255,80,80,0.7)",
-                                border: "1px solid rgba(255,80,80,0.2)",
-                                padding: "0.5rem 1.1rem",
-                                borderRadius: "980px",
-                                fontWeight: 400,
-                                fontSize: "0.8rem",
-                                cursor: "pointer",
-                                fontFamily: "-apple-system, sans-serif",
-                                whiteSpace: "nowrap",
+                                fontSize: "1rem",
+                                fontWeight: 600,
+                                letterSpacing: "-0.01em",
+                                marginBottom: "0.6rem",
                               }}
                             >
-                              Cancel
-                            </button>
-                          )}
+                              {job.title}
+                            </h3>
+
+                            {/* Progress pipeline */}
+                            <ProgressPipeline status={ivStatus} />
+
+                            {/* Status badge */}
+                            <div style={{ marginTop: "0.6rem" }}>
+                              <InterviewBadge status={ivStatus} />
+                            </div>
+                          </div>
+
+                          {/* Action buttons */}
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "0.5rem",
+                              alignItems: "flex-end",
+                            }}
+                          >
+                            {needsScheduling && appId && (
+                              <button
+                                onClick={() =>
+                                  router.push(
+                                    `/worker/schedule-interview/${appId}`
+                                  )
+                                }
+                                style={{
+                                  background: "#fff",
+                                  color: "#000",
+                                  border: "none",
+                                  padding: "0.6rem 1.3rem",
+                                  borderRadius: "980px",
+                                  fontWeight: 500,
+                                  fontSize: "0.85rem",
+                                  cursor: "pointer",
+                                  fontFamily: "-apple-system, sans-serif",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                Schedule →
+                              </button>
+                            )}
+                            {!locked && (
+                              <button
+                                onClick={() => handleCancelApplication(job.id)}
+                                style={{
+                                  background: "transparent",
+                                  color: "rgba(255,80,80,0.7)",
+                                  border: "1px solid rgba(255,80,80,0.2)",
+                                  padding: "0.5rem 1.1rem",
+                                  borderRadius: "980px",
+                                  fontWeight: 400,
+                                  fontSize: "0.8rem",
+                                  cursor: "pointer",
+                                  fontFamily: "-apple-system, sans-serif",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}
