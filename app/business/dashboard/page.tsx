@@ -374,6 +374,9 @@ function AISummaryPanel({ summary }: { summary: any }) {
 
 // ── Main dashboard ────────────────────────────────────────────
 export default function BusinessDashboard() {
+  const [talentWorkers, setTalentWorkers] = useState<any[]>([]);
+  const [talentSearch, setTalentSearch] = useState("");
+  const [loadingTalent, setLoadingTalent] = useState(false);
   const router = useRouter();
   const [jobs, setJobs] = useState<any[]>([]);
   const [business, setBusiness] = useState<any>(null);
@@ -381,10 +384,11 @@ export default function BusinessDashboard() {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
-  const [activeTab, setActiveTab] = useState<"listings" | "applicants">(
-    "listings"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "listings" | "applicants" | "talent"
+  >("listings");
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+
   // Filter: "all" | "completed" | "pending"
   const [interviewFilter, setInterviewFilter] = useState<
     "all" | "completed" | "pending"
@@ -467,6 +471,19 @@ export default function BusinessDashboard() {
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/");
+  }
+
+  async function loadTalent() {
+    setLoadingTalent(true);
+    const { data } = await supabase
+      .from("profiles")
+      .select(
+        "id, full_name, location, country, skills, industries, job_type, experience_summary, what_good_at"
+      )
+      .eq("open_to_work", true)
+      .eq("verified", true);
+    setTalentWorkers(data || []);
+    setLoadingTalent(false);
   }
 
   async function toggleJobStatus(jobId: string, currentStatus: string) {
@@ -1043,6 +1060,26 @@ export default function BusinessDashboard() {
           >
             {selectedJob ? `Applicants — ${selectedJobTitle}` : "Applicants"}
           </button>
+          <button
+            onClick={() => {
+              setActiveTab("talent" as any);
+              loadTalent();
+            }}
+            style={{
+              padding: "0.5rem 1.2rem",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "-apple-system, sans-serif",
+              fontWeight: 500,
+              fontSize: "0.85rem",
+              background: activeTab === "talent" ? "#fff" : "transparent",
+              color: activeTab === "talent" ? "#000" : "rgba(255,255,255,0.5)",
+              transition: "all 0.2s",
+            }}
+          >
+            Talent directory
+          </button>
         </div>
 
         {/* ── LISTINGS TAB ── */}
@@ -1395,6 +1432,180 @@ export default function BusinessDashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── TALENT TAB ── */}
+        {activeTab === ("talent" as any) && (
+          <div>
+            <div style={{ marginBottom: "1.5rem" }}>
+              <input
+                type="text"
+                placeholder="Search by name, skill, or location..."
+                value={talentSearch}
+                onChange={(e) => setTalentSearch(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  padding: "0.75rem 1rem",
+                  color: "#f5f5f7",
+                  fontSize: "0.9rem",
+                  outline: "none",
+                  fontFamily: "-apple-system, sans-serif",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+            {loadingTalent ? (
+              <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.9rem" }}>
+                Loading talent...
+              </p>
+            ) : talentWorkers.length === 0 ? (
+              <div
+                style={{
+                  background: "#111",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  padding: "4rem",
+                  textAlign: "center",
+                }}
+              >
+                <p style={{ color: "rgba(255,255,255,0.3)" }}>
+                  No workers are currently open to work.
+                </p>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                  gap: "1rem",
+                }}
+              >
+                {talentWorkers
+                  .filter((w) => {
+                    const q = talentSearch.toLowerCase();
+                    if (!q) return true;
+                    return (
+                      (w.full_name || "").toLowerCase().includes(q) ||
+                      (w.location || "").toLowerCase().includes(q) ||
+                      (w.skills || []).some((s: string) =>
+                        s.toLowerCase().includes(q)
+                      )
+                    );
+                  })
+                  .map((w) => (
+                    <div
+                      key={w.id}
+                      style={{
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 16,
+                        padding: "1.25rem",
+                      }}
+                    >
+                      {/* Name + status */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginBottom: "0.75rem",
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "0.95rem",
+                            margin: 0,
+                          }}
+                        >
+                          {w.full_name || "Anonymous"}
+                        </p>
+                        <span
+                          style={{
+                            fontSize: "0.65rem",
+                            color: "rgba(80,200,120,0.9)",
+                            background: "rgba(80,200,120,0.08)",
+                            border: "1px solid rgba(80,200,120,0.2)",
+                            padding: "0.15rem 0.55rem",
+                            borderRadius: "980px",
+                          }}
+                        >
+                          Open to work
+                        </span>
+                      </div>
+                      {/* Location + job type */}
+                      <p
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "rgba(255,255,255,0.35)",
+                          marginBottom: "0.75rem",
+                        }}
+                      >
+                        {[w.location, w.job_type].filter(Boolean).join(" · ") ||
+                          "Location not specified"}
+                      </p>
+                      {/* Skills */}
+                      {w.skills?.length > 0 && (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "0.3rem",
+                            marginBottom: "0.75rem",
+                          }}
+                        >
+                          {w.skills.slice(0, 5).map((s: string) => (
+                            <span
+                              key={s}
+                              style={{
+                                fontSize: "0.72rem",
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                padding: "0.15rem 0.55rem",
+                                borderRadius: "980px",
+                                color: "rgba(255,255,255,0.6)",
+                              }}
+                            >
+                              {s}
+                            </span>
+                          ))}
+                          {w.skills.length > 5 && (
+                            <span
+                              style={{
+                                fontSize: "0.72rem",
+                                color: "rgba(255,255,255,0.25)",
+                              }}
+                            >
+                              +{w.skills.length - 5} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {/* Blurb */}
+                      {w.what_good_at && (
+                        <p
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "rgba(255,255,255,0.4)",
+                            lineHeight: 1.5,
+                            margin: 0,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {w.what_good_at}
+                        </p>
+                      )}
+                    </div>
+                  ))}
               </div>
             )}
           </div>
