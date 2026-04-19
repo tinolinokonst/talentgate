@@ -26,7 +26,6 @@ type Job = {
   businesses: Business | null;
 };
 
-// Maps application_id -> interview_status for applied jobs
 type InterviewStatusMap = Record<string, string>;
 
 const COUNTRIES = [
@@ -130,7 +129,6 @@ function ProgressPipeline({ status }: { status: string }) {
               flex: isLast ? 0 : 1,
             }}
           >
-            {/* Step column */}
             <div
               style={{
                 display: "flex",
@@ -175,7 +173,6 @@ function ProgressPipeline({ status }: { status: string }) {
                 {stepSubLabel(i, status)}
               </span>
             </div>
-            {/* Connector line */}
             {!isLast && (
               <div
                 style={{
@@ -443,6 +440,17 @@ export default function WorkerDashboard() {
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
+  // ── Shared styles ──────────────────────────────────────────
+  const metaPill: React.CSSProperties = {
+    fontSize: "0.75rem",
+    color: "rgba(255,255,255,0.4)",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    padding: "0.2rem 0.6rem",
+    borderRadius: "980px",
+    whiteSpace: "nowrap",
+  };
+
   if (loading)
     return (
       <main
@@ -664,6 +672,7 @@ export default function WorkerDashboard() {
         {/* ── BROWSE TAB ── */}
         {activeTab === "browse" && (
           <>
+            {/* Filters */}
             <div
               style={{
                 display: "flex",
@@ -774,124 +783,196 @@ export default function WorkerDashboard() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <div style={{ flex: 1 }}>
-                      {/* Company + verified */}
+                    {/* Left: avatar + content */}
+                    <div style={{ display: "flex", gap: "1rem", flex: 1 }}>
+                      {/* Company avatar */}
                       <div
                         style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 10,
+                          background: "rgba(255,255,255,0.06)",
+                          border: "1px solid rgba(255,255,255,0.1)",
                           display: "flex",
                           alignItems: "center",
-                          gap: "0.5rem",
-                          marginBottom: "0.4rem",
+                          justifyContent: "center",
+                          fontSize: "0.95rem",
+                          fontWeight: 700,
+                          color: "rgba(255,255,255,0.5)",
+                          flexShrink: 0,
+                          letterSpacing: "-0.01em",
                         }}
                       >
-                        <span
+                        {(job.businesses?.company_name ?? "?")[0].toUpperCase()}
+                      </div>
+
+                      <div style={{ flex: 1 }}>
+                        {/* Company + verified */}
+                        <div
                           style={{
-                            fontSize: "0.82rem",
-                            color: "rgba(255,255,255,0.4)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            marginBottom: "0.25rem",
                           }}
                         >
-                          {job.businesses?.company_name}
-                        </span>
-                        {job.businesses?.verified && (
                           <span
                             style={{
-                              background: "rgba(255,255,255,0.06)",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              color: "rgba(255,255,255,0.5)",
-                              fontSize: "0.68rem",
-                              fontWeight: 600,
-                              padding: "0.1rem 0.5rem",
-                              borderRadius: "980px",
+                              fontSize: "0.82rem",
+                              color: "rgba(255,255,255,0.4)",
                             }}
                           >
-                            ✓ Verified
+                            {job.businesses?.company_name}
                           </span>
-                        )}
-                      </div>
+                          {job.businesses?.verified && (
+                            <span
+                              style={{
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                color: "rgba(255,255,255,0.5)",
+                                fontSize: "0.68rem",
+                                fontWeight: 600,
+                                padding: "0.1rem 0.5rem",
+                                borderRadius: "980px",
+                              }}
+                            >
+                              ✓ Verified
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Title */}
-                      <h3
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: 600,
-                          letterSpacing: "-0.01em",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        {job.title}
-                      </h3>
-
-                      {/* Description */}
-                      {job.description && (
-                        <p
+                        {/* Title */}
+                        <h3
                           style={{
-                            color: "rgba(255,255,255,0.4)",
-                            fontSize: "0.85rem",
-                            lineHeight: 1.5,
-                            marginBottom: "0.75rem",
-                            maxWidth: 500,
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            letterSpacing: "-0.01em",
+                            marginBottom: "0.5rem",
                           }}
                         >
-                          {job.description.length > 120
-                            ? job.description.slice(0, 120) + "…"
-                            : job.description}
-                        </p>
-                      )}
+                          {job.title}
+                        </h3>
 
-                      {/* Meta row */}
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "0.4rem",
-                          marginBottom: "0.5rem",
-                          fontSize: "0.78rem",
-                          color: "rgba(255,255,255,0.3)",
-                        }}
-                      >
-                        {job.location && <span>{job.location}</span>}
-                        {job.work_type && <span>· {job.work_type}</span>}
+                        {/* Salary — prominent */}
                         {job.salary_min && job.salary_max && (
-                          <span>
-                            · ${job.salary_min.toLocaleString()}–$
-                            {job.salary_max.toLocaleString()}
-                          </span>
+                          <p
+                            style={{
+                              fontSize: "0.92rem",
+                              fontWeight: 600,
+                              color: "rgba(255,255,255,0.85)",
+                              marginBottom: "0.5rem",
+                            }}
+                          >
+                            ${job.salary_min.toLocaleString()}
+                            <span
+                              style={{
+                                color: "rgba(255,255,255,0.3)",
+                                fontWeight: 400,
+                              }}
+                            >
+                              {" "}
+                              –{" "}
+                            </span>
+                            ${job.salary_max.toLocaleString()}
+                            <span
+                              style={{
+                                fontSize: "0.75rem",
+                                fontWeight: 400,
+                                color: "rgba(255,255,255,0.3)",
+                                marginLeft: "0.3rem",
+                              }}
+                            >
+                              / yr
+                            </span>
+                          </p>
                         )}
-                        {job.deadline && (
-                          <span>· Deadline: {job.deadline}</span>
-                        )}
-                      </div>
 
-                      {/* Qualifications */}
-                      {job.qualifications?.length > 0 && (
+                        {/* Meta pills */}
                         <div
                           style={{
                             display: "flex",
                             flexWrap: "wrap",
-                            gap: "0.4rem",
+                            gap: "0.35rem",
+                            marginBottom: "0.65rem",
                           }}
                         >
-                          {job.qualifications.map((q, i) => (
+                          {job.location && (
+                            <span style={metaPill}>📍 {job.location}</span>
+                          )}
+                          {job.work_type && (
+                            <span style={metaPill}>{job.work_type}</span>
+                          )}
+                          {job.industry && (
+                            <span style={metaPill}>{job.industry}</span>
+                          )}
+                          {job.deadline && (
                             <span
-                              key={i}
                               style={{
-                                background: "rgba(255,255,255,0.04)",
-                                border: "1px solid rgba(255,255,255,0.08)",
-                                color: "rgba(255,255,255,0.45)",
-                                fontSize: "0.75rem",
-                                padding: "0.2rem 0.6rem",
-                                borderRadius: "980px",
+                                ...metaPill,
+                                color: "rgba(255,200,60,0.8)",
+                                background: "rgba(255,200,60,0.06)",
+                                border: "1px solid rgba(255,200,60,0.15)",
                               }}
                             >
-                              {q}
+                              ⏳ Closes {job.deadline}
                             </span>
-                          ))}
+                          )}
                         </div>
-                      )}
+
+                        {/* Description */}
+                        {job.description && (
+                          <p
+                            style={{
+                              color: "rgba(255,255,255,0.35)",
+                              fontSize: "0.83rem",
+                              lineHeight: 1.55,
+                              marginBottom: "0.65rem",
+                              maxWidth: 520,
+                            }}
+                          >
+                            {job.description.length > 130
+                              ? job.description.slice(0, 130) + "…"
+                              : job.description}
+                          </p>
+                        )}
+
+                        {/* Qualifications */}
+                        {job.qualifications?.length > 0 && (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "0.35rem",
+                            }}
+                          >
+                            {job.qualifications.map((q, i) => (
+                              <span
+                                key={i}
+                                style={{
+                                  background: "rgba(255,255,255,0.04)",
+                                  border: "1px solid rgba(255,255,255,0.08)",
+                                  color: "rgba(255,255,255,0.4)",
+                                  fontSize: "0.73rem",
+                                  padding: "0.2rem 0.6rem",
+                                  borderRadius: "980px",
+                                }}
+                              >
+                                {q}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Apply button */}
-                    <div style={{ display: "flex", alignItems: "flex-start" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        paddingTop: "0.25rem",
+                      }}
+                    >
                       <button
                         onClick={() =>
                           appliedJobs.includes(job.id)
@@ -918,9 +999,7 @@ export default function WorkerDashboard() {
                           transition: "all 0.2s",
                         }}
                       >
-                        {appliedJobs.includes(job.id)
-                          ? "Cancel application"
-                          : "Apply"}
+                        {appliedJobs.includes(job.id) ? "Cancel" : "Apply"}
                       </button>
                     </div>
                   </div>
