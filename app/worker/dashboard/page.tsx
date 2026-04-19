@@ -138,7 +138,7 @@ export default function WorkerDashboard() {
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("full_name, skills, location")
+      .select("full_name, skills, location, open_to_work")
       .eq("id", user.id)
       .single();
     setProfile(prof);
@@ -449,13 +449,41 @@ export default function WorkerDashboard() {
                 ))}
               </div>
             </div>
-            {profile.location && (
-              <p
-                style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}
-              >
-                📍 {profile.location}
-              </p>
-            )}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: "0.4rem",
+              }}
+            >
+              {profile.location && (
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "0.85rem",
+                    margin: 0,
+                  }}
+                >
+                  📍 {profile.location}
+                </p>
+              )}
+              {(profile as any).open_to_work && (
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "rgba(80,200,120,0.9)",
+                    background: "rgba(80,200,120,0.08)",
+                    border: "1px solid rgba(80,200,120,0.2)",
+                    padding: "0.2rem 0.65rem",
+                    borderRadius: "980px",
+                    fontWeight: 500,
+                  }}
+                >
+                  Open to work
+                </span>
+              )}
+            </div>
           </div>
         )}
 
