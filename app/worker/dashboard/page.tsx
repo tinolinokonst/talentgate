@@ -545,7 +545,6 @@ export default function WorkerDashboard() {
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
-  // Build activity feed items from applied jobs
   const activityItems = appliedJobsList
     .map((job) => {
       const appId = applicationIds[job.id];
@@ -602,7 +601,25 @@ export default function WorkerDashboard() {
         fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');
+
+        @media (max-width: 600px) {
+          .tg-page-wrap { padding: 1.5rem 1rem !important; }
+          .tg-nav-name { display: none !important; }
+          .tg-tabs { width: 100% !important; }
+          .tg-tabs button { flex: 1 !important; }
+          .tg-filters { flex-direction: column !important; }
+          .tg-filters input,
+          .tg-filters select { width: 100% !important; min-width: unset !important; box-sizing: border-box; }
+          .tg-job-card { flex-direction: column !important; }
+          .tg-job-card-left { width: 100% !important; }
+          .tg-job-card-action { width: 100% !important; padding-top: 0 !important; }
+          .tg-job-card-action button { width: 100% !important; justify-content: center; }
+          .tg-applied-actions { flex-direction: row !important; width: 100% !important; align-items: stretch !important; }
+          .tg-applied-actions button { flex: 1 !important; text-align: center; }
+        }
+      `}</style>
 
       {/* NAV */}
       <nav
@@ -636,6 +653,7 @@ export default function WorkerDashboard() {
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
           <span
+            className="tg-nav-name"
             style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem" }}
           >
             {profile?.full_name}
@@ -658,7 +676,10 @@ export default function WorkerDashboard() {
         </div>
       </nav>
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "3rem 2rem" }}>
+      <div
+        className="tg-page-wrap"
+        style={{ maxWidth: 900, margin: "0 auto", padding: "3rem 2rem" }}
+      >
         {/* Header */}
         <div style={{ marginBottom: "3rem" }}>
           <h1
@@ -761,6 +782,7 @@ export default function WorkerDashboard() {
 
         {/* Tabs */}
         <div
+          className="tg-tabs"
           style={{
             display: "flex",
             gap: "0.25rem",
@@ -801,6 +823,7 @@ export default function WorkerDashboard() {
           <>
             {/* Filters */}
             <div
+              className="tg-filters"
               style={{
                 display: "flex",
                 gap: "0.75rem",
@@ -898,7 +921,6 @@ export default function WorkerDashboard() {
                     color: "rgba(255,255,255,0.35)",
                     fontSize: "0.88rem",
                     lineHeight: 1.6,
-                    marginBottom: "1.5rem",
                     maxWidth: 340,
                     margin: "0 auto 1.75rem",
                   }}
@@ -941,6 +963,7 @@ export default function WorkerDashboard() {
                 {filteredJobs.map((job) => (
                   <div
                     key={job.id}
+                    className="tg-job-card"
                     style={{
                       background: "#111",
                       padding: "1.5rem",
@@ -952,7 +975,10 @@ export default function WorkerDashboard() {
                     }}
                   >
                     {/* Left: avatar + content */}
-                    <div style={{ display: "flex", gap: "1rem", flex: 1 }}>
+                    <div
+                      className="tg-job-card-left"
+                      style={{ display: "flex", gap: "1rem", flex: 1 }}
+                    >
                       {/* Company avatar */}
                       <div
                         style={{
@@ -1134,6 +1160,7 @@ export default function WorkerDashboard() {
 
                     {/* Apply button */}
                     <div
+                      className="tg-job-card-action"
                       style={{
                         display: "flex",
                         alignItems: "flex-start",
@@ -1327,6 +1354,7 @@ export default function WorkerDashboard() {
 
                           {/* Action buttons */}
                           <div
+                            className="tg-applied-actions"
                             style={{
                               display: "flex",
                               flexDirection: "column",
