@@ -28,7 +28,6 @@ export const postRoleSchema = z
     location: z.string().max(200).trim(),
     salaryMin: z.number().min(0).max(10_000_000).nullable(),
     salaryMax: z.number().min(0).max(10_000_000).nullable(),
-    qualifications: z.array(z.string()).optional(),
     deadline: z.string().optional(),
   })
   .refine(

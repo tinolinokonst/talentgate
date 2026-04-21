@@ -95,7 +95,6 @@ export default function PostRole() {
       location,
       salaryMin: salaryMin ? parseInt(salaryMin) : null,
       salaryMax: salaryMax ? parseInt(salaryMax) : null,
-      qualifications,
       deadline,
     });
     if (!result.success) {
