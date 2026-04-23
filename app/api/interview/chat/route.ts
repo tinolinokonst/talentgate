@@ -162,7 +162,11 @@ export async function POST(req: NextRequest) {
           role: m.role,
           content: m.content,
         }));
-
+    console.log("ANTHROPIC KEY EXISTS:", !!process.env.ANTHROPIC_API_KEY);
+    console.log(
+      "ANTHROPIC KEY PREFIX:",
+      process.env.ANTHROPIC_API_KEY?.slice(0, 10)
+    );
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
