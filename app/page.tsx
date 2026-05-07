@@ -1,306 +1,316 @@
+"use client";
+
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main
       style={{
-        background: "#000",
         minHeight: "100vh",
-        fontFamily:
-          "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-        color: "#f5f5f7",
+        background: "#0a0f1e",
+        color: "#f0f4ff",
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
         overflowX: "hidden",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&display=swap');
-        .tg-title {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: clamp(5rem, 14vw, 13rem);
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          line-height: 1.1;
-          margin: 0;
-          padding-bottom: 0.15em;
-          background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.1) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+          --navy: #0a0f1e;
+          --navy-mid: #111827;
+          --navy-card: #161d30;
+          --navy-border: rgba(99,130,255,0.12);
+          --accent: #4f7cff;
+          --accent-soft: rgba(79,124,255,0.15);
+          --accent-mid: rgba(79,124,255,0.25);
+          --teal: #2dd4bf;
+          --teal-soft: rgba(45,212,191,0.12);
+          --gold: #f59e0b;
+          --gold-soft: rgba(245,158,11,0.12);
+          --text-primary: #f0f4ff;
+          --text-secondary: rgba(176,196,255,0.7);
+          --text-muted: rgba(176,196,255,0.4);
+          --serif: 'Playfair Display', Georgia, serif;
+          --sans: 'DM Sans', -apple-system, sans-serif;
         }
-        .tg-title span {
-          font-style: normal;
-        }
-        .tg-logo {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1.4rem;
-          font-weight: 700;
-          font-style: normal;
+        a { text-decoration: none; color: inherit; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+        .fade-up { animation: fadeUp 0.7s ease forwards; }
+        .fade-up-1 { animation-delay: 0.1s; opacity: 0; }
+        .fade-up-2 { animation-delay: 0.25s; opacity: 0; }
+        .fade-up-3 { animation-delay: 0.4s; opacity: 0; }
+        .fade-up-4 { animation-delay: 0.55s; opacity: 0; }
+        .nav-link { color: var(--text-secondary); font-size: 0.9rem; font-weight: 400; transition: color 0.2s; letter-spacing: 0.01em; }
+        .nav-link:hover { color: var(--text-primary); }
+        .btn-primary {
+          background: var(--accent);
+          color: #fff;
+          padding: 0.75rem 1.75rem;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-block;
           letter-spacing: 0.01em;
-          text-decoration: none;
-          background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          text-align: center;
         }
-        .tg-stat-num {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 2.2rem;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .btn-primary:hover { background: #3d6aee; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,124,255,0.3); }
+        .btn-outline {
+          background: transparent;
+          color: var(--text-primary);
+          padding: 0.75rem 1.75rem;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          font-weight: 500;
+          border: 1px solid var(--navy-border);
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-block;
+        }
+        .btn-outline:hover { border-color: rgba(79,124,255,0.4); background: var(--accent-soft); }
+        .card {
+          background: var(--navy-card);
+          border: 1px solid var(--navy-border);
+          border-radius: 16px;
+          padding: 2rem;
+          transition: all 0.25s;
+        }
+        .card:hover { border-color: rgba(79,124,255,0.28); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.35); }
+        .pill {
+          background: var(--accent-soft);
+          border: 1px solid rgba(79,124,255,0.2);
+          color: #a5b8ff;
+          font-size: 0.75rem;
+          font-weight: 500;
+          padding: 0.3rem 0.9rem;
+          border-radius: 100px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          display: inline-block;
+        }
+        .stat-line {
+          width: 32px;
+          height: 3px;
+          border-radius: 2px;
+          background: var(--accent);
+          display: inline-block;
+          vertical-align: middle;
+          margin-right: 10px;
+        }
+        .icon-box {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.25rem;
+          flex-shrink: 0;
+        }
+        .divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, var(--navy-border), transparent);
+          margin: 5rem 0;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        @media (max-width: 768px) {
+          .grid-2 { grid-template-columns: 1fr; }
+          .grid-3 { grid-template-columns: 1fr; }
+          .hero-btns { flex-direction: column; align-items: stretch !important; }
+          .hide-mobile { display: none; }
+        }
+        .glow-dot {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          background: var(--teal);
+          box-shadow: 0 0 8px var(--teal);
+          animation: shimmer 2s infinite;
+          display: inline-block;
+          margin-right: 8px;
+          flex-shrink: 0;
         }
       `}</style>
 
-      {/* NAV */}
+      {/* ── NAV ── */}
       <nav
         style={{
-          position: "fixed",
+          position: "sticky",
           top: 0,
-          left: 0,
-          right: 0,
           zIndex: 100,
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          display: "flex",
           alignItems: "center",
-          padding: "0 2rem",
-          height: "52px",
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "saturate(180%) blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          justifyContent: "space-between",
+          padding: "0 2.5rem",
+          height: "60px",
+          background: "rgba(10,15,30,0.88)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid var(--navy-border)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
-          <Link
-            href="/how-it-works"
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-            }}
-          >
-            How it works
-          </Link>
-          <Link
-            href="/pricing"
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-            }}
-          >
-            Pricing
-          </Link>
-        </div>
-        <Link href="/" className="tg-logo">
-          Talentgate
-        </Link>
-        <div
+        <span
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "1.5rem",
-            justifyContent: "flex-end",
+            fontFamily: "var(--serif)",
+            fontSize: "1.35rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            letterSpacing: "-0.01em",
           }}
         >
+          Talentgate
+        </span>
+        <div className="hide-mobile" style={{ display: "flex", gap: "2rem" }}>
+          <a href="#for-workers" className="nav-link">
+            For Workers
+          </a>
+          <a href="#for-businesses" className="nav-link">
+            For Businesses
+          </a>
+          <a href="#how-it-works" className="nav-link">
+            How It Works
+          </a>
+        </div>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <Link
             href="/auth/login"
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-            }}
+            className="btn-outline"
+            style={{ padding: "0.5rem 1.25rem", fontSize: "0.88rem" }}
           >
             Log in
           </Link>
           <Link
             href="/auth/signup"
-            style={{
-              background: "#fff",
-              color: "#000",
-              padding: "0.4rem 1rem",
-              borderRadius: "980px",
-              fontSize: "0.85rem",
-              fontWeight: 500,
-              textDecoration: "none",
-            }}
+            className="btn-primary"
+            style={{ padding: "0.5rem 1.25rem", fontSize: "0.88rem" }}
           >
             Get started
           </Link>
         </div>
       </nav>
 
-      {/* HERO */}
+      {/* ── HERO ── */}
       <section
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "7rem 2.5rem 5rem",
           textAlign: "center",
-          padding: "8rem 2rem 4rem",
           position: "relative",
-          overflow: "hidden",
-          background: "#000",
         }}
       >
+        {/* Background orb */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
-            zIndex: 0,
+            top: "10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 600,
+            height: 300,
             background:
-              "radial-gradient(ellipse 60% 40% at 50% 60%, rgba(255,255,255,0.03) 0%, transparent 70%)",
+              "radial-gradient(ellipse, rgba(79,124,255,0.08) 0%, transparent 70%)",
+            pointerEvents: "none",
           }}
         />
 
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            display: "inline-block",
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "980px",
-            padding: "0.3rem 1rem",
-            fontSize: "0.75rem",
-            color: "rgba(255,255,255,0.5)",
-            marginBottom: "3rem",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase" as const,
-          }}
-        >
-          Verified hiring · Real experience · Global talent
+        <div className="fade-up fade-up-1">
+          <span className="pill">Hiring, reimagined</span>
         </div>
 
-        <div
-          style={{ position: "relative", zIndex: 1, marginBottom: "1.5rem" }}
-        >
-          <h1 className="tg-title">
-            Talent<span>gate</span>
-          </h1>
-        </div>
-
-        <div
+        <h1
+          className="fade-up fade-up-2"
           style={{
-            position: "relative",
-            zIndex: 1,
-            width: 80,
-            height: 1,
-            background: "rgba(255,255,255,0.2)",
-            margin: "0 auto 2rem",
-          }}
-        />
-
-        <p
-          style={{
-            position: "relative",
-            zIndex: 1,
-            fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
-            color: "rgba(255,255,255,0.4)",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase" as const,
-            fontWeight: 400,
-            marginBottom: "2rem",
-            maxWidth: 500,
-            lineHeight: 1.8,
+            fontFamily: "var(--serif)",
+            fontSize: "clamp(2.8rem, 6vw, 4.5rem)",
+            fontWeight: 700,
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+            marginTop: "1.5rem",
+            marginBottom: "1.5rem",
           }}
         >
-          Where verified businesses meet real talent
-        </p>
+          Where great work
+          <br />
+          <span style={{ color: "var(--accent)" }}>finds great people.</span>
+        </h1>
 
         <p
+          className="fade-up fade-up-3"
           style={{
-            position: "relative",
-            zIndex: 1,
-            fontSize: "clamp(1rem, 2vw, 1.15rem)",
-            color: "rgba(255,255,255,0.45)",
-            maxWidth: 560,
+            color: "var(--text-secondary)",
+            fontSize: "clamp(1rem, 2vw, 1.2rem)",
             lineHeight: 1.7,
-            marginBottom: "3rem",
+            maxWidth: 560,
+            margin: "0 auto 2.5rem",
             fontWeight: 300,
           }}
         >
-          Talentgate connects companies actively hiring with real, verified
-          people — not CVs. Workers share their experience, skills, and story.
-          Businesses find the right fit.
+          Talentgate connects ambitious talent with forward-thinking businesses
+          — through a smarter, interview-first hiring process.
         </p>
 
         <div
+          className="fade-up fade-up-4 hero-btns"
           style={{
-            position: "relative",
-            zIndex: 1,
             display: "flex",
             gap: "1rem",
-            flexWrap: "wrap",
             justifyContent: "center",
-            marginBottom: "5rem",
+            flexWrap: "wrap",
           }}
         >
           <Link
-            href="/auth/signup?type=business"
-            style={{
-              background: "#fff",
-              color: "#000",
-              padding: "0.85rem 2.5rem",
-              borderRadius: "980px",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-              textDecoration: "none",
-              letterSpacing: "0.03em",
-            }}
+            href="/auth/signup?role=worker"
+            className="btn-primary"
+            style={{ fontSize: "1rem", padding: "0.85rem 2rem" }}
           >
-            Post a role — $39/mo
+            Find your next role
           </Link>
           <Link
-            href="/auth/signup?type=worker"
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.2)",
-              color: "#fff",
-              padding: "0.85rem 2.5rem",
-              borderRadius: "980px",
-              fontWeight: 400,
-              fontSize: "0.9rem",
-              textDecoration: "none",
-              letterSpacing: "0.03em",
-            }}
+            href="/auth/signup?role=business"
+            className="btn-outline"
+            style={{ fontSize: "1rem", padding: "0.85rem 2rem" }}
           >
-            Find work — Free
+            Hire top talent
           </Link>
         </div>
 
+        {/* Live stats bar */}
         <div
+          className="fade-up fade-up-4"
           style={{
-            position: "relative",
-            zIndex: 1,
             display: "flex",
-            gap: "4rem",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            paddingTop: "3rem",
-            flexWrap: "wrap",
+            gap: "2.5rem",
             justifyContent: "center",
+            marginTop: "4rem",
+            flexWrap: "wrap",
           }}
         >
           {[
-            { num: "100%", label: "Verified identities" },
-            { num: "$39", label: "Flat monthly fee for businesses" },
-            { num: "Free", label: "Always free for workers" },
-            { num: "Global", label: "All industries" },
+            { label: "Active roles", value: "200+" },
+            { label: "Verified companies", value: "85+" },
+            { label: "Countries", value: "12" },
           ].map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
-              <div className="tg-stat-num">{s.num}</div>
               <div
                 style={{
-                  fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.3)",
-                  marginTop: "0.3rem",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase" as const,
+                  fontSize: "1.6rem",
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
+                  fontFamily: "var(--serif)",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {s.value}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  color: "var(--text-muted)",
+                  marginTop: "0.2rem",
+                  letterSpacing: "0.04em",
                 }}
               >
                 {s.label}
@@ -310,107 +320,148 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WHAT MAKES US DIFFERENT */}
-      <section
-        style={{ padding: "8rem 2rem", maxWidth: 1100, margin: "0 auto" }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <p
-            style={{
-              color: "rgba(255,255,255,0.35)",
-              fontSize: "0.75rem",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase" as const,
-              marginBottom: "1rem",
-            }}
-          >
-            A different kind of hiring
-          </p>
-          <h2
-            style={{
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-            }}
-          >
-            Not your CV.
-            <br />
-            Your story.
-          </h2>
-          <p
-            style={{
-              color: "rgba(255,255,255,0.45)",
-              fontSize: "1rem",
-              maxWidth: 520,
-              margin: "1.5rem auto 0",
-              lineHeight: 1.7,
-            }}
-          >
-            Forget uploading a document. Talentgate asks workers to describe
-            their experience in their own words — the roles they've held, the
-            skills they've built, what they're genuinely good at.
-          </p>
-        </div>
+      <div className="divider" style={{ margin: "0 2.5rem 5rem" }} />
 
+      {/* ── FOR WORKERS ── */}
+      <section
+        id="for-workers"
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "0 2.5rem 5rem" }}
+      >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "1px",
-            background: "rgba(255,255,255,0.06)",
-            borderRadius: 20,
-            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            marginBottom: "0.75rem",
           }}
         >
+          <span className="stat-line" style={{ background: "var(--teal)" }} />
+          <span
+            style={{
+              color: "var(--teal)",
+              fontSize: "0.8rem",
+              fontWeight: 500,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}
+          >
+            For workers
+          </span>
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: "clamp(2rem, 4vw, 2.8rem)",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            marginBottom: "0.75rem",
+          }}
+        >
+          Your career, your terms.
+        </h2>
+        <p
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: "1.05rem",
+            maxWidth: 500,
+            lineHeight: 1.7,
+            marginBottom: "3rem",
+            fontWeight: 300,
+          }}
+        >
+          Browse verified roles across industries, apply in one click, and
+          schedule interviews on your schedule.
+        </p>
+
+        <div className="grid-3" style={{ marginBottom: "2.5rem" }}>
           {[
             {
-              icon: "✦",
-              title: "Experience, not documents",
-              desc: "Workers describe what they've actually done — the roles, the challenges, and what they've learned.",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4f7cff"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              ),
+              bg: "var(--accent-soft)",
+              title: "Browse verified roles",
+              desc: "Every listing comes from a verified business. No ghosting, no fake posts.",
             },
             {
-              icon: "◈",
-              title: "Skills that matter",
-              desc: "From technical abilities to soft skills — workers highlight what they're genuinely good at.",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#2dd4bf"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              ),
+              bg: "var(--teal-soft)",
+              title: "Choose your interview slot",
+              desc: "Pick a time that suits you. No back-and-forth, no chasing emails.",
             },
             {
-              icon: "⊕",
-              title: "Verified on both sides",
-              desc: "Every business and every worker is verified. No fake profiles, no ghost listings.",
-            },
-            {
-              icon: "◎",
-              title: "Real roles, right now",
-              desc: "Businesses mark roles as actively hiring, paused, or filled — always accurate.",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#f59e0b"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              ),
+              bg: "var(--gold-soft)",
+              title: "Track every application",
+              desc: "Your dashboard keeps every application, status, and next step in one place.",
             },
           ].map((f) => (
-            <div key={f.title} style={{ background: "#111", padding: "2rem" }}>
-              <div
-                style={{
-                  fontSize: "1.2rem",
-                  marginBottom: "1rem",
-                  color: "rgba(255,255,255,0.3)",
-                }}
-              >
+            <div
+              key={f.title}
+              className="card"
+              style={{ display: "flex", flexDirection: "column" }}
+            >
+              <div className="icon-box" style={{ background: f.bg }}>
                 {f.icon}
               </div>
               <h3
                 style={{
-                  fontSize: "0.95rem",
+                  fontSize: "1rem",
                   fontWeight: 600,
                   marginBottom: "0.6rem",
-                  letterSpacing: "-0.01em",
-                  lineHeight: 1.3,
+                  color: "var(--text-primary)",
                 }}
               >
                 {f.title}
               </h3>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.4)",
-                  fontSize: "0.82rem",
+                  color: "var(--text-secondary)",
+                  fontSize: "0.9rem",
                   lineHeight: 1.65,
+                  fontWeight: 300,
                 }}
               >
                 {f.desc}
@@ -418,534 +469,426 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        <Link
+          href="/auth/signup?role=worker"
+          className="btn-primary"
+          style={{ fontSize: "0.95rem" }}
+        >
+          Create your worker profile →
+        </Link>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section style={{ padding: "8rem 2rem", background: "#0a0a0a" }}>
-        <div style={{ maxWidth: 980, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "5rem" }}>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.35)",
-                fontSize: "0.75rem",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase" as const,
-                marginBottom: "1rem",
-              }}
-            >
-              How it works
-            </p>
-            <h2
-              style={{
-                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                fontWeight: 700,
-                letterSpacing: "-0.03em",
-              }}
-            >
-              Two sides. One platform.
-            </h2>
-          </div>
+      <div className="divider" style={{ margin: "0 2.5rem 5rem" }} />
 
-          <div
+      {/* ── FOR BUSINESSES ── */}
+      <section
+        id="for-businesses"
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "0 2.5rem 5rem" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            marginBottom: "0.75rem",
+          }}
+        >
+          <span className="stat-line" style={{ background: "var(--gold)" }} />
+          <span
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "2rem",
-            }}
-          >
-            <div
-              style={{
-                background: "#111",
-                borderRadius: 20,
-                padding: "2.5rem",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "0.72rem",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase" as const,
-                  color: "rgba(255,255,255,0.3)",
-                  marginBottom: "1.5rem",
-                }}
-              >
-                For businesses
-              </div>
-              {[
-                {
-                  step: "01",
-                  title: "Sign up & pay $39/month",
-                  desc: "One flat fee. Post as many roles as you need.",
-                },
-                {
-                  step: "02",
-                  title: "Get verified",
-                  desc: "We confirm your business registration so workers know you're real.",
-                },
-                {
-                  step: "03",
-                  title: "Describe the role",
-                  desc: "Write what you're looking for — the experience, the skills, the person.",
-                },
-                {
-                  step: "04",
-                  title: "Find your fit",
-                  desc: "Browse verified worker profiles and their experience stories.",
-                },
-              ].map((s) => (
-                <div
-                  key={s.step}
-                  style={{
-                    display: "flex",
-                    gap: "1.2rem",
-                    marginBottom: "1.8rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.72rem",
-                      color: "rgba(255,255,255,0.2)",
-                      fontWeight: 600,
-                      minWidth: 24,
-                      paddingTop: 3,
-                    }}
-                  >
-                    {s.step}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: "0.9rem",
-                        marginBottom: "0.3rem",
-                      }}
-                    >
-                      {s.title}
-                    </div>
-                    <div
-                      style={{
-                        color: "rgba(255,255,255,0.4)",
-                        fontSize: "0.82rem",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {s.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <Link
-                href="/auth/signup?type=business"
-                style={{
-                  display: "inline-block",
-                  background: "#fff",
-                  color: "#000",
-                  padding: "0.7rem 1.5rem",
-                  borderRadius: "980px",
-                  fontWeight: 500,
-                  fontSize: "0.85rem",
-                  textDecoration: "none",
-                  marginTop: "0.5rem",
-                }}
-              >
-                Start hiring →
-              </Link>
-            </div>
-
-            <div
-              style={{
-                background: "#111",
-                borderRadius: 20,
-                padding: "2.5rem",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "0.72rem",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase" as const,
-                  color: "rgba(255,255,255,0.3)",
-                  marginBottom: "1.5rem",
-                }}
-              >
-                For workers
-              </div>
-              {[
-                {
-                  step: "01",
-                  title: "Sign up free",
-                  desc: "No cost, ever. Finding work shouldn't cost money.",
-                },
-                {
-                  step: "02",
-                  title: "Verify your identity",
-                  desc: "A quick ID check so businesses know you're a real person.",
-                },
-                {
-                  step: "03",
-                  title: "Tell your story",
-                  desc: "Describe your experience in your own words. No CV needed — just talk about what you've done and what you're good at.",
-                },
-                {
-                  step: "04",
-                  title: "Apply to real roles",
-                  desc: "Browse verified businesses that are actively hiring right now.",
-                },
-              ].map((s) => (
-                <div
-                  key={s.step}
-                  style={{
-                    display: "flex",
-                    gap: "1.2rem",
-                    marginBottom: "1.8rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.72rem",
-                      color: "rgba(255,255,255,0.2)",
-                      fontWeight: 600,
-                      minWidth: 24,
-                      paddingTop: 3,
-                    }}
-                  >
-                    {s.step}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: "0.9rem",
-                        marginBottom: "0.3rem",
-                      }}
-                    >
-                      {s.title}
-                    </div>
-                    <div
-                      style={{
-                        color: "rgba(255,255,255,0.4)",
-                        fontSize: "0.82rem",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {s.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <Link
-                href="/auth/signup?type=worker"
-                style={{
-                  display: "inline-block",
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  color: "#fff",
-                  padding: "0.7rem 1.5rem",
-                  borderRadius: "980px",
-                  fontWeight: 500,
-                  fontSize: "0.85rem",
-                  textDecoration: "none",
-                  marginTop: "0.5rem",
-                }}
-              >
-                Find work free →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section style={{ padding: "8rem 2rem" }}>
-        <div style={{ maxWidth: 780, margin: "0 auto", textAlign: "center" }}>
-          <p
-            style={{
-              color: "rgba(255,255,255,0.35)",
-              fontSize: "0.75rem",
+              color: "var(--gold)",
+              fontSize: "0.8rem",
+              fontWeight: 500,
               letterSpacing: "0.1em",
-              textTransform: "uppercase" as const,
-              marginBottom: "1rem",
+              textTransform: "uppercase",
             }}
           >
-            Pricing
-          </p>
-          <h2
-            style={{
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              marginBottom: "4rem",
-            }}
-          >
-            Simple. Transparent. Fair.
-          </h2>
+            For businesses
+          </span>
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: "clamp(2rem, 4vw, 2.8rem)",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            marginBottom: "0.75rem",
+          }}
+        >
+          Hire with confidence.
+        </h2>
+        <p
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: "1.05rem",
+            maxWidth: 500,
+            lineHeight: 1.7,
+            marginBottom: "3rem",
+            fontWeight: 300,
+          }}
+        >
+          Post roles, review candidates with AI-powered summaries, and manage
+          your entire pipeline from one dashboard.
+        </p>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1.5rem",
-            }}
-          >
+        <div className="grid-2">
+          {[
+            {
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4f7cff"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              ),
+              bg: "var(--accent-soft)",
+              title: "Smart applicant profiles",
+              desc: "Each candidate comes with an AI-generated summary — skills, experience highlights, and a fit score — so you spend less time reading, more time deciding.",
+            },
+            {
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#2dd4bf"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+              ),
+              bg: "var(--teal-soft)",
+              title: "Live pipeline tracking",
+              desc: "See every applicant's stage in real time — from application through interview to decision. Full visibility, zero spreadsheets.",
+            },
+            {
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#f59e0b"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              ),
+              bg: "var(--gold-soft)",
+              title: "Post and manage roles",
+              desc: "Create detailed job listings with salary ranges, work type, and qualifications. Go live in under five minutes.",
+            },
+            {
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#c084fc"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              ),
+              bg: "rgba(192,132,252,0.1)",
+              title: "Verified company badge",
+              desc: "Verified businesses attract more quality candidates. Our trust process is fast and straightforward.",
+            },
+          ].map((f) => (
             <div
+              key={f.title}
+              className="card"
               style={{
-                background: "#111",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 20,
-                padding: "2.5rem",
-                textAlign: "left" as const,
+                display: "flex",
+                gap: "1.25rem",
+                alignItems: "flex-start",
               }}
             >
               <div
-                style={{
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.35)",
-                  marginBottom: "1rem",
-                  textTransform: "uppercase" as const,
-                  letterSpacing: "0.05em",
-                }}
+                className="icon-box"
+                style={{ background: f.bg, marginBottom: 0 }}
               >
-                For workers
+                {f.icon}
               </div>
-              <div
-                style={{
-                  fontSize: "3.5rem",
-                  fontWeight: 700,
-                  letterSpacing: "-0.04em",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                Free
-              </div>
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.4)",
-                  fontSize: "0.88rem",
-                  marginBottom: "2rem",
-                  lineHeight: 1.6,
-                }}
-              >
-                Finding work should never cost money. Sign up, tell your story,
-                and apply to roles — all free.
-              </p>
-              <ul
-                style={{
-                  listStyle: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.65rem",
-                  marginBottom: "2rem",
-                }}
-              >
-                {[
-                  "Verified identity badge",
-                  "Full experience profile",
-                  "Browse all active roles",
-                  "Apply to unlimited positions",
-                  "Track your applications",
-                ].map((f) => (
-                  <li
-                    key={f}
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "rgba(255,255,255,0.55)",
-                      display: "flex",
-                      gap: "0.6rem",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "rgba(255,255,255,0.4)",
-                        fontSize: "0.7rem",
-                      }}
-                    >
-                      ✓
-                    </span>{" "}
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/auth/signup?type=worker"
-                style={{
-                  display: "block",
-                  textAlign: "center" as const,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  color: "#fff",
-                  padding: "0.85rem",
-                  borderRadius: "980px",
-                  fontWeight: 500,
-                  fontSize: "0.88rem",
-                  textDecoration: "none",
-                }}
-              >
-                Create free account
-              </Link>
-            </div>
-
-            <div
-              style={{
-                background: "#161616",
-                border: "1px solid rgba(255,255,255,0.15)",
-                borderRadius: 20,
-                padding: "2.5rem",
-                textAlign: "left" as const,
-                position: "relative" as const,
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute" as const,
-                  top: "1.5rem",
-                  right: "1.5rem",
-                  background: "#fff",
-                  color: "#000",
-                  fontSize: "0.68rem",
-                  fontWeight: 700,
-                  padding: "0.2rem 0.7rem",
-                  borderRadius: "980px",
-                  letterSpacing: "0.03em",
-                }}
-              >
-                BUSINESS
-              </div>
-              <div
-                style={{
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.35)",
-                  marginBottom: "1rem",
-                  textTransform: "uppercase" as const,
-                  letterSpacing: "0.05em",
-                }}
-              >
-                For businesses
-              </div>
-              <div
-                style={{
-                  fontSize: "3.5rem",
-                  fontWeight: 700,
-                  letterSpacing: "-0.04em",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                $39
-                <span
+              <div>
+                <h3
                   style={{
-                    fontSize: "1.2rem",
-                    color: "rgba(255,255,255,0.35)",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  {f.title}
+                </h3>
+                <p
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontSize: "0.88rem",
+                    lineHeight: 1.65,
                     fontWeight: 300,
                   }}
                 >
-                  /mo
-                </span>
+                  {f.desc}
+                </p>
               </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: "2.5rem" }}>
+          <Link
+            href="/auth/signup?role=business"
+            className="btn-primary"
+            style={{ fontSize: "0.95rem" }}
+          >
+            Start hiring today →
+          </Link>
+        </div>
+      </section>
+
+      <div className="divider" style={{ margin: "0 2.5rem 5rem" }} />
+
+      {/* ── HOW IT WORKS ── */}
+      <section
+        id="how-it-works"
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "0 2.5rem 5rem" }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+          <span className="pill" style={{ marginBottom: "1rem" }}>
+            Simple by design
+          </span>
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(2rem, 4vw, 2.8rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              marginTop: "1rem",
+            }}
+          >
+            How Talentgate works
+          </h2>
+        </div>
+
+        <div className="grid-3">
+          {[
+            {
+              num: "01",
+              title: "Create your profile",
+              desc: "Workers build a rich profile with skills and experience. Businesses set up their company page in minutes.",
+              accent: "var(--accent)",
+            },
+            {
+              num: "02",
+              title: "Connect",
+              desc: "Workers browse and apply to verified roles. Businesses review applicants with AI-powered insights.",
+              accent: "var(--teal)",
+            },
+            {
+              num: "03",
+              title: "Meet",
+              desc: "Schedule interviews at a time that works for everyone. The platform handles coordination automatically.",
+              accent: "var(--gold)",
+            },
+          ].map((s) => (
+            <div
+              key={s.num}
+              className="card"
+              style={{ position: "relative", overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  fontSize: "3.5rem",
+                  fontFamily: "var(--serif)",
+                  fontWeight: 700,
+                  color: s.accent,
+                  opacity: 0.12,
+                  position: "absolute",
+                  top: "1rem",
+                  right: "1.25rem",
+                  lineHeight: 1,
+                }}
+              >
+                {s.num}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: s.accent,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Step {s.num}
+              </div>
+              <h3
+                style={{
+                  fontSize: "1.05rem",
+                  fontWeight: 600,
+                  marginBottom: "0.6rem",
+                }}
+              >
+                {s.title}
+              </h3>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.4)",
+                  color: "var(--text-secondary)",
                   fontSize: "0.88rem",
-                  marginBottom: "2rem",
-                  lineHeight: 1.6,
+                  lineHeight: 1.65,
+                  fontWeight: 300,
                 }}
               >
-                One flat fee. Post unlimited roles, access verified worker
-                profiles, cancel anytime.
+                {s.desc}
               </p>
-              <ul
-                style={{
-                  listStyle: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.65rem",
-                  marginBottom: "2rem",
-                }}
-              >
-                {[
-                  "Business verification",
-                  "Unlimited role postings",
-                  "Access all worker profiles",
-                  "Set required qualifications",
-                  "Real-time applicant dashboard",
-                  "Cancel anytime",
-                ].map((f) => (
-                  <li
-                    key={f}
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "rgba(255,255,255,0.55)",
-                      display: "flex",
-                      gap: "0.6rem",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "rgba(255,255,255,0.4)",
-                        fontSize: "0.7rem",
-                      }}
-                    >
-                      ✓
-                    </span>{" "}
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/auth/signup?type=business"
-                style={{
-                  display: "block",
-                  textAlign: "center" as const,
-                  background: "#fff",
-                  color: "#000",
-                  padding: "0.85rem",
-                  borderRadius: "980px",
-                  fontWeight: 500,
-                  fontSize: "0.88rem",
-                  textDecoration: "none",
-                }}
-              >
-                Start hiring
-              </Link>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ── */}
+      <section
+        style={{ maxWidth: 1100, margin: "0 auto 5rem", padding: "0 2.5rem" }}
+      >
+        <div
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(79,124,255,0.12) 0%, rgba(45,212,191,0.08) 100%)",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 20,
+            padding: "3.5rem 3rem",
+            textAlign: "center",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: -60,
+              right: -60,
+              width: 240,
+              height: 240,
+              background:
+                "radial-gradient(circle, rgba(79,124,255,0.1) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
+          <span className="pill" style={{ marginBottom: "1.25rem" }}>
+            Ready to get started?
+          </span>
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            The right opportunity is waiting.
+          </h2>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              maxWidth: 480,
+              margin: "0 auto 2rem",
+              lineHeight: 1.7,
+              fontWeight: 300,
+            }}
+          >
+            Whether you're looking for your next role or your next hire —
+            Talentgate was built for you.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Link
+              href="/auth/signup?role=worker"
+              className="btn-primary"
+              style={{ fontSize: "0.95rem", padding: "0.85rem 1.75rem" }}
+            >
+              I'm looking for work
+            </Link>
+            <Link
+              href="/auth/signup?role=business"
+              className="btn-outline"
+              style={{ fontSize: "0.95rem", padding: "0.85rem 1.75rem" }}
+            >
+              I'm hiring
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* ── FOOTER ── */}
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          padding: "3rem 2rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem",
-          maxWidth: 980,
+          borderTop: "1px solid var(--navy-border)",
+          padding: "2.5rem 2.5rem",
+          maxWidth: 1100,
           margin: "0 auto",
         }}
       >
-        <span className="tg-logo">Talentgate</span>
-        <div style={{ display: "flex", gap: "2rem" }}>
-          {["Privacy Policy", "Terms of Service", "Contact"].map((l) => (
-            <Link
-              key={l}
-              href="#"
-              style={{
-                color: "rgba(255,255,255,0.3)",
-                textDecoration: "none",
-                fontSize: "0.8rem",
-              }}
-            >
-              {l}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "1rem",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "1.1rem",
+              fontWeight: 700,
+            }}
+          >
+            Talentgate
+          </span>
+          <div style={{ display: "flex", gap: "2rem" }}>
+            <Link href="/auth/login" className="nav-link">
+              Log in
             </Link>
-          ))}
+            <Link href="/auth/signup" className="nav-link">
+              Sign up
+            </Link>
+          </div>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+            © 2025 Talentgate
+          </span>
         </div>
-        <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.8rem" }}>
-          © 2026 Talentgate
-        </span>
       </footer>
     </main>
   );

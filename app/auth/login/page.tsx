@@ -1,207 +1,267 @@
 "use client";
 
-import { loginSchema } from "../../../lib/schema";
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
 
-export default function LoginPage() {
+const SS = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --navy:#0a0f1e;--navy-card:#161d30;--navy-border:rgba(99,130,255,0.12);
+    --accent:#4f7cff;--accent-soft:rgba(79,124,255,0.12);
+    --text-primary:#f0f4ff;--text-secondary:rgba(176,196,255,0.7);--text-muted:rgba(176,196,255,0.4);
+    --serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',-apple-system,sans-serif;
+  }
+  a{text-decoration:none;color:inherit;}
+  input{font-family:var(--sans);}
+  input::placeholder{color:var(--text-muted);}
+  input:focus{outline:none;border-color:rgba(79,124,255,0.5)!important;background:rgba(79,124,255,0.04)!important;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .fade{animation:fadeUp 0.5s ease forwards;}
+`;
+
+export default function Login() {
   const router = useRouter();
+  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function checkSession() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        if (profile?.role === "business") {
-          router.push("/business/dashboard");
-        } else {
-          router.push("/worker/dashboard");
-        }
-      }
-    }
-    checkSession();
-  }, []);
-
   async function handleLogin() {
-    setError("");
-
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      setError(result.error.issues[0]?.message ?? "Invalid input");
+    if (!email || !password) {
+      setError("Please fill in all fields.");
       return;
     }
-
     setLoading(true);
-
-    const { data, error: loginError } = await supabase.auth.signInWithPassword({
+    setError("");
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
-    if (loginError) {
-      setError(loginError.message);
+    if (authError) {
+      setError(authError.message);
       setLoading(false);
       return;
     }
-
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
-
-      if (profile?.role === "business") {
-        router.push("/business/dashboard");
-      } else {
-        router.push("/worker/dashboard");
-      }
+    const user = data.user;
+    if (!user) {
+      setError("Login failed.");
+      setLoading(false);
+      return;
     }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role === "business") router.push("/business/dashboard");
+    else router.push("/worker/dashboard");
   }
 
-  const inputStyle = {
+  const inputStyle: React.CSSProperties = {
     width: "100%",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 12,
-    padding: "0.9rem 1rem",
-    color: "#f5f5f7",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid var(--navy-border)",
+    borderRadius: 10,
+    padding: "0.85rem 1rem",
+    color: "var(--text-primary)",
     fontSize: "0.95rem",
-    outline: "none",
-    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+    fontFamily: "var(--sans)",
+    transition: "border-color 0.2s, background 0.2s",
   };
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background: "#000",
+        background: "var(--navy)",
+        color: "var(--text-primary)",
+        fontFamily: "var(--sans)",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-        color: "#f5f5f7",
+        flexDirection: "column",
       }}
     >
-      <div style={{ width: "100%", maxWidth: 420 }}>
-        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <Link href="/" style={{ textDecoration: "none" }}>
-            <span
+      <style>{SS}</style>
+
+      {/* Nav */}
+      <nav
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 2.5rem",
+          height: "60px",
+          borderBottom: "1px solid var(--navy-border)",
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: "1.25rem",
+            fontWeight: 700,
+          }}
+        >
+          Talentgate
+        </Link>
+        <Link
+          href="/auth/signup"
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: "0.88rem",
+            transition: "color 0.2s",
+          }}
+        >
+          Don't have an account?{" "}
+          <span style={{ color: "var(--accent)" }}>Sign up</span>
+        </Link>
+      </nav>
+
+      {/* Form */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "3rem 1.5rem",
+        }}
+      >
+        <div className="fade" style={{ width: "100%", maxWidth: 420 }}>
+          <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+            <h1
               style={{
-                fontFamily: "Georgia, serif",
-                fontSize: "1.8rem",
+                fontFamily: "var(--serif)",
+                fontSize: "2.2rem",
                 fontWeight: 700,
-                color: "#fff",
+                letterSpacing: "-0.02em",
+                marginBottom: "0.5rem",
               }}
             >
-              Talentgate
-            </span>
-          </Link>
+              Welcome back.
+            </h1>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.95rem",
+                fontWeight: 300,
+              }}
+            >
+              Sign in to your Talentgate account.
+            </p>
+          </div>
+
+          <div
+            style={{
+              background: "var(--navy-card)",
+              border: "1px solid var(--navy-border)",
+              borderRadius: 18,
+              padding: "2rem",
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    textTransform: "uppercase" as const,
+                    letterSpacing: "0.07em",
+                    display: "block",
+                    marginBottom: "0.45rem",
+                  }}
+                >
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  style={inputStyle}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    textTransform: "uppercase" as const,
+                    letterSpacing: "0.07em",
+                    display: "block",
+                    marginBottom: "0.45rem",
+                  }}
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  style={inputStyle}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div
+                style={{
+                  background: "rgba(248,113,113,0.1)",
+                  border: "1px solid rgba(248,113,113,0.2)",
+                  borderRadius: 8,
+                  padding: "0.75rem 1rem",
+                  marginTop: "1rem",
+                }}
+              >
+                <p style={{ color: "#fca5a5", fontSize: "0.85rem" }}>{error}</p>
+              </div>
+            )}
+
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              style={{
+                width: "100%",
+                marginTop: "1.5rem",
+                background: "var(--accent)",
+                color: "#fff",
+                border: "none",
+                padding: "0.9rem",
+                borderRadius: 10,
+                fontFamily: "var(--sans)",
+                fontSize: "0.95rem",
+                fontWeight: 500,
+                cursor: loading ? "not-allowed" : "pointer",
+                opacity: loading ? 0.7 : 1,
+                transition: "all 0.2s",
+              }}
+            >
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </div>
+
           <p
             style={{
-              color: "rgba(255,255,255,0.35)",
-              fontSize: "0.9rem",
-              marginTop: "0.5rem",
+              textAlign: "center",
+              marginTop: "1.5rem",
+              color: "var(--text-muted)",
+              fontSize: "0.88rem",
             }}
           >
-            Welcome back
+            New to Talentgate?{" "}
+            <Link href="/auth/signup" style={{ color: "var(--accent)" }}>
+              Create an account
+            </Link>
           </p>
         </div>
-
-        <div
-          style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 20,
-            padding: "2rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1rem",
-          }}
-        >
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
-          />
-
-          {error && (
-            <div
-              style={{
-                background: "rgba(255,60,60,0.1)",
-                border: "1px solid rgba(255,60,60,0.2)",
-                borderRadius: 10,
-                padding: "0.75rem 1rem",
-                color: "#ff6b6b",
-                fontSize: "0.85rem",
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={handleLogin}
-            disabled={loading || !email || !password}
-            style={{
-              background: "#fff",
-              color: "#000",
-              padding: "0.9rem",
-              borderRadius: "980px",
-              fontWeight: 500,
-              fontSize: "0.95rem",
-              border: "none",
-              cursor:
-                loading || !email || !password ? "not-allowed" : "pointer",
-              opacity: loading || !email || !password ? 0.5 : 1,
-              fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-              marginTop: "0.5rem",
-            }}
-          >
-            {loading ? "Logging in..." : "Log in →"}
-          </button>
-        </div>
-
-        <p
-          style={{
-            textAlign: "center",
-            color: "rgba(255,255,255,0.35)",
-            fontSize: "0.82rem",
-            marginTop: "1.5rem",
-          }}
-        >
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/auth/signup"
-            style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
-          >
-            Sign up
-          </Link>
-        </p>
       </div>
     </main>
   );

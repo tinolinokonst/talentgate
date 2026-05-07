@@ -1,223 +1,71 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
-
-type Business = {
-  company_name: string;
-  verified: boolean;
-};
 
 type Job = {
   id: string;
   title: string;
-  location: string;
-  country: string;
-  region: string;
-  industry: string;
-  salary_min: number;
-  salary_max: number;
-  deadline: string;
-  qualifications: string[];
+  location: string | null;
+  country: string | null;
+  region: string | null;
+  industry: string | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  deadline: string | null;
+  qualifications: string[] | null;
   status: string;
-  description: string;
-  work_type: string;
-  businesses: Business | null;
+  description: string | null;
+  work_type: string | null;
+  businesses: { company_name: string; verified: boolean } | null;
 };
 
 type InterviewStatusMap = Record<string, string>;
 
-// ── Progress Pipeline ──────────────────────────────────────────
-const PIPELINE_STEPS = ["Applied", "Interview", "AI Review", "Decision"];
+const statusConfig: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
+  invited: { label: "Invited", color: "#a5b8ff", bg: "rgba(79,124,255,0.1)" },
+  scheduled: {
+    label: "Scheduled",
+    color: "#5eead4",
+    bg: "rgba(45,212,191,0.1)",
+  },
+  in_progress: {
+    label: "In progress",
+    color: "#fcd34d",
+    bg: "rgba(245,158,11,0.1)",
+  },
+  completed: {
+    label: "Completed",
+    color: "#6ee7b7",
+    bg: "rgba(52,211,153,0.1)",
+  },
+  not_started: {
+    label: "Not started",
+    color: "rgba(176,196,255,0.4)",
+    bg: "rgba(255,255,255,0.04)",
+  },
+};
 
-function statusToStep(status: string): number {
-  if (status === "not_started" || status === "invited") return 1;
-  if (status === "scheduled") return 1;
-  if (status === "in_progress") return 2;
-  if (status === "completed") return 3;
-  return 0;
-}
-
-function stepSubLabel(i: number, status: string): string {
-  if (status === "declined") return i === 0 ? "Submitted" : "";
-  if (i === 0) return "Submitted";
-  if (i === 1) {
-    if (status === "invited" || status === "not_started")
-      return "Action needed";
-    if (status === "scheduled") return "Scheduled";
-    if (status === "in_progress") return "Underway";
-    return "Done";
-  }
-  if (i === 2) return status === "completed" ? "Ready" : "";
-  if (i === 3) return status === "completed" ? "Pending" : "";
-  return "";
-}
-
-function ProgressPipeline({ status }: { status: string }) {
-  const activeStep = statusToStep(status);
-  const declined = status === "declined";
-  const stepComplete = (i: number) => !declined && i < activeStep;
-  const stepActive = (i: number) => !declined && i === activeStep;
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        margin: "0.9rem 0 0.5rem",
-      }}
-    >
-      {PIPELINE_STEPS.map((label, i) => {
-        const complete = stepComplete(i);
-        const active = stepActive(i);
-        const isLast = i === PIPELINE_STEPS.length - 1;
-        const dotColor = declined
-          ? i === 0
-            ? "rgba(255,255,255,0.2)"
-            : "rgba(255,255,255,0.08)"
-          : complete
-          ? "rgba(80,200,120,0.9)"
-          : active
-          ? "#fff"
-          : "rgba(255,255,255,0.12)";
-        const lineColor = complete
-          ? "rgba(80,200,120,0.5)"
-          : "rgba(255,255,255,0.08)";
-        const labelColor = declined
-          ? i === 0
-            ? "rgba(255,255,255,0.3)"
-            : "rgba(255,255,255,0.12)"
-          : complete
-          ? "rgba(80,200,120,0.8)"
-          : active
-          ? "rgba(255,255,255,0.9)"
-          : "rgba(255,255,255,0.2)";
-        const subColor =
-          active && !declined
-            ? status === "invited" || status === "not_started"
-              ? "rgba(255,200,60,0.8)"
-              : "rgba(80,200,120,0.7)"
-            : "rgba(255,255,255,0.2)";
-
-        return (
-          <div
-            key={label}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              flex: isLast ? 0 : 1,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                minWidth: 56,
-              }}
-            >
-              <div
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: dotColor,
-                  marginBottom: 4,
-                  boxShadow:
-                    active && !declined ? `0 0 6px ${dotColor}` : "none",
-                  transition: "background 0.2s",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.65rem",
-                  color: labelColor,
-                  fontWeight: active ? 600 : 400,
-                  textAlign: "center",
-                  lineHeight: 1.2,
-                }}
-              >
-                {label}
-              </span>
-              <span
-                style={{
-                  fontSize: "0.6rem",
-                  color: subColor,
-                  textAlign: "center",
-                  marginTop: 1,
-                  lineHeight: 1.2,
-                  minHeight: 10,
-                }}
-              >
-                {stepSubLabel(i, status)}
-              </span>
-            </div>
-            {!isLast && (
-              <div
-                style={{
-                  flex: 1,
-                  height: 1,
-                  background: lineColor,
-                  marginTop: 3.5,
-                  transition: "background 0.2s",
-                }}
-              />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Interview Badge ────────────────────────────────────────────
-function InterviewBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string; bg: string }> = {
-    not_started: {
-      label: "Schedule interview",
-      color: "rgba(255,200,60,0.9)",
-      bg: "rgba(255,200,60,0.08)",
-    },
-    invited: {
-      label: "Schedule interview",
-      color: "rgba(255,200,60,0.9)",
-      bg: "rgba(255,200,60,0.08)",
-    },
-    scheduled: {
-      label: "Interview scheduled",
-      color: "rgba(80,200,120,0.9)",
-      bg: "rgba(80,200,120,0.08)",
-    },
-    in_progress: {
-      label: "Interview in progress",
-      color: "rgba(80,160,255,0.9)",
-      bg: "rgba(80,160,255,0.08)",
-    },
-    completed: {
-      label: "Interview complete",
-      color: "rgba(80,200,120,0.9)",
-      bg: "rgba(80,200,120,0.08)",
-    },
-    declined: {
-      label: "Interview declined",
-      color: "rgba(255,255,255,0.3)",
-      bg: "rgba(255,255,255,0.04)",
-    },
-  };
-  const s = map[status] ?? map["not_started"];
+function StatusBadge({ status }: { status?: string }) {
+  const s =
+    statusConfig[status ?? "not_started"] ?? statusConfig["not_started"];
   return (
     <span
       style={{
         background: s.bg,
-        border: `1px solid ${s.color}`,
         color: s.color,
         fontSize: "0.72rem",
         fontWeight: 500,
-        padding: "0.2rem 0.65rem",
-        borderRadius: "980px",
+        padding: "0.22rem 0.7rem",
+        borderRadius: 100,
+        border: `1px solid ${s.color}30`,
         letterSpacing: "0.02em",
+        whiteSpace: "nowrap",
       }}
     >
       {s.label}
@@ -225,141 +73,57 @@ function InterviewBadge({ status }: { status: string }) {
   );
 }
 
-// ── Activity Feed ──────────────────────────────────────────────
-function ActivityFeed({
-  items,
+function SalaryText({
+  min,
+  max,
 }: {
-  items: { jobTitle: string; status: string; companyName: string }[];
+  min?: number | null;
+  max?: number | null;
 }) {
-  if (items.length === 0) return null;
-
-  const config: Record<
-    string,
-    {
-      icon: string;
-      color: string;
-      bg: string;
-      border: string;
-      message: (job: string, company: string) => string;
-    }
-  > = {
-    invited: {
-      icon: "⏳",
-      color: "rgba(255,200,60,0.9)",
-      bg: "rgba(255,200,60,0.05)",
-      border: "rgba(255,200,60,0.15)",
-      message: (job, company) =>
-        `Action needed — schedule your interview for ${job} at ${company}.`,
-    },
-    not_started: {
-      icon: "⏳",
-      color: "rgba(255,200,60,0.9)",
-      bg: "rgba(255,200,60,0.05)",
-      border: "rgba(255,200,60,0.15)",
-      message: (job, company) =>
-        `Action needed — schedule your interview for ${job} at ${company}.`,
-    },
-    scheduled: {
-      icon: "✓",
-      color: "rgba(80,200,120,0.9)",
-      bg: "rgba(80,200,120,0.05)",
-      border: "rgba(80,200,120,0.15)",
-      message: (job, company) =>
-        `Your interview for ${job} at ${company} is confirmed.`,
-    },
-    in_progress: {
-      icon: "◎",
-      color: "rgba(80,160,255,0.9)",
-      bg: "rgba(80,160,255,0.05)",
-      border: "rgba(80,160,255,0.15)",
-      message: (job, company) =>
-        `Your interview for ${job} at ${company} is underway.`,
-    },
-    completed: {
-      icon: "✦",
-      color: "rgba(80,200,120,0.9)",
-      bg: "rgba(80,200,120,0.05)",
-      border: "rgba(80,200,120,0.15)",
-      message: (job, company) =>
-        `Interview complete for ${job} at ${company} — the business is reviewing your summary.`,
-    },
-  };
-
-  const priority: Record<string, number> = {
-    invited: 0,
-    not_started: 0,
-    in_progress: 1,
-    completed: 2,
-    scheduled: 3,
-  };
-  const sorted = [...items].sort(
-    (a, b) => (priority[a.status] ?? 99) - (priority[b.status] ?? 99)
-  );
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5rem",
-        marginBottom: "1.75rem",
-      }}
-    >
-      <p
-        style={{
-          fontSize: "0.72rem",
-          color: "rgba(255,255,255,0.3)",
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          marginBottom: "0.25rem",
-        }}
-      >
-        Activity
-      </p>
-      {sorted.map((item, i) => {
-        const c = config[item.status];
-        if (!c) return null;
-        return (
-          <div
-            key={i}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "0.75rem",
-              background: c.bg,
-              border: `1px solid ${c.border}`,
-              borderRadius: 12,
-              padding: "0.85rem 1rem",
-            }}
-          >
-            <span
-              style={{
-                color: c.color,
-                fontSize: "0.85rem",
-                flexShrink: 0,
-                marginTop: 1,
-              }}
-            >
-              {c.icon}
-            </span>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.7)",
-                fontSize: "0.85rem",
-                lineHeight: 1.5,
-                margin: 0,
-              }}
-            >
-              {c.message(item.jobTitle, item.companyName)}
-            </p>
-          </div>
-        );
-      })}
-    </div>
-  );
+  if (!min && !max) return null;
+  const fmt = (n: number) => `£${(n / 1000).toFixed(0)}k`;
+  if (min && max)
+    return (
+      <>
+        {fmt(min)} – {fmt(max)}
+      </>
+    );
+  if (min) return <>From {fmt(min)}</>;
+  return <>Up to {fmt(max!)}</>;
 }
 
-// ── Main Component ─────────────────────────────────────────────
+const SS = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --navy:#0a0f1e;--navy-mid:#111827;--navy-card:#161d30;--navy-border:rgba(99,130,255,0.12);
+    --accent:#4f7cff;--accent-soft:rgba(79,124,255,0.12);--teal:#2dd4bf;--gold:#f59e0b;
+    --text-primary:#f0f4ff;--text-secondary:rgba(176,196,255,0.7);--text-muted:rgba(176,196,255,0.4);
+    --serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',-apple-system,sans-serif;
+  }
+  a{text-decoration:none;color:inherit;}
+  input,select{font-family:var(--sans);}
+  input::placeholder{color:var(--text-muted);}
+  input:focus,select:focus{outline:none;border-color:rgba(79,124,255,0.5)!important;background:rgba(79,124,255,0.05)!important;}
+  select option{background:#111827;color:#f0f4ff;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(79,124,255,0.2);border-radius:3px;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  .card-hover{transition:all 0.2s;}
+  .card-hover:hover{border-color:rgba(79,124,255,0.28)!important;transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.35);}
+  .tab-btn{background:transparent;border:none;padding:0.5rem 0;font-family:var(--sans);font-size:0.9rem;cursor:pointer;transition:all 0.15s;position:relative;}
+  .tab-active{color:#f0f4ff;font-weight:500;}
+  .tab-active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);border-radius:2px;}
+  .tab-inactive{color:rgba(176,196,255,0.4);}
+  .tab-inactive:hover{color:rgba(176,196,255,0.7);}
+  .apply-btn{background:var(--accent);color:#fff;border:none;padding:0.55rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .apply-btn:hover{background:#3d6aee;box-shadow:0 4px 16px rgba(79,124,255,0.35);}
+  .apply-btn:disabled{background:rgba(79,124,255,0.25);color:rgba(176,196,255,0.4);cursor:not-allowed;box-shadow:none;}
+  .cancel-btn{background:transparent;color:rgba(248,113,113,0.7);border:1px solid rgba(248,113,113,0.2);padding:0.45rem 1rem;border-radius:8px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
+  .cancel-btn:hover{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.4);color:#fca5a5;}
+`;
+
 export default function WorkerDashboard() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -378,7 +142,6 @@ export default function WorkerDashboard() {
     full_name: string;
     skills: string[];
     location: string;
-    open_to_work?: boolean;
   } | null>(null);
   const [activeTab, setActiveTab] = useState<"browse" | "applied">("browse");
   const supabase = createClient();
@@ -394,7 +157,7 @@ export default function WorkerDashboard() {
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("full_name, skills, location, open_to_work")
+      .select("full_name, skills, location")
       .eq("id", user.id)
       .single();
     setProfile(prof);
@@ -413,7 +176,6 @@ export default function WorkerDashboard() {
         ? item.businesses[0] ?? null
         : item.businesses ?? null,
     })) as Job[];
-
     setJobs(typedListings);
     setFilteredJobs(typedListings);
 
@@ -421,7 +183,6 @@ export default function WorkerDashboard() {
       .from("applications")
       .select("id, job_id, interview_status")
       .eq("worker_id", user.id);
-
     if (apps) {
       setAppliedJobs(apps.map((a: any) => a.job_id));
       const idMap: Record<string, string> = {};
@@ -433,7 +194,6 @@ export default function WorkerDashboard() {
       setApplicationIds(idMap);
       setInterviewStatuses(statusMap);
     }
-
     setLoading(false);
   }
 
@@ -454,7 +214,7 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     let filtered = jobs;
-    if (search) {
+    if (search)
       filtered = filtered.filter(
         (j) =>
           j.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -463,7 +223,6 @@ export default function WorkerDashboard() {
             .toLowerCase()
             .includes(search.toLowerCase())
       );
-    }
     if (industryFilter)
       filtered = filtered.filter((j) => j.industry === industryFilter);
     if (countryFilter)
@@ -486,16 +245,15 @@ export default function WorkerDashboard() {
       })
       .select("id")
       .single();
-    if (appError || !newApp) {
-      console.error("Failed to create application:", appError);
-      return;
-    }
-    await supabase.from("interviews").insert({
-      application_id: newApp.id,
-      worker_id: user.id,
-      job_id: jobId,
-      status: "scheduled",
-    });
+    if (appError || !newApp) return;
+    await supabase
+      .from("interviews")
+      .insert({
+        application_id: newApp.id,
+        worker_id: user.id,
+        job_id: jobId,
+        status: "scheduled",
+      });
     setAppliedJobs((prev) => [...prev, jobId]);
     setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
     setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
@@ -515,14 +273,14 @@ export default function WorkerDashboard() {
     const appId = applicationIds[jobId];
     setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
     setApplicationIds((prev) => {
-      const next = { ...prev };
-      delete next[jobId];
-      return next;
+      const n = { ...prev };
+      delete n[jobId];
+      return n;
     });
     setInterviewStatuses((prev) => {
-      const next = { ...prev };
-      if (appId) delete next[appId];
-      return next;
+      const n = { ...prev };
+      if (appId) delete n[appId];
+      return n;
     });
   }
 
@@ -544,81 +302,40 @@ export default function WorkerDashboard() {
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
-  const activityItems = appliedJobsList
-    .map((job) => {
-      const appId = applicationIds[job.id];
-      const status = appId
-        ? interviewStatuses[appId] ?? "not_started"
-        : "not_started";
-      return {
-        jobTitle: job.title,
-        companyName: job.businesses?.company_name ?? "the company",
-        status,
-      };
-    })
-    .filter((item) =>
-      [
-        "invited",
-        "not_started",
-        "scheduled",
-        "in_progress",
-        "completed",
-      ].includes(item.status)
-    );
-
-  const metaPill: React.CSSProperties = {
-    fontSize: "0.75rem",
-    color: "rgba(255,255,255,0.4)",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    padding: "0.2rem 0.6rem",
-    borderRadius: "980px",
-    whiteSpace: "nowrap",
-  };
-
   if (loading)
     return (
-      <main
+      <div
         style={{
           minHeight: "100vh",
-          background: "#000",
+          background: "#0a0f1e",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <p style={{ color: "rgba(255,255,255,0.4)" }}>Loading...</p>
-      </main>
+        <style>{SS}</style>
+        <p
+          style={{
+            color: "rgba(176,196,255,0.4)",
+            fontFamily: "var(--sans)",
+            fontSize: "0.9rem",
+          }}
+        >
+          Loading your dashboard...
+        </p>
+      </div>
     );
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background: "#000",
-        color: "#f5f5f7",
-        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+        background: "var(--navy)",
+        color: "var(--text-primary)",
+        fontFamily: "var(--sans)",
       }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');
-
-        @media (max-width: 600px) {
-          .tg-page-wrap { padding: 1.5rem 1rem !important; }
-          .tg-nav-name { display: none !important; }
-          .tg-tabs { width: 100% !important; }
-          .tg-tabs button { flex: 1 !important; }
-          .tg-filters { flex-direction: column !important; }
-          .tg-filters input,
-          .tg-filters select { width: 100% !important; min-width: unset !important; box-sizing: border-box; }
-          .tg-job-card { flex-direction: column !important; }
-          .tg-job-card-left { width: 100% !important; }
-          .tg-job-card-action { width: 100% !important; padding-top: 0 !important; }
-          .tg-job-card-action button { width: 100% !important; justify-content: center; }
-          .tg-applied-actions { flex-direction: row !important; width: 100% !important; align-items: stretch !important; }
-          .tg-applied-actions button { flex: 1 !important; text-align: center; }
-        }
-      `}</style>
+      <style>{SS}</style>
 
       {/* NAV */}
       <nav
@@ -629,50 +346,47 @@ export default function WorkerDashboard() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 2rem",
-          height: "52px",
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "saturate(180%) blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          padding: "0 2.5rem",
+          height: "60px",
+          background: "rgba(10,15,30,0.9)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid var(--navy-border)",
         }}
       >
-        <span
+        <Link
+          href="/"
           style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "1.3rem",
+            fontFamily: "var(--serif)",
+            fontSize: "1.25rem",
             fontWeight: 700,
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            color: "var(--text-primary)",
           }}
         >
           Talentgate
-        </span>
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
           <Link
             href="/worker/profile"
             style={{
-              color: "rgba(255,255,255,0.45)",
+              color: "var(--text-secondary)",
               fontSize: "0.85rem",
-              textDecoration: "none",
-              cursor: "pointer",
+              transition: "color 0.2s",
             }}
           >
-            {profile?.full_name}
+            {profile?.full_name || "Profile"}
           </Link>
           <button
             onClick={handleSignOut}
             style={{
               background: "transparent",
-              border: "1px solid rgba(255,255,255,0.15)",
-              color: "rgba(255,255,255,0.6)",
-              padding: "0.35rem 0.9rem",
-              borderRadius: "980px",
+              border: "1px solid var(--navy-border)",
+              color: "var(--text-muted)",
+              padding: "0.4rem 1rem",
+              borderRadius: "8px",
+              fontFamily: "var(--sans)",
+              fontSize: "0.82rem",
               cursor: "pointer",
-              fontFamily: "-apple-system, sans-serif",
-              fontSize: "0.8rem",
+              transition: "all 0.2s",
             }}
           >
             Sign out
@@ -680,146 +394,101 @@ export default function WorkerDashboard() {
         </div>
       </nav>
 
-      <div
-        className="tg-page-wrap"
-        style={{ maxWidth: 900, margin: "0 auto", padding: "3rem 2rem" }}
-      >
+      <div style={{ maxWidth: 920, margin: "0 auto", padding: "3rem 2rem" }}>
         {/* Header */}
-        <div style={{ marginBottom: "3rem" }}>
-          <h1
+        <div
+          style={{
+            marginBottom: "2.5rem",
+            animation: "fadeUp 0.5s ease forwards",
+          }}
+        >
+          <p
             style={{
-              fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              marginBottom: "0.5rem",
+              color: "var(--accent)",
+              fontSize: "0.78rem",
+              fontWeight: 500,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              marginBottom: "0.4rem",
             }}
           >
-            Good to see you, {profile?.full_name?.split(" ")[0]}.
+            Worker dashboard
+          </p>
+          <h1
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(1.8rem, 4vw, 2.4rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Welcome back
+            {profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}.
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "1rem" }}>
-            {filteredJobs.length} verified roles open right now.
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              marginTop: "0.4rem",
+              fontSize: "0.95rem",
+              fontWeight: 300,
+            }}
+          >
+            {filteredJobs.length} role{filteredJobs.length !== 1 ? "s" : ""}{" "}
+            open right now.
           </p>
         </div>
 
-        {/* Skills snapshot */}
-        {profile?.skills && profile.skills.length > 0 && (
-          <div
-            style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 16,
-              padding: "1.5rem",
-              marginBottom: "2.5rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "1.5rem",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <p
-                style={{
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.35)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                Your skills
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                {profile.skills.map((s) => (
-                  <span
-                    key={s}
-                    style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      padding: "0.2rem 0.7rem",
-                      borderRadius: "980px",
-                      fontSize: "0.8rem",
-                      color: "rgba(255,255,255,0.7)",
-                    }}
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: "0.4rem",
-              }}
-            >
-              {profile.location && (
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.35)",
-                    fontSize: "0.85rem",
-                    margin: 0,
-                  }}
-                >
-                  📍 {profile.location}
-                </p>
-              )}
-              {profile.open_to_work && (
-                <span
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "rgba(80,200,120,0.9)",
-                    background: "rgba(80,200,120,0.08)",
-                    border: "1px solid rgba(80,200,120,0.2)",
-                    padding: "0.2rem 0.65rem",
-                    borderRadius: "980px",
-                    fontWeight: 500,
-                  }}
-                >
-                  Open to work
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Tabs */}
         <div
-          className="tg-tabs"
           style={{
             display: "flex",
-            gap: "0.25rem",
-            background: "rgba(255,255,255,0.04)",
-            borderRadius: 12,
-            padding: "0.25rem",
-            width: "fit-content",
+            gap: "2rem",
+            borderBottom: "1px solid var(--navy-border)",
             marginBottom: "2rem",
-            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
-          {(["browse", "applied"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+          <button
+            className={`tab-btn ${
+              activeTab === "browse" ? "tab-active" : "tab-inactive"
+            }`}
+            onClick={() => setActiveTab("browse")}
+          >
+            Browse roles
+            <span
               style={{
-                padding: "0.5rem 1.2rem",
-                borderRadius: 10,
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "-apple-system, sans-serif",
-                fontWeight: 500,
-                fontSize: "0.85rem",
-                background: activeTab === tab ? "#fff" : "transparent",
-                color: activeTab === tab ? "#000" : "rgba(255,255,255,0.5)",
-                transition: "all 0.2s",
+                marginLeft: "0.5rem",
+                background: "var(--accent-soft)",
+                color: "var(--accent)",
+                fontSize: "0.7rem",
+                padding: "0.1rem 0.5rem",
+                borderRadius: 100,
               }}
             >
-              {tab === "browse"
-                ? `Browse roles (${filteredJobs.length})`
-                : `Applied (${appliedJobs.length})`}
-            </button>
-          ))}
+              {filteredJobs.length}
+            </span>
+          </button>
+          <button
+            className={`tab-btn ${
+              activeTab === "applied" ? "tab-active" : "tab-inactive"
+            }`}
+            onClick={() => setActiveTab("applied")}
+          >
+            My applications
+            {appliedJobs.length > 0 && (
+              <span
+                style={{
+                  marginLeft: "0.5rem",
+                  background: "rgba(45,212,191,0.1)",
+                  color: "var(--teal)",
+                  fontSize: "0.7rem",
+                  padding: "0.1rem 0.5rem",
+                  borderRadius: 100,
+                }}
+              >
+                {appliedJobs.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* ── BROWSE TAB ── */}
@@ -827,381 +496,347 @@ export default function WorkerDashboard() {
           <>
             {/* Filters */}
             <div
-              className="tg-filters"
               style={{
-                display: "flex",
+                display: "grid",
+                gridTemplateColumns: "1fr auto auto",
                 gap: "0.75rem",
-                marginBottom: "1.5rem",
-                flexWrap: "wrap",
+                marginBottom: "1.75rem",
+                alignItems: "center",
               }}
             >
-              <input
-                type="text"
-                placeholder="Search roles, companies, locations..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{
-                  flex: 1,
-                  minWidth: 200,
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "0.75rem 1rem",
-                  color: "#f5f5f7",
-                  fontSize: "0.9rem",
-                  outline: "none",
-                  fontFamily: "-apple-system, sans-serif",
-                }}
-              />
-              <select
-                value={countryFilter}
-                onChange={(e) => setCountryFilter(e.target.value)}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "0.75rem 1rem",
-                  color: countryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
-                  fontSize: "0.9rem",
-                  outline: "none",
-                  fontFamily: "-apple-system, sans-serif",
-                  cursor: "pointer",
-                }}
-              >
-                <option value="">All countries</option>
-                {availableCountries.map((c) => (
-                  <option key={c} value={c} style={{ background: "#111" }}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              <div style={{ position: "relative" }}>
+                <svg
+                  style={{
+                    position: "absolute",
+                    left: "0.85rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    opacity: 0.4,
+                  }}
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search roles, companies, locations…"
+                  style={{
+                    width: "100%",
+                    background: "var(--navy-card)",
+                    border: "1px solid var(--navy-border)",
+                    borderRadius: 8,
+                    padding: "0.75rem 1rem 0.75rem 2.5rem",
+                    color: "var(--text-primary)",
+                    fontSize: "0.9rem",
+                    fontFamily: "var(--sans)",
+                  }}
+                />
+              </div>
               <select
                 value={industryFilter}
                 onChange={(e) => setIndustryFilter(e.target.value)}
                 style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
+                  background: "var(--navy-card)",
+                  border: "1px solid var(--navy-border)",
+                  borderRadius: 8,
                   padding: "0.75rem 1rem",
-                  color: industryFilter ? "#f5f5f7" : "rgba(255,255,255,0.4)",
-                  fontSize: "0.9rem",
-                  outline: "none",
-                  fontFamily: "-apple-system, sans-serif",
+                  color: industryFilter
+                    ? "var(--text-primary)"
+                    : "var(--text-muted)",
+                  fontSize: "0.88rem",
+                  fontFamily: "var(--sans)",
                   cursor: "pointer",
+                  minWidth: 140,
                 }}
               >
                 <option value="">All industries</option>
-                {industries.map((ind) => (
-                  <option key={ind} value={ind} style={{ background: "#111" }}>
-                    {ind}
+                {industries.map((i) => (
+                  <option key={i} value={i!}>
+                    {i}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={countryFilter}
+                onChange={(e) => setCountryFilter(e.target.value)}
+                style={{
+                  background: "var(--navy-card)",
+                  border: "1px solid var(--navy-border)",
+                  borderRadius: 8,
+                  padding: "0.75rem 1rem",
+                  color: countryFilter
+                    ? "var(--text-primary)"
+                    : "var(--text-muted)",
+                  fontSize: "0.88rem",
+                  fontFamily: "var(--sans)",
+                  cursor: "pointer",
+                  minWidth: 130,
+                }}
+              >
+                <option value="">All countries</option>
+                {availableCountries.map((c) => (
+                  <option key={c} value={c!}>
+                    {c}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Empty state: no filter results */}
+            {/* Job cards */}
             {filteredJobs.length === 0 ? (
               <div
                 style={{
-                  background: "#111",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 20,
-                  padding: "4rem 2rem",
                   textAlign: "center",
+                  padding: "4rem 2rem",
+                  color: "var(--text-muted)",
                 }}
               >
-                <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>🔍</p>
-                <p
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  No roles match your search
+                <p style={{ fontSize: "1rem" }}>No roles match your search.</p>
+                <p style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>
+                  Try clearing your filters.
                 </p>
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.35)",
-                    fontSize: "0.88rem",
-                    lineHeight: 1.6,
-                    maxWidth: 340,
-                    margin: "0 auto 1.75rem",
-                  }}
-                >
-                  Try adjusting your filters or clearing the search to see all
-                  available roles.
-                </p>
-                <button
-                  onClick={() => {
-                    setSearch("");
-                    setIndustryFilter("");
-                    setCountryFilter("");
-                  }}
-                  style={{
-                    background: "#fff",
-                    color: "#000",
-                    padding: "0.6rem 1.5rem",
-                    borderRadius: "980px",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "-apple-system, sans-serif",
-                    fontWeight: 500,
-                    fontSize: "0.88rem",
-                  }}
-                >
-                  Clear filters
-                </button>
               </div>
             ) : (
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "1px",
-                  background: "rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  overflow: "hidden",
+                  gap: "1rem",
                 }}
               >
-                {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="tg-job-card"
-                    style={{
-                      background: "#111",
-                      padding: "1.5rem",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      gap: "1.5rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {/* Left: avatar + content */}
+                {filteredJobs.map((job) => {
+                  const applied = appliedJobs.includes(job.id);
+                  const appId = applicationIds[job.id];
+                  const status = appId ? interviewStatuses[appId] : undefined;
+                  const locked = interviewLocked(job.id);
+                  return (
                     <div
-                      className="tg-job-card-left"
-                      style={{ display: "flex", gap: "1rem", flex: 1 }}
+                      key={job.id}
+                      className="card-hover"
+                      style={{
+                        background: "var(--navy-card)",
+                        border: "1px solid var(--navy-border)",
+                        borderRadius: 14,
+                        padding: "1.5rem",
+                      }}
                     >
-                      {/* Company avatar */}
                       <div
                         style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 10,
-                          background: "rgba(255,255,255,0.06)",
-                          border: "1px solid rgba(255,255,255,0.1)",
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "0.95rem",
-                          fontWeight: 700,
-                          color: "rgba(255,255,255,0.5)",
-                          flexShrink: 0,
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: "1rem",
+                          flexWrap: "wrap",
                         }}
                       >
-                        {(job.businesses?.company_name ?? "?")[0].toUpperCase()}
-                      </div>
-
-                      <div style={{ flex: 1 }}>
-                        {/* Company + verified */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            marginBottom: "0.25rem",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: "0.82rem",
-                              color: "rgba(255,255,255,0.4)",
-                            }}
-                          >
-                            {job.businesses?.company_name}
-                          </span>
-                          {job.businesses?.verified && (
-                            <span
-                              style={{
-                                background: "rgba(255,255,255,0.06)",
-                                border: "1px solid rgba(255,255,255,0.1)",
-                                color: "rgba(255,255,255,0.5)",
-                                fontSize: "0.68rem",
-                                fontWeight: 600,
-                                padding: "0.1rem 0.5rem",
-                                borderRadius: "980px",
-                              }}
-                            >
-                              ✓ Verified
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Title */}
-                        <h3
-                          style={{
-                            fontSize: "1rem",
-                            fontWeight: 600,
-                            letterSpacing: "-0.01em",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          {job.title}
-                        </h3>
-
-                        {/* Salary */}
-                        {job.salary_min && job.salary_max && (
-                          <p
-                            style={{
-                              fontSize: "0.92rem",
-                              fontWeight: 600,
-                              color: "rgba(255,255,255,0.85)",
-                              marginBottom: "0.5rem",
-                            }}
-                          >
-                            ${job.salary_min.toLocaleString()}
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.3)",
-                                fontWeight: 400,
-                              }}
-                            >
-                              {" "}
-                              –{" "}
-                            </span>
-                            ${job.salary_max.toLocaleString()}
-                            <span
-                              style={{
-                                fontSize: "0.75rem",
-                                fontWeight: 400,
-                                color: "rgba(255,255,255,0.3)",
-                                marginLeft: "0.3rem",
-                              }}
-                            >
-                              / yr
-                            </span>
-                          </p>
-                        )}
-
-                        {/* Meta pills */}
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "0.35rem",
-                            marginBottom: "0.65rem",
-                          }}
-                        >
-                          {job.location && (
-                            <span style={metaPill}>📍 {job.location}</span>
-                          )}
-                          {job.work_type && (
-                            <span style={metaPill}>{job.work_type}</span>
-                          )}
-                          {job.industry && (
-                            <span style={metaPill}>{job.industry}</span>
-                          )}
-                          {job.deadline && (
-                            <span
-                              style={{
-                                ...metaPill,
-                                color: "rgba(255,200,60,0.8)",
-                                background: "rgba(255,200,60,0.06)",
-                                border: "1px solid rgba(255,200,60,0.15)",
-                              }}
-                            >
-                              ⏳ Closes {job.deadline}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Description */}
-                        {job.description && (
-                          <p
-                            style={{
-                              color: "rgba(255,255,255,0.35)",
-                              fontSize: "0.83rem",
-                              lineHeight: 1.55,
-                              marginBottom: "0.65rem",
-                              maxWidth: 520,
-                            }}
-                          >
-                            {job.description.length > 130
-                              ? job.description.slice(0, 130) + "…"
-                              : job.description}
-                          </p>
-                        )}
-
-                        {/* Qualifications */}
-                        {job.qualifications?.length > 0 && (
+                        <div style={{ flex: 1, minWidth: 200 }}>
                           <div
                             style={{
                               display: "flex",
+                              alignItems: "center",
+                              gap: "0.6rem",
+                              marginBottom: "0.35rem",
                               flexWrap: "wrap",
-                              gap: "0.35rem",
                             }}
                           >
-                            {job.qualifications.map((q, i) => (
+                            <h3
+                              style={{
+                                fontSize: "1rem",
+                                fontWeight: 600,
+                                color: "var(--text-primary)",
+                              }}
+                            >
+                              {job.title}
+                            </h3>
+                            {job.businesses?.verified && (
                               <span
-                                key={i}
                                 style={{
-                                  background: "rgba(255,255,255,0.04)",
-                                  border: "1px solid rgba(255,255,255,0.08)",
-                                  color: "rgba(255,255,255,0.4)",
-                                  fontSize: "0.73rem",
-                                  padding: "0.2rem 0.6rem",
-                                  borderRadius: "980px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "0.3rem",
+                                  background: "rgba(45,212,191,0.1)",
+                                  color: "var(--teal)",
+                                  fontSize: "0.68rem",
+                                  fontWeight: 500,
+                                  padding: "0.15rem 0.55rem",
+                                  borderRadius: 100,
+                                  border: "1px solid rgba(45,212,191,0.2)",
                                 }}
                               >
-                                {q}
+                                <svg
+                                  width="9"
+                                  height="9"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                Verified
                               </span>
-                            ))}
+                            )}
                           </div>
-                        )}
+                          <p
+                            style={{
+                              color: "var(--text-secondary)",
+                              fontSize: "0.88rem",
+                              marginBottom: "0.75rem",
+                              fontWeight: 300,
+                            }}
+                          >
+                            {job.businesses?.company_name}
+                            {job.location && <> · {job.location}</>}
+                            {job.country && <>, {job.country}</>}
+                          </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "0.5rem",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            {job.industry && (
+                              <span
+                                style={{
+                                  background: "var(--accent-soft)",
+                                  color: "#a5b8ff",
+                                  fontSize: "0.72rem",
+                                  fontWeight: 500,
+                                  padding: "0.2rem 0.65rem",
+                                  borderRadius: 100,
+                                  border: "1px solid rgba(79,124,255,0.15)",
+                                }}
+                              >
+                                {job.industry}
+                              </span>
+                            )}
+                            {job.work_type && (
+                              <span
+                                style={{
+                                  background: "rgba(245,158,11,0.08)",
+                                  color: "#fcd34d",
+                                  fontSize: "0.72rem",
+                                  fontWeight: 500,
+                                  padding: "0.2rem 0.65rem",
+                                  borderRadius: 100,
+                                  border: "1px solid rgba(245,158,11,0.15)",
+                                }}
+                              >
+                                {job.work_type}
+                              </span>
+                            )}
+                            {(job.salary_min || job.salary_max) && (
+                              <span
+                                style={{
+                                  background: "rgba(52,211,153,0.08)",
+                                  color: "#6ee7b7",
+                                  fontSize: "0.72rem",
+                                  fontWeight: 500,
+                                  padding: "0.2rem 0.65rem",
+                                  borderRadius: 100,
+                                  border: "1px solid rgba(52,211,153,0.15)",
+                                }}
+                              >
+                                <SalaryText
+                                  min={job.salary_min}
+                                  max={job.salary_max}
+                                />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-end",
+                            gap: "0.6rem",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {applied && <StatusBadge status={status} />}
+                          {!applied ? (
+                            <button
+                              className="apply-btn"
+                              onClick={() => handleApply(job.id)}
+                            >
+                              Apply now
+                            </button>
+                          ) : locked ? (
+                            <span
+                              style={{
+                                color: "var(--text-muted)",
+                                fontSize: "0.8rem",
+                              }}
+                            >
+                              In progress
+                            </span>
+                          ) : (
+                            <button
+                              className="cancel-btn"
+                              onClick={() => handleCancelApplication(job.id)}
+                            >
+                              Withdraw
+                            </button>
+                          )}
+                          {applied &&
+                            appId &&
+                            interviewStatuses[appId] === "invited" && (
+                              <button
+                                onClick={() =>
+                                  router.push(
+                                    `/worker/schedule-interview/${appId}`
+                                  )
+                                }
+                                style={{
+                                  background: "var(--accent-soft)",
+                                  color: "var(--accent)",
+                                  border: "1px solid rgba(79,124,255,0.2)",
+                                  padding: "0.4rem 0.9rem",
+                                  borderRadius: 8,
+                                  fontSize: "0.78rem",
+                                  fontWeight: 500,
+                                  cursor: "pointer",
+                                  transition: "all 0.2s",
+                                  fontFamily: "var(--sans)",
+                                }}
+                              >
+                                Schedule interview
+                              </button>
+                            )}
+                        </div>
                       </div>
+                      {job.description && (
+                        <p
+                          style={{
+                            color: "var(--text-muted)",
+                            fontSize: "0.83rem",
+                            lineHeight: 1.6,
+                            marginTop: "1rem",
+                            paddingTop: "1rem",
+                            borderTop: "1px solid var(--navy-border)",
+                            fontWeight: 300,
+                          }}
+                        >
+                          {job.description.slice(0, 180)}
+                          {job.description.length > 180 ? "…" : ""}
+                        </p>
+                      )}
                     </div>
-
-                    {/* Apply button */}
-                    <div
-                      className="tg-job-card-action"
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        paddingTop: "0.25rem",
-                      }}
-                    >
-                      <button
-                        onClick={() =>
-                          appliedJobs.includes(job.id)
-                            ? handleCancelApplication(job.id)
-                            : handleApply(job.id)
-                        }
-                        style={{
-                          background: appliedJobs.includes(job.id)
-                            ? "transparent"
-                            : "#fff",
-                          color: appliedJobs.includes(job.id)
-                            ? "rgba(255,80,80,0.8)"
-                            : "#000",
-                          border: appliedJobs.includes(job.id)
-                            ? "1px solid rgba(255,80,80,0.3)"
-                            : "none",
-                          padding: "0.6rem 1.3rem",
-                          borderRadius: "980px",
-                          fontWeight: 500,
-                          fontSize: "0.85rem",
-                          cursor: "pointer",
-                          fontFamily: "-apple-system, sans-serif",
-                          whiteSpace: "nowrap",
-                          transition: "all 0.2s",
-                        }}
-                      >
-                        {appliedJobs.includes(job.id) ? "Cancel" : "Apply"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -1211,210 +846,133 @@ export default function WorkerDashboard() {
         {activeTab === "applied" && (
           <div>
             {appliedJobsList.length === 0 ? (
-              /* Empty state: no applications yet */
               <div
                 style={{
-                  background: "#111",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 20,
-                  padding: "4rem 2rem",
                   textAlign: "center",
+                  padding: "4rem 2rem",
+                  color: "var(--text-muted)",
                 }}
               >
-                <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>✦</p>
-                <p
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "1.05rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Your applications will live here
-                </p>
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.35)",
-                    fontSize: "0.88rem",
-                    lineHeight: 1.6,
-                    maxWidth: 340,
-                    margin: "0 auto 1.75rem",
-                  }}
-                >
-                  Once you apply to a role, you'll be able to track your
-                  interview progress right here — step by step.
+                <p style={{ fontSize: "1rem" }}>No applications yet.</p>
+                <p style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>
+                  Switch to Browse to explore open roles.
                 </p>
                 <button
                   onClick={() => setActiveTab("browse")}
                   style={{
-                    background: "#fff",
-                    color: "#000",
-                    padding: "0.65rem 1.6rem",
-                    borderRadius: "980px",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "-apple-system, sans-serif",
-                    fontWeight: 500,
+                    marginTop: "1.5rem",
+                    background: "var(--accent-soft)",
+                    color: "var(--accent)",
+                    border: "1px solid rgba(79,124,255,0.2)",
+                    padding: "0.65rem 1.5rem",
+                    borderRadius: 8,
                     fontSize: "0.9rem",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    fontFamily: "var(--sans)",
                   }}
                 >
-                  Browse open roles →
+                  Browse roles
                 </button>
               </div>
             ) : (
-              <>
-                {/* Activity feed */}
-                <ActivityFeed items={activityItems} />
-
-                {/* Applied job cards */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1px",
-                    background: "rgba(255,255,255,0.06)",
-                    borderRadius: 16,
-                    overflow: "hidden",
-                  }}
-                >
-                  {appliedJobsList.map((job) => {
-                    const appId = applicationIds[job.id];
-                    const ivStatus = appId
-                      ? interviewStatuses[appId] ?? "not_started"
-                      : "not_started";
-                    const locked = interviewLocked(job.id);
-                    const needsScheduling =
-                      ivStatus === "not_started" || ivStatus === "invited";
-
-                    return (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
+                {appliedJobsList.map((job) => {
+                  const appId = applicationIds[job.id];
+                  const status = appId ? interviewStatuses[appId] : undefined;
+                  return (
+                    <div
+                      key={job.id}
+                      style={{
+                        background: "var(--navy-card)",
+                        border: "1px solid var(--navy-border)",
+                        borderRadius: 14,
+                        padding: "1.5rem",
+                      }}
+                    >
                       <div
-                        key={job.id}
-                        style={{ background: "#111", padding: "1.5rem" }}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: "1rem",
+                        }}
                       >
+                        <div>
+                          <h3
+                            style={{
+                              fontSize: "1rem",
+                              fontWeight: 600,
+                              marginBottom: "0.25rem",
+                            }}
+                          >
+                            {job.title}
+                          </h3>
+                          <p
+                            style={{
+                              color: "var(--text-secondary)",
+                              fontSize: "0.85rem",
+                              fontWeight: 300,
+                            }}
+                          >
+                            {job.businesses?.company_name}
+                            {job.location && ` · ${job.location}`}
+                          </p>
+                        </div>
                         <div
                           style={{
                             display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                            flexWrap: "wrap",
-                            gap: "1rem",
+                            alignItems: "center",
+                            gap: "0.75rem",
                           }}
                         >
-                          <div style={{ flex: 1 }}>
-                            {/* Company + verified */}
-                            <div
+                          <StatusBadge status={status} />
+                          {status === "invited" && appId && (
+                            <button
+                              onClick={() =>
+                                router.push(
+                                  `/worker/schedule-interview/${appId}`
+                                )
+                              }
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                marginBottom: "0.3rem",
-                                flexWrap: "wrap",
+                                background: "var(--accent)",
+                                color: "#fff",
+                                border: "none",
+                                padding: "0.45rem 1rem",
+                                borderRadius: 8,
+                                fontSize: "0.82rem",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                fontFamily: "var(--sans)",
+                                transition: "all 0.2s",
                               }}
                             >
-                              <span
-                                style={{
-                                  fontSize: "0.82rem",
-                                  color: "rgba(255,255,255,0.4)",
-                                }}
-                              >
-                                {job.businesses?.company_name}
-                              </span>
-                              {job.businesses?.verified && (
-                                <span
-                                  style={{
-                                    background: "rgba(255,255,255,0.06)",
-                                    border: "1px solid rgba(255,255,255,0.1)",
-                                    color: "rgba(255,255,255,0.5)",
-                                    fontSize: "0.68rem",
-                                    fontWeight: 600,
-                                    padding: "0.1rem 0.5rem",
-                                    borderRadius: "980px",
-                                  }}
-                                >
-                                  ✓ Verified
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Title */}
-                            <h3
-                              style={{
-                                fontSize: "1rem",
-                                fontWeight: 600,
-                                letterSpacing: "-0.01em",
-                                marginBottom: "0.6rem",
-                              }}
-                            >
-                              {job.title}
-                            </h3>
-
-                            {/* Progress pipeline */}
-                            <ProgressPipeline status={ivStatus} />
-
-                            {/* Status badge */}
-                            <div style={{ marginTop: "0.6rem" }}>
-                              <InterviewBadge status={ivStatus} />
-                            </div>
-                          </div>
-
-                          {/* Action buttons */}
-                          <div
-                            className="tg-applied-actions"
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "0.5rem",
-                              alignItems: "flex-end",
-                            }}
-                          >
-                            {needsScheduling && appId && (
-                              <button
-                                onClick={() =>
-                                  router.push(
-                                    `/worker/schedule-interview/${appId}`
-                                  )
-                                }
-                                style={{
-                                  background: "#fff",
-                                  color: "#000",
-                                  border: "none",
-                                  padding: "0.6rem 1.3rem",
-                                  borderRadius: "980px",
-                                  fontWeight: 500,
-                                  fontSize: "0.85rem",
-                                  cursor: "pointer",
-                                  fontFamily: "-apple-system, sans-serif",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                Schedule →
-                              </button>
-                            )}
-                            {!locked && (
-                              <button
-                                onClick={() => handleCancelApplication(job.id)}
-                                style={{
-                                  background: "transparent",
-                                  color: "rgba(255,80,80,0.7)",
-                                  border: "1px solid rgba(255,80,80,0.2)",
-                                  padding: "0.5rem 1.1rem",
-                                  borderRadius: "980px",
-                                  fontWeight: 400,
-                                  fontSize: "0.8rem",
-                                  cursor: "pointer",
-                                  fontFamily: "-apple-system, sans-serif",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                Cancel
-                              </button>
-                            )}
-                          </div>
+                              Schedule
+                            </button>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </>
+                      <p
+                        style={{
+                          color: "var(--text-muted)",
+                          fontSize: "0.78rem",
+                          marginTop: "0.6rem",
+                        }}
+                      >
+                        Applied · {job.industry}{" "}
+                        {job.country && `· ${job.country}`}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
