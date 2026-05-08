@@ -11,17 +11,17 @@ type Business = { company_name: string; verified: boolean };
 type Job = {
   id: string;
   title: string;
-  location: string;
-  country: string;
-  region: string;
-  industry: string;
-  salary_min: number;
-  salary_max: number;
-  deadline: string;
-  qualifications: string[];
+  location: string | null;
+  country: string | null;
+  region: string | null;
+  industry: string | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  deadline: string | null;
+  qualifications: string[] | null;
   status: string;
-  description: string;
-  work_type: string;
+  description: string | null;
+  work_type: string | null;
   businesses: Business | null;
 };
 
@@ -362,9 +362,11 @@ export default function WorkerDashboard() {
   }
 
   // ── Derived ──────────────────────────────────────────────
-  const industries = [...new Set(jobs.map((j) => j.industry).filter(Boolean))];
+  const industries = [
+    ...new Set(jobs.map((j) => j.industry).filter((x): x is string => !!x)),
+  ];
   const availableCountries = [
-    ...new Set(jobs.map((j) => j.country).filter(Boolean)),
+    ...new Set(jobs.map((j) => j.country).filter((x): x is string => !!x)),
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
@@ -689,9 +691,9 @@ export default function WorkerDashboard() {
                 }}
               >
                 <option value="">All industries</option>
-                {industries.map((i) => (
-                  <option key={i} value={i!}>
-                    {i}
+                {industries.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind}
                   </option>
                 ))}
               </select>
@@ -744,7 +746,7 @@ export default function WorkerDashboard() {
                   gap: "0.85rem",
                 }}
               >
-                {filteredJobs.map((job) => {
+                {filteredJobs.map((job: Job) => {
                   const applied = appliedJobs.includes(job.id);
                   const appId = applicationIds[job.id];
                   const status = appId ? interviewStatuses[appId] : undefined;
@@ -868,7 +870,7 @@ export default function WorkerDashboard() {
                           </div>
 
                           {/* Qualifications chips */}
-                          {job.qualifications?.length > 0 && (
+                          {(job.qualifications ?? []).length > 0 && (
                             <div
                               style={{
                                 display: "flex",
@@ -876,21 +878,24 @@ export default function WorkerDashboard() {
                                 gap: "0.35rem",
                               }}
                             >
-                              {job.qualifications.map((q, i) => (
-                                <span
-                                  key={i}
-                                  style={{
-                                    background: "rgba(255,255,255,0.04)",
-                                    border: "1px solid rgba(255,255,255,0.08)",
-                                    color: "var(--text-muted)",
-                                    fontSize: "0.75rem",
-                                    padding: "0.18rem 0.6rem",
-                                    borderRadius: 100,
-                                  }}
-                                >
-                                  {q}
-                                </span>
-                              ))}
+                              {(job.qualifications ?? []).map(
+                                (q: string, i: number) => (
+                                  <span
+                                    key={i}
+                                    style={{
+                                      background: "rgba(255,255,255,0.04)",
+                                      border:
+                                        "1px solid rgba(255,255,255,0.08)",
+                                      color: "var(--text-muted)",
+                                      fontSize: "0.75rem",
+                                      padding: "0.18rem 0.6rem",
+                                      borderRadius: 100,
+                                    }}
+                                  >
+                                    {q}
+                                  </span>
+                                )
+                              )}
                             </div>
                           )}
                         </div>
@@ -959,7 +964,7 @@ export default function WorkerDashboard() {
                   overflow: "hidden",
                 }}
               >
-                {appliedJobsList.map((job, i) => {
+                {appliedJobsList.map((job: Job, i: number) => {
                   const appId = applicationIds[job.id];
                   const ivStatus = appId
                     ? interviewStatuses[appId] ?? "not_started"
