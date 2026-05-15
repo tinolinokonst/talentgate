@@ -400,6 +400,7 @@ export default function BusinessDashboard() {
   // Listings / applicants tabs
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [totalApplicants, setTotalApplicants] = useState<number>(0);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [activeTab, setActiveTab] = useState<"listings" | "applicants">(
     "listings"
@@ -442,7 +443,16 @@ export default function BusinessDashboard() {
       .eq("business_id", biz.id)
       .order("created_at", { ascending: false });
 
-    setJobs(jobData ?? []);
+    setJobs(jobData || []);
+
+    if (jobData && jobData.length > 0) {
+      const jobIds = jobData.map((j: any) => j.id);
+      const { count } = await supabase
+        .from("applications")
+        .select("id", { count: "exact", head: true })
+        .in("job_id", jobIds);
+      setTotalApplicants(count ?? 0);
+    }
     setLoading(false);
   }
 
@@ -904,6 +914,58 @@ export default function BusinessDashboard() {
             >
               Manage your roles and applicants.
             </p>
+          </div>
+          {/* ── Stat cards ── */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: "1rem",
+              marginBottom: "2rem",
+            }}
+          >
+            {[
+              {
+                label: "Active roles",
+                value: jobs.filter((j: any) => j.status === "active").length,
+              },
+              {
+                label: "Total applicants",
+                value: totalApplicants,
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                style={{
+                  background: "#111",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  padding: "1.25rem 1.5rem",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "rgba(255,255,255,0.35)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  {stat.label}
+                </p>
+                <p
+                  style={{
+                    fontSize: "2rem",
+                    fontWeight: 700,
+                    letterSpacing: "-0.03em",
+                    color: "#f5f5f7",
+                  }}
+                >
+                  {stat.value}
+                </p>
+              </div>
+            ))}
           </div>
           <Link
             href="/business/post-role"
