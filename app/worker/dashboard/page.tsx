@@ -63,23 +63,63 @@ const SS = `
   ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:rgba(79,124,255,0.2);border-radius:3px;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
   .fade{animation:fadeUp 0.5s ease forwards;}
+  .modal-inner{animation:slideUp 0.3s ease forwards;}
   .tab-btn{background:transparent;border:none;padding:0.55rem 0;font-family:var(--sans);font-size:0.9rem;cursor:pointer;transition:color 0.15s;position:relative;}
   .tab-active{color:var(--text-primary);font-weight:500;}
   .tab-active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);border-radius:2px;}
   .tab-inactive{color:var(--text-muted);}
   .tab-inactive:hover{color:var(--text-secondary);}
-  .job-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:1.35rem 1.5rem;transition:border-color 0.2s,box-shadow 0.2s;}
-  .job-card:hover{border-color:rgba(79,124,255,0.28);box-shadow:0 8px 28px rgba(0,0,0,0.3);}
+  .job-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:1.35rem 1.5rem;transition:border-color 0.2s,box-shadow 0.2s;cursor:pointer;}
+  .job-card:hover{border-color:rgba(79,124,255,0.35);box-shadow:0 8px 28px rgba(0,0,0,0.35);}
   .apply-btn{background:var(--accent);color:#fff;border:none;padding:0.55rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:var(--sans);}
   .apply-btn:hover{background:#3d6aee;box-shadow:0 4px 16px rgba(79,124,255,0.35);}
+  .apply-btn-lg{background:var(--accent);color:#fff;border:none;padding:0.75rem 2rem;border-radius:10px;font-size:0.92rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:var(--sans);}
+  .apply-btn-lg:hover{background:#3d6aee;box-shadow:0 4px 20px rgba(79,124,255,0.4);}
   .cancel-btn{background:transparent;color:rgba(248,113,113,0.7);border:1px solid rgba(248,113,113,0.2);padding:0.45rem 1rem;border-radius:8px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:var(--sans);}
   .cancel-btn:hover{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.4);color:#fca5a5;}
+  .cancel-btn-lg{background:transparent;color:rgba(248,113,113,0.7);border:1px solid rgba(248,113,113,0.2);padding:0.7rem 1.5rem;border-radius:10px;font-size:0.88rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:var(--sans);}
+  .cancel-btn-lg:hover{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.4);color:#fca5a5;}
   .schedule-btn{background:#fff;color:#000;border:none;padding:0.5rem 1.1rem;border-radius:8px;font-weight:500;font-size:0.82rem;cursor:pointer;white-space:nowrap;font-family:var(--sans);transition:all 0.2s;}
   .schedule-btn:hover{background:#e8edff;box-shadow:0 4px 12px rgba(79,124,255,0.2);}
 `;
 
-// ── InterviewBadge (applied tab) ───────────────────────────
+// ── Verified badge ─────────────────────────────────────────
+function VerifiedBadge() {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.25rem",
+        background: "var(--teal-soft)",
+        color: "var(--teal)",
+        fontSize: "0.68rem",
+        fontWeight: 500,
+        padding: "0.1rem 0.5rem",
+        borderRadius: 100,
+        border: "1px solid rgba(45,212,191,0.2)",
+      }}
+    >
+      <svg
+        width="8"
+        height="8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      Verified
+    </span>
+  );
+}
+
+// ── InterviewBadge ─────────────────────────────────────────
 function InterviewBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; color: string; bg: string }> = {
     not_started: {
@@ -132,7 +172,7 @@ function InterviewBadge({ status }: { status: string }) {
   );
 }
 
-// ── StatusBadge (browse tab, applied column) ───────────────
+// ── StatusBadge ────────────────────────────────────────────
 function StatusBadge({ status }: { status?: string }) {
   const map: Record<string, { label: string; color: string; bg: string }> = {
     invited: { label: "Invited", color: "#a5b8ff", bg: "rgba(79,124,255,0.1)" },
@@ -176,6 +216,410 @@ function StatusBadge({ status }: { status?: string }) {
   );
 }
 
+// ── Meta pill ──────────────────────────────────────────────
+function MetaPill({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.4rem",
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid var(--navy-border)",
+        borderRadius: 8,
+        padding: "0.4rem 0.75rem",
+        fontSize: "0.82rem",
+        color: "var(--text-secondary)",
+      }}
+    >
+      {icon}
+      {text}
+    </div>
+  );
+}
+
+// ── Role Detail Modal ──────────────────────────────────────
+function RoleModal({
+  job,
+  applied,
+  appId,
+  interviewStatus,
+  onClose,
+  onApply,
+  onCancel,
+  onSchedule,
+  locked,
+}: {
+  job: Job;
+  applied: boolean;
+  appId?: string;
+  interviewStatus?: string;
+  onClose: () => void;
+  onApply: () => void;
+  onCancel: () => void;
+  onSchedule: () => void;
+  locked: boolean;
+}) {
+  const needsScheduling =
+    interviewStatus === "not_started" || interviewStatus === "invited";
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        background: "rgba(0,0,0,0.82)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1.5rem",
+      }}
+    >
+      <div
+        className="modal-inner"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#131c2e",
+          border: "1px solid var(--navy-border)",
+          borderRadius: 20,
+          padding: "2.5rem",
+          maxWidth: 660,
+          width: "100%",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          position: "relative",
+        }}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "1.25rem",
+            right: "1.25rem",
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid var(--navy-border)",
+            color: "var(--text-muted)",
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {/* Company + verified */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            marginBottom: "0.5rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.85rem",
+              color: "var(--text-secondary)",
+              fontWeight: 300,
+            }}
+          >
+            {job.businesses?.company_name}
+          </span>
+          {job.businesses?.verified && <VerifiedBadge />}
+        </div>
+
+        {/* Title */}
+        <h2
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: "1.6rem",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            marginBottom: "1.25rem",
+            lineHeight: 1.2,
+          }}
+        >
+          {job.title}
+        </h2>
+
+        {/* Meta pills */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.5rem",
+            marginBottom: "1.75rem",
+          }}
+        >
+          {job.location && (
+            <MetaPill
+              icon={
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              }
+              text={job.location}
+            />
+          )}
+          {job.work_type && (
+            <MetaPill
+              icon={
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              }
+              text={job.work_type}
+            />
+          )}
+          {job.industry && (
+            <MetaPill
+              icon={
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              }
+              text={job.industry}
+            />
+          )}
+          {job.salary_min && job.salary_max && (
+            <MetaPill
+              icon={
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              }
+              text={`£${job.salary_min.toLocaleString()} – £${job.salary_max.toLocaleString()}`}
+            />
+          )}
+          {job.deadline && (
+            <MetaPill
+              icon={
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              }
+              text={`Deadline: ${job.deadline}`}
+            />
+          )}
+        </div>
+
+        {/* Divider */}
+        <div
+          style={{
+            height: 1,
+            background: "var(--navy-border)",
+            marginBottom: "1.75rem",
+          }}
+        />
+
+        {/* Description */}
+        {job.description && (
+          <div style={{ marginBottom: "1.75rem" }}>
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: "0.75rem",
+              }}
+            >
+              About the role
+            </p>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.9rem",
+                lineHeight: 1.75,
+                fontWeight: 300,
+              }}
+            >
+              {job.description}
+            </p>
+          </div>
+        )}
+
+        {/* Qualifications */}
+        {(job.qualifications ?? []).length > 0 && (
+          <div style={{ marginBottom: "2rem" }}>
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: "0.75rem",
+              }}
+            >
+              Requirements
+            </p>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
+              }}
+            >
+              {(job.qualifications ?? []).map((q, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "0.6rem",
+                  }}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--accent)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ marginTop: 2, flexShrink: 0 }}
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    style={{
+                      fontSize: "0.88rem",
+                      color: "var(--text-secondary)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    {q}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div
+          style={{
+            height: 1,
+            background: "var(--navy-border)",
+            marginBottom: "1.5rem",
+          }}
+        />
+
+        {/* Interview status (if applied) */}
+        {applied && interviewStatus && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <InterviewBadge status={interviewStatus} />
+          </div>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          {!applied && (
+            <button className="apply-btn-lg" onClick={onApply}>
+              Apply for this role
+            </button>
+          )}
+          {applied && needsScheduling && appId && (
+            <button className="apply-btn-lg" onClick={onSchedule}>
+              Schedule interview →
+            </button>
+          )}
+          {applied && !locked && (
+            <button className="cancel-btn-lg" onClick={onCancel}>
+              Cancel application
+            </button>
+          )}
+          {applied && locked && (
+            <p
+              style={{
+                color: "var(--text-muted)",
+                fontSize: "0.85rem",
+                alignSelf: "center",
+              }}
+            >
+              Your interview is underway — good luck!
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────
 export default function WorkerDashboard() {
   const router = useRouter();
@@ -202,6 +646,9 @@ export default function WorkerDashboard() {
   } | null>(null);
   const [activeTab, setActiveTab] = useState<"browse" | "applied">("browse");
 
+  // ── Role detail modal ────────────────────────────────────
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
   // ── Data loading ─────────────────────────────────────────
   async function loadData() {
     const {
@@ -222,10 +669,7 @@ export default function WorkerDashboard() {
     const { data: listings } = await supabase
       .from("job_listings")
       .select(
-        `id, title, location, country, region, industry,
-               salary_min, salary_max, deadline,
-               qualifications, status, description, work_type,
-               businesses (company_name, verified)`
+        `id, title, location, country, region, industry, salary_min, salary_max, deadline, qualifications, status, description, work_type, businesses (company_name, verified)`
       )
       .eq("status", "active")
       .order("created_at", { ascending: false });
@@ -272,7 +716,6 @@ export default function WorkerDashboard() {
     };
   }, []);
 
-  // ── Filtering ────────────────────────────────────────────
   useEffect(() => {
     let filtered = jobs;
     if (search)
@@ -322,6 +765,7 @@ export default function WorkerDashboard() {
     setAppliedJobs((prev) => [...prev, jobId]);
     setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
     setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
+    setSelectedJob(null);
     router.push(`/worker/schedule-interview/${newApp.id}`);
   }
 
@@ -347,6 +791,7 @@ export default function WorkerDashboard() {
       if (appId) delete n[appId];
       return n;
     });
+    setSelectedJob(null);
   }
 
   async function handleSignOut() {
@@ -361,12 +806,8 @@ export default function WorkerDashboard() {
     return s === "in_progress" || s === "completed";
   }
 
-  // ── Derived ──────────────────────────────────────────────
   const industries = [
     ...new Set(jobs.map((j) => j.industry).filter((x): x is string => !!x)),
-  ];
-  const availableCountries = [
-    ...new Set(jobs.map((j) => j.country).filter((x): x is string => !!x)),
   ];
   const appliedJobsList = jobs.filter((j) => appliedJobs.includes(j.id));
 
@@ -381,7 +822,6 @@ export default function WorkerDashboard() {
     width: "100%",
   };
 
-  // ── Loading ──────────────────────────────────────────────
   if (loading)
     return (
       <div
@@ -406,6 +846,14 @@ export default function WorkerDashboard() {
       </div>
     );
 
+  // ── Derive modal state ────────────────────────────────────
+  const modalAppId = selectedJob ? applicationIds[selectedJob.id] : undefined;
+  const modalIvStatus = modalAppId ? interviewStatuses[modalAppId] : undefined;
+  const modalApplied = selectedJob
+    ? appliedJobs.includes(selectedJob.id)
+    : false;
+  const modalLocked = selectedJob ? interviewLocked(selectedJob.id) : false;
+
   return (
     <main
       style={{
@@ -417,7 +865,25 @@ export default function WorkerDashboard() {
     >
       <style>{SS}</style>
 
-      {/* NAV */}
+      {/* ── ROLE DETAIL MODAL ── */}
+      {selectedJob && (
+        <RoleModal
+          job={selectedJob}
+          applied={modalApplied}
+          appId={modalAppId}
+          interviewStatus={modalIvStatus}
+          onClose={() => setSelectedJob(null)}
+          onApply={() => handleApply(selectedJob.id)}
+          onCancel={() => handleCancelApplication(selectedJob.id)}
+          onSchedule={() => {
+            setSelectedJob(null);
+            router.push(`/worker/schedule-interview/${modalAppId}`);
+          }}
+          locked={modalLocked}
+        />
+      )}
+
+      {/* ── NAV ── */}
       <nav
         style={{
           position: "sticky",
@@ -752,7 +1218,11 @@ export default function WorkerDashboard() {
                   const status = appId ? interviewStatuses[appId] : undefined;
 
                   return (
-                    <div key={job.id} className="job-card">
+                    <div
+                      key={job.id}
+                      className="job-card"
+                      onClick={() => setSelectedJob(job)}
+                    >
                       <div
                         style={{
                           display: "flex",
@@ -762,9 +1232,8 @@ export default function WorkerDashboard() {
                           flexWrap: "wrap",
                         }}
                       >
-                        {/* Left: job info */}
+                        {/* Left */}
                         <div style={{ flex: 1, minWidth: 200 }}>
-                          {/* Company + verified */}
                           <div
                             style={{
                               display: "flex",
@@ -783,39 +1252,8 @@ export default function WorkerDashboard() {
                             >
                               {job.businesses?.company_name}
                             </span>
-                            {job.businesses?.verified && (
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "0.25rem",
-                                  background: "var(--teal-soft)",
-                                  color: "var(--teal)",
-                                  fontSize: "0.68rem",
-                                  fontWeight: 500,
-                                  padding: "0.1rem 0.5rem",
-                                  borderRadius: 100,
-                                  border: "1px solid rgba(45,212,191,0.2)",
-                                }}
-                              >
-                                <svg
-                                  width="8"
-                                  height="8"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                Verified
-                              </span>
-                            )}
+                            {job.businesses?.verified && <VerifiedBadge />}
                           </div>
-
-                          {/* Title */}
                           <h3
                             style={{
                               fontSize: "1rem",
@@ -826,8 +1264,6 @@ export default function WorkerDashboard() {
                           >
                             {job.title}
                           </h3>
-
-                          {/* Description (truncated at 120 chars) */}
                           {job.description && (
                             <p
                               style={{
@@ -844,14 +1280,11 @@ export default function WorkerDashboard() {
                                 : job.description}
                             </p>
                           )}
-
-                          {/* Meta: location · work_type · salary · deadline */}
                           <div
                             style={{
                               display: "flex",
                               flexWrap: "wrap",
                               gap: "0.4rem",
-                              marginBottom: "0.5rem",
                               fontSize: "0.78rem",
                               color: "var(--text-muted)",
                             }}
@@ -868,39 +1301,8 @@ export default function WorkerDashboard() {
                               <span>· Deadline: {job.deadline}</span>
                             )}
                           </div>
-
-                          {/* Qualifications chips */}
-                          {(job.qualifications ?? []).length > 0 && (
-                            <div
-                              style={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: "0.35rem",
-                              }}
-                            >
-                              {(job.qualifications ?? []).map(
-                                (q: string, i: number) => (
-                                  <span
-                                    key={i}
-                                    style={{
-                                      background: "rgba(255,255,255,0.04)",
-                                      border:
-                                        "1px solid rgba(255,255,255,0.08)",
-                                      color: "var(--text-muted)",
-                                      fontSize: "0.75rem",
-                                      padding: "0.18rem 0.6rem",
-                                      borderRadius: 100,
-                                    }}
-                                  >
-                                    {q}
-                                  </span>
-                                )
-                              )}
-                            </div>
-                          )}
                         </div>
-
-                        {/* Right: status + apply/cancel */}
+                        {/* Right */}
                         <div
                           style={{
                             display: "flex",
@@ -911,16 +1313,15 @@ export default function WorkerDashboard() {
                           }}
                         >
                           {applied && <StatusBadge status={status} />}
-                          <button
-                            onClick={() =>
-                              applied
-                                ? handleCancelApplication(job.id)
-                                : handleApply(job.id)
-                            }
-                            className={applied ? "cancel-btn" : "apply-btn"}
+                          <span
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "var(--accent)",
+                              fontWeight: 500,
+                            }}
                           >
-                            {applied ? "Cancel application" : "Apply"}
-                          </button>
+                            View role →
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -982,7 +1383,11 @@ export default function WorkerDashboard() {
                           i < appliedJobsList.length - 1
                             ? "1px solid var(--navy-border)"
                             : "none",
+                        cursor: "pointer",
+                        transition: "background 0.15s",
                       }}
+                      onClick={() => setSelectedJob(job)}
+                      className="row-hover"
                     >
                       <div
                         style={{
@@ -993,9 +1398,7 @@ export default function WorkerDashboard() {
                           gap: "1rem",
                         }}
                       >
-                        {/* Left */}
                         <div style={{ flex: 1 }}>
-                          {/* Company + verified */}
                           <div
                             style={{
                               display: "flex",
@@ -1014,36 +1417,7 @@ export default function WorkerDashboard() {
                             >
                               {job.businesses?.company_name}
                             </span>
-                            {job.businesses?.verified && (
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "0.25rem",
-                                  background: "var(--teal-soft)",
-                                  color: "var(--teal)",
-                                  fontSize: "0.68rem",
-                                  fontWeight: 500,
-                                  padding: "0.1rem 0.5rem",
-                                  borderRadius: 100,
-                                  border: "1px solid rgba(45,212,191,0.2)",
-                                }}
-                              >
-                                <svg
-                                  width="8"
-                                  height="8"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                Verified
-                              </span>
-                            )}
+                            {job.businesses?.verified && <VerifiedBadge />}
                           </div>
                           <h3
                             style={{
@@ -1055,10 +1429,21 @@ export default function WorkerDashboard() {
                           >
                             {job.title}
                           </h3>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "0.4rem",
+                              fontSize: "0.78rem",
+                              color: "var(--text-muted)",
+                              marginBottom: "0.5rem",
+                            }}
+                          >
+                            {job.location && <span>{job.location}</span>}
+                            {job.work_type && <span>· {job.work_type}</span>}
+                          </div>
                           <InterviewBadge status={ivStatus} />
                         </div>
-
-                        {/* Right: action buttons */}
                         <div
                           style={{
                             display: "flex",
@@ -1070,11 +1455,12 @@ export default function WorkerDashboard() {
                           {needsScheduling && appId && (
                             <button
                               className="schedule-btn"
-                              onClick={() =>
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 router.push(
                                   `/worker/schedule-interview/${appId}`
-                                )
-                              }
+                                );
+                              }}
                             >
                               Schedule interview →
                             </button>
@@ -1082,7 +1468,10 @@ export default function WorkerDashboard() {
                           {!locked && (
                             <button
                               className="cancel-btn"
-                              onClick={() => handleCancelApplication(job.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCancelApplication(job.id);
+                              }}
                             >
                               Cancel application
                             </button>
