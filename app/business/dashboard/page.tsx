@@ -396,20 +396,15 @@ export default function BusinessDashboard() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [business, setBusiness] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [totalApplicants, setTotalApplicants] = useState<number>(0);
 
-  // Listings / applicants tabs
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
-  const [totalApplicants, setTotalApplicants] = useState<number>(0);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [activeTab, setActiveTab] = useState<"listings" | "applicants">(
     "listings"
   );
-
-  // Applicant modal
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
-
-  // Interview filter: "all" | "completed" | "pending"
   const [interviewFilter, setInterviewFilter] = useState<
     "all" | "completed" | "pending"
   >("all");
@@ -453,6 +448,7 @@ export default function BusinessDashboard() {
         .in("job_id", jobIds);
       setTotalApplicants(count ?? 0);
     }
+
     setLoading(false);
   }
 
@@ -825,7 +821,6 @@ export default function BusinessDashboard() {
               fontFamily: "var(--sans)",
               fontSize: "0.82rem",
               cursor: "pointer",
-              transition: "all 0.2s",
             }}
           >
             Sign out
@@ -834,7 +829,7 @@ export default function BusinessDashboard() {
       </nav>
 
       <div style={{ maxWidth: 920, margin: "0 auto", padding: "3rem 2rem" }}>
-        {/* Header */}
+        {/* ── HEADER ── */}
         <div
           className="fade"
           style={{
@@ -843,7 +838,7 @@ export default function BusinessDashboard() {
             alignItems: "flex-start",
             marginBottom: "2.5rem",
             flexWrap: "wrap",
-            gap: "1rem",
+            gap: "1.5rem",
           }}
         >
           <div>
@@ -915,58 +910,6 @@ export default function BusinessDashboard() {
               Manage your roles and applicants.
             </p>
           </div>
-          {/* ── Stat cards ── */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-              gap: "1rem",
-              marginBottom: "2rem",
-            }}
-          >
-            {[
-              {
-                label: "Active roles",
-                value: jobs.filter((j: any) => j.status === "active").length,
-              },
-              {
-                label: "Total applicants",
-                value: totalApplicants,
-              },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                style={{
-                  background: "#111",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 16,
-                  padding: "1.25rem 1.5rem",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "rgba(255,255,255,0.35)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {stat.label}
-                </p>
-                <p
-                  style={{
-                    fontSize: "2rem",
-                    fontWeight: 700,
-                    letterSpacing: "-0.03em",
-                    color: "#f5f5f7",
-                  }}
-                >
-                  {stat.value}
-                </p>
-              </div>
-            ))}
-          </div>
           <Link
             href="/business/post-role"
             style={{
@@ -980,7 +923,6 @@ export default function BusinessDashboard() {
               fontFamily: "var(--sans)",
               fontSize: "0.9rem",
               fontWeight: 500,
-              transition: "all 0.2s",
               whiteSpace: "nowrap",
             }}
           >
@@ -1001,7 +943,7 @@ export default function BusinessDashboard() {
           </Link>
         </div>
 
-        {/* Stats */}
+        {/* ── STAT CARDS ── */}
         <div
           style={{
             display: "grid",
@@ -1019,7 +961,7 @@ export default function BusinessDashboard() {
             },
             {
               label: "Total applicants",
-              value: jobs.reduce((n, j: any) => n + (j._appCount ?? 0), 0),
+              value: totalApplicants,
               color: "var(--teal)",
               bg: "var(--teal-soft)",
             },
@@ -1063,7 +1005,7 @@ export default function BusinessDashboard() {
           ))}
         </div>
 
-        {/* Tabs */}
+        {/* ── TABS ── */}
         <div
           style={{
             display: "flex",
@@ -1219,7 +1161,6 @@ export default function BusinessDashboard() {
                           flexWrap: "wrap",
                         }}
                       >
-                        {/* Status badge */}
                         <span
                           style={{
                             fontSize: "0.7rem",
@@ -1245,8 +1186,6 @@ export default function BusinessDashboard() {
                             ? "Paused"
                             : job.status}
                         </span>
-
-                        {/* Toggle Pause/Activate */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1261,13 +1200,10 @@ export default function BusinessDashboard() {
                             fontSize: "0.75rem",
                             cursor: "pointer",
                             fontFamily: "var(--sans)",
-                            transition: "all 0.15s",
                           }}
                         >
                           {job.status === "active" ? "Pause" : "Activate"}
                         </button>
-
-                        {/* Delete */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1281,7 +1217,6 @@ export default function BusinessDashboard() {
                             fontSize: "0.75rem",
                             fontFamily: "var(--sans)",
                             padding: "0.3rem 0.5rem",
-                            transition: "color 0.15s",
                           }}
                         >
                           Delete
@@ -1298,7 +1233,6 @@ export default function BusinessDashboard() {
         {/* ── APPLICANTS TAB ── */}
         {activeTab === "applicants" && (
           <div>
-            {/* Back link */}
             <button
               onClick={() => setActiveTab("listings")}
               style={{
@@ -1313,7 +1247,6 @@ export default function BusinessDashboard() {
                 display: "flex",
                 alignItems: "center",
                 gap: "0.4rem",
-                transition: "color 0.15s",
               }}
             >
               <svg
@@ -1331,7 +1264,7 @@ export default function BusinessDashboard() {
               Back to listings
             </button>
 
-            {/* Interview filter pills */}
+            {/* Filter pills */}
             {!loadingApplicants && applicants.length > 0 && (
               <div
                 style={{
@@ -1477,7 +1410,6 @@ export default function BusinessDashboard() {
                               .filter(Boolean)
                               .join(" · ")}
                           </p>
-                          {/* Inline recommendation if interview done */}
                           {app.interview_status === "completed" &&
                             app.interviews?.ai_summary?.recommendation && (
                               <div style={{ marginTop: "0.3rem" }}>
