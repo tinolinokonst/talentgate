@@ -98,6 +98,137 @@ function RecommendationBadge({ value }: { value?: string }) {
   );
 }
 
+// ── AI Detection badge ─────────────────────────────────────
+function AIDetectionBadge({ summary }: { summary: any }) {
+  if (!summary) return null;
+  const text = [
+    summary.recommendation_reason,
+    summary.relevant_experience,
+    summary.communication_style,
+    ...(summary.standout_moments ?? []),
+    ...(summary.areas_of_concern ?? []),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const aiPhrases = [
+    "as an ai",
+    "i am an ai",
+    "i'm an ai",
+    "i don't have personal",
+    "i cannot",
+    "i do not have",
+    "as a language model",
+    "i was trained",
+    "my training data",
+    "i don't have feelings",
+    "i lack the ability",
+    "i am unable to",
+    "my knowledge cutoff",
+    "i don't have access to",
+    "as an artificial",
+    "i have no personal experience",
+  ];
+
+  const genericPhrases = [
+    "i am passionate about",
+    "i am a hard worker",
+    "i always give 110",
+    "i work well in a team and independently",
+    "i am a quick learner",
+    "i thrive in fast-paced",
+    "i am results-driven",
+    "i am a self-starter",
+    "i have excellent communication skills",
+    "i am dedicated and motivated",
+  ];
+
+  const aiHits = aiPhrases.filter((p) => text.includes(p)).length;
+  const genericHits = genericPhrases.filter((p) => text.includes(p)).length;
+  const score = aiHits * 3 + genericHits;
+
+  if (score === 0) return null;
+
+  const level = score >= 6 ? "high" : score >= 3 ? "medium" : "low";
+  const config = {
+    high: {
+      label: "Likely AI-generated",
+      color: "#f87171",
+      bg: "rgba(248,113,113,0.1)",
+      border: "rgba(248,113,113,0.25)",
+    },
+    medium: {
+      label: "Possibly AI-assisted",
+      color: "#fcd34d",
+      bg: "rgba(245,158,11,0.1)",
+      border: "rgba(245,158,11,0.25)",
+    },
+    low: {
+      label: "Some generic phrasing",
+      color: "#a5b8ff",
+      bg: "rgba(79,124,255,0.1)",
+      border: "rgba(79,124,255,0.25)",
+    },
+  }[level];
+
+  return (
+    <div
+      style={{
+        background: config.bg,
+        border: `1px solid ${config.border}`,
+        borderRadius: 10,
+        padding: "0.75rem 1rem",
+        marginBottom: "1rem",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: "0.6rem",
+      }}
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={config.color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ flexShrink: 0, marginTop: 1 }}
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <div>
+        <p
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            color: config.color,
+            marginBottom: "0.2rem",
+          }}
+        >
+          {config.label}
+        </p>
+        <p
+          style={{
+            fontSize: "0.75rem",
+            color: "var(--text-muted)",
+            fontWeight: 300,
+            lineHeight: 1.5,
+          }}
+        >
+          {level === "high"
+            ? "This response contains phrases strongly associated with AI-generated text. We recommend probing further in a follow-up."
+            : level === "medium"
+            ? "Some parts of this response may have been AI-assisted. Consider asking the candidate to expand in their own words."
+            : "This response contains some generic phrasing. It may still be genuine — use your judgment."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Confidence bar ─────────────────────────────────────────
 function ConfidenceBar({ value }: { value?: number }) {
   if (value === undefined || value === null) return null;
@@ -384,6 +515,7 @@ function AISummaryPanel({ summary }: { summary: any }) {
           ))}
         </>
       )}
+      <AIDetectionBadge summary={summary} />
     </div>
   );
 }

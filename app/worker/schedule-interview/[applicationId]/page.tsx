@@ -203,30 +203,9 @@ export default function ScheduleInterview() {
         >
           Talentgate
         </Link>
-        <Link
-          href="/worker/dashboard"
-          style={{
-            color: "var(--text-muted)",
-            fontSize: "0.85rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.4rem",
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Back to dashboard
-        </Link>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+          Schedule your interview
+        </p>
       </nav>
 
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "4rem 2rem" }}>
@@ -451,6 +430,18 @@ export default function ScheduleInterview() {
           >
             {saving ? "Confirming…" : "Confirm interview slot"}
           </button>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "0.78rem",
+              textAlign: "center",
+              marginTop: "0.75rem",
+              lineHeight: 1.5,
+            }}
+          >
+            Once confirmed, your interview slot is locked in. You'll receive a
+            link when it's time.
+          </p>
         </div>
       </div>
     </main>
