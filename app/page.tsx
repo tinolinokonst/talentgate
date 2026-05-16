@@ -172,6 +172,9 @@ export default function Home() {
           <a href="#how-it-works" className="nav-link">
             How It Works
           </a>
+          <a href="#pricing" className="nav-link">
+            Pricing
+          </a>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <Link
@@ -916,6 +919,299 @@ export default function Home() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <div className="divider" style={{ margin: "0 2.5rem 5rem" }} />
+
+      {/* ── PRICING ── */}
+      <section
+        id="pricing"
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "0 2.5rem 5rem" }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+          <span className="pill" style={{ marginBottom: "1rem" }}>
+            Pricing
+          </span>
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(2rem, 4vw, 2.8rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              marginTop: "1rem",
+              marginBottom: "0.75rem",
+            }}
+          >
+            Simple, transparent pricing.
+          </h2>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "1.05rem",
+              maxWidth: 480,
+              margin: "0 auto",
+              lineHeight: 1.7,
+              fontWeight: 300,
+            }}
+          >
+            No subscriptions. No hidden fees. Pay once to get set up, then only
+            when you're ready to hire.
+          </p>
+        </div>
+
+        <div className="grid-2" style={{ maxWidth: 760, margin: "0 auto" }}>
+          {/* Card 1 — Account */}
+          <div
+            className="card"
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Business account
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "0.35rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: "3rem",
+                    fontWeight: 700,
+                    color: "var(--text-primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  $99
+                </span>
+                <span
+                  style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}
+                >
+                  one-time
+                </span>
+              </div>
+            </div>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.9rem",
+                lineHeight: 1.65,
+                fontWeight: 300,
+              }}
+            >
+              Get your business set up on Talentgate. Includes your verified
+              company profile and access to the hiring dashboard.
+            </p>
+            <div
+              style={{
+                borderTop: "1px solid var(--navy-border)",
+                paddingTop: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+              }}
+            >
+              {[
+                "Verified company badge",
+                "Business dashboard access",
+                "Applicant pipeline management",
+                "AI-powered candidate summaries",
+              ].map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.65rem",
+                  }}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--teal)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    style={{
+                      fontSize: "0.88rem",
+                      color: "var(--text-secondary)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/auth/signup?role=business"
+              className="btn-outline"
+              style={{
+                marginTop: "auto",
+                textAlign: "center",
+                fontSize: "0.9rem",
+              }}
+            >
+              Create business account
+            </Link>
+          </div>
+
+          {/* Card 2 — Per role, featured */}
+          <div
+            className="card"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+              border: "1px solid rgba(79,124,255,0.4)",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "-1px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "var(--accent)",
+                color: "#fff",
+                fontSize: "0.7rem",
+                fontWeight: 500,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                padding: "0.25rem 0.9rem",
+                borderRadius: "0 0 8px 8px",
+              }}
+            >
+              Per role
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Role posting
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "0.35rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: "3rem",
+                    fontWeight: 700,
+                    color: "var(--text-primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  $49
+                </span>
+                <span
+                  style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}
+                >
+                  per listing
+                </span>
+              </div>
+            </div>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.9rem",
+                lineHeight: 1.65,
+                fontWeight: 300,
+              }}
+            >
+              Post a role and start receiving AI-interviewed candidates. Only
+              pay when you're actively hiring.
+            </p>
+            <div
+              style={{
+                borderTop: "1px solid var(--navy-border)",
+                paddingTop: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+              }}
+            >
+              {[
+                "Unlimited applicants per role",
+                "AI first-round interviews included",
+                "Full candidate profiles & summaries",
+                "Role live until filled or closed",
+              ].map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.65rem",
+                  }}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--teal)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    style={{
+                      fontSize: "0.88rem",
+                      color: "var(--text-secondary)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/auth/signup?role=business"
+              className="btn-primary"
+              style={{
+                marginTop: "auto",
+                textAlign: "center",
+                fontSize: "0.9rem",
+              }}
+            >
+              Start hiring today →
+            </Link>
+          </div>
         </div>
       </section>
 
