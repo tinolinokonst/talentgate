@@ -619,8 +619,183 @@ function RoleModal({
     </div>
   );
 }
+// ── Open to Work Banner ────────────────────────────────────
+function OpenToWorkBanner({ supabase }: { supabase: any }) {
+  const [openToWork, setOpenToWork] = useState<boolean | null>(null);
+  const [dismissed, setDismissed] = useState(false);
 
-// ── Main component ─────────────────────────────────────────
+  useEffect(() => {
+    async function load() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("open_to_work")
+        .eq("id", user.id)
+        .single();
+      setOpenToWork(data?.open_to_work ?? false);
+    }
+    load();
+  }, []);
+
+  if (openToWork === null || openToWork === true || dismissed) return null;
+
+  return (
+    <div
+      style={{
+        background: "rgba(79,124,255,0.06)",
+        border: "1px solid rgba(79,124,255,0.2)",
+        borderRadius: 14,
+        padding: "1.1rem 1.5rem",
+        marginBottom: "1.5rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "1rem",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            fontWeight: 300,
+          }}
+        >
+          <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>
+            You're not visible to businesses.
+          </span>{" "}
+          Turn on "Open to work" in Settings so verified employers can find you.
+        </p>
+      </div>
+      <button
+        onClick={() => setDismissed(true)}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "var(--text-muted)",
+          cursor: "pointer",
+          fontSize: "0.8rem",
+          fontFamily: "var(--sans)",
+          padding: 0,
+          whiteSpace: "nowrap",
+        }}
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+}
+
+// ── Open to Work Toggle ────────────────────────────────────
+function OpenToWorkToggle({ supabase }: { supabase: any }) {
+  const [openToWork, setOpenToWork] = useState<boolean>(false);
+  const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+      const { data } = await supabase
+        .from("profiles")
+        .select("open_to_work")
+        .eq("id", user.id)
+        .single();
+      setOpenToWork(data?.open_to_work ?? false);
+    }
+    load();
+  }, []);
+
+  async function toggle() {
+    if (!userId) return;
+    setSaving(true);
+    const newVal = !openToWork;
+    await supabase
+      .from("profiles")
+      .update({ open_to_work: newVal })
+      .eq("id", userId);
+    setOpenToWork(newVal);
+    setSaving(false);
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "1rem",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <button
+          onClick={toggle}
+          disabled={saving}
+          style={{
+            width: 44,
+            height: 24,
+            borderRadius: 12,
+            border: "none",
+            cursor: "pointer",
+            background: openToWork ? "var(--teal)" : "rgba(255,255,255,0.1)",
+            position: "relative",
+            transition: "background 0.2s",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 18,
+              height: 18,
+              borderRadius: "50%",
+              background: "#fff",
+              position: "absolute",
+              top: 3,
+              transition: "left 0.2s",
+              left: openToWork ? 23 : 3,
+            }}
+          />
+        </button>
+        <span
+          style={{
+            fontSize: "0.88rem",
+            color: openToWork ? "var(--teal)" : "var(--text-muted)",
+            fontWeight: 500,
+          }}
+        >
+          {saving
+            ? "Saving…"
+            : openToWork
+            ? "On — businesses can find you"
+            : "Off — you're hidden from businesses"}
+        </span>
+      </div>
+    </div>
+  );
+}
+//–– Main components –––––––––––––––––––––
 export default function WorkerDashboard() {
   const router = useRouter();
   const supabase = createClient();
@@ -724,15 +899,23 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     let filtered = jobs;
-    if (search)
-      filtered = filtered.filter(
-        (j) =>
-          j.title.toLowerCase().includes(search.toLowerCase()) ||
-          j.location?.toLowerCase().includes(search.toLowerCase()) ||
-          (j.businesses?.company_name ?? "")
-            .toLowerCase()
-            .includes(search.toLowerCase())
-      );
+    if (search) {
+      const keywords = search.toLowerCase().split(" ").filter(Boolean);
+      filtered = filtered.filter((j) => {
+        const haystack = [
+          j.title,
+          j.location,
+          j.businesses?.company_name,
+          j.description,
+          j.industry,
+          j.work_type,
+          ...(j.qualifications ?? []),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return keywords.some((k) => haystack.includes(k));
+      });
+    }
     if (industryFilter)
       filtered = filtered.filter((j) => j.industry === industryFilter);
     if (countryFilter)
@@ -741,7 +924,7 @@ export default function WorkerDashboard() {
   }, [search, industryFilter, countryFilter, jobs]);
 
   // ── Apply / cancel ───────────────────────────────────────
-  async function handleApply(jobId: string) {
+  async function confirmApplyAction(jobId: string) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -756,10 +939,7 @@ export default function WorkerDashboard() {
       })
       .select("id")
       .single();
-    if (appError || !newApp) {
-      console.error("Failed to create application:", appError);
-      return;
-    }
+    if (appError || !newApp) return;
     await supabase.from("interviews").insert({
       application_id: newApp.id,
       worker_id: user.id,
@@ -769,11 +949,12 @@ export default function WorkerDashboard() {
     setAppliedJobs((prev) => [...prev, jobId]);
     setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
     setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
+    setConfirmApply(null);
     setSelectedJob(null);
     router.push(`/worker/schedule-interview/${newApp.id}`);
   }
 
-  async function handleCancelApplication(jobId: string) {
+  async function confirmCancelAction(jobId: string) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -795,12 +976,8 @@ export default function WorkerDashboard() {
       if (appId) delete n[appId];
       return n;
     });
+    setConfirmCancel(null);
     setSelectedJob(null);
-  }
-
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.push("/");
   }
 
   function interviewLocked(jobId: string): boolean {
@@ -850,6 +1027,296 @@ export default function WorkerDashboard() {
       </div>
     );
 
+  {
+    /* ── CONFIRM APPLY ── */
+  }
+  {
+    confirmApply && (
+      <div
+        onClick={() => setConfirmApply(null)}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 300,
+          background: "rgba(0,0,0,0.7)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "#131c2e",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 16,
+            padding: "2rem",
+            maxWidth: 400,
+            width: "100%",
+          }}
+        >
+          <h3
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "1.2rem",
+              fontWeight: 700,
+              marginBottom: "0.75rem",
+            }}
+          >
+            Apply for this role?
+          </h3>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.88rem",
+              lineHeight: 1.6,
+              marginBottom: "1.5rem",
+              fontWeight: 300,
+            }}
+          >
+            You'll be taken to schedule your AI first-round interview with
+            Claude. Once scheduled, you won't be able to undo this.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => setConfirmApply(null)}
+              style={{
+                background: "transparent",
+                border: "1px solid var(--navy-border)",
+                color: "var(--text-secondary)",
+                padding: "0.5rem 1.25rem",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "var(--sans)",
+                fontSize: "0.85rem",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => confirmApplyAction(confirmApply)}
+              style={{
+                background: "var(--accent)",
+                color: "#fff",
+                border: "none",
+                padding: "0.5rem 1.25rem",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "var(--sans)",
+                fontSize: "0.85rem",
+                fontWeight: 500,
+              }}
+            >
+              Yes, apply
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  {
+    /* ── CONFIRM CANCEL ── */
+  }
+  {
+    confirmCancel && (
+      <div
+        onClick={() => setConfirmCancel(null)}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 300,
+          background: "rgba(0,0,0,0.7)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "#131c2e",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 16,
+            padding: "2rem",
+            maxWidth: 400,
+            width: "100%",
+          }}
+        >
+          <h3
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "1.2rem",
+              fontWeight: 700,
+              marginBottom: "0.75rem",
+            }}
+          >
+            Cancel your application?
+          </h3>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.88rem",
+              lineHeight: 1.6,
+              marginBottom: "1.5rem",
+              fontWeight: 300,
+            }}
+          >
+            This will remove your application for this role. You can reapply
+            later if the role is still open.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => setConfirmCancel(null)}
+              style={{
+                background: "transparent",
+                border: "1px solid var(--navy-border)",
+                color: "var(--text-secondary)",
+                padding: "0.5rem 1.25rem",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "var(--sans)",
+                fontSize: "0.85rem",
+              }}
+            >
+              Keep application
+            </button>
+            <button
+              onClick={() => confirmCancelAction(confirmCancel)}
+              style={{
+                background: "rgba(248,113,113,0.15)",
+                color: "#f87171",
+                border: "1px solid rgba(248,113,113,0.3)",
+                padding: "0.5rem 1.25rem",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "var(--sans)",
+                fontSize: "0.85rem",
+                fontWeight: 500,
+              }}
+            >
+              Yes, cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  {
+    /* ── CONFIRM SIGN OUT ── */
+  }
+  {
+    confirmSignOut && (
+      <div
+        onClick={() => setConfirmSignOut(false)}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 300,
+          background: "rgba(0,0,0,0.7)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "#131c2e",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 16,
+            padding: "2rem",
+            maxWidth: 400,
+            width: "100%",
+          }}
+        >
+          <h3
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "1.2rem",
+              fontWeight: 700,
+              marginBottom: "0.75rem",
+            }}
+          >
+            Sign out?
+          </h3>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.88rem",
+              lineHeight: 1.6,
+              marginBottom: "1.5rem",
+              fontWeight: 300,
+            }}
+          >
+            You'll be signed out of your worker account on this device.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => setConfirmSignOut(false)}
+              style={{
+                background: "transparent",
+                border: "1px solid var(--navy-border)",
+                color: "var(--text-secondary)",
+                padding: "0.5rem 1.25rem",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "var(--sans)",
+                fontSize: "0.85rem",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                router.push("/");
+              }}
+              style={{
+                background: "var(--accent)",
+                color: "#fff",
+                border: "none",
+                padding: "0.5rem 1.25rem",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "var(--sans)",
+                fontSize: "0.85rem",
+                fontWeight: 500,
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── Derive modal state ────────────────────────────────────
   const modalAppId = selectedJob ? applicationIds[selectedJob.id] : undefined;
   const modalIvStatus = modalAppId ? interviewStatuses[modalAppId] : undefined;
@@ -877,8 +1344,8 @@ export default function WorkerDashboard() {
           appId={modalAppId}
           interviewStatus={modalIvStatus}
           onClose={() => setSelectedJob(null)}
-          onApply={() => handleApply(selectedJob.id)}
-          onCancel={() => handleCancelApplication(selectedJob.id)}
+          onApply={() => setConfirmApply(selectedJob.id)}
+          onCancel={() => setConfirmCancel(selectedJob.id)}
           onSchedule={() => {
             setSelectedJob(null);
             router.push(`/worker/schedule-interview/${modalAppId}`);
@@ -922,7 +1389,7 @@ export default function WorkerDashboard() {
             {profile?.full_name || "Profile"}
           </Link>
           <button
-            onClick={handleSignOut}
+            onClick={() => setConfirmSignOut(true)}
             style={{
               background: "transparent",
               border: "1px solid var(--navy-border)",
@@ -1051,7 +1518,8 @@ export default function WorkerDashboard() {
             )}
           </div>
         )}
-
+        {/* ── OPEN TO WORK BANNER ── */}
+        <OpenToWorkBanner supabase={supabase} />
         {/* Tabs */}
         <div
           style={{
@@ -1102,6 +1570,14 @@ export default function WorkerDashboard() {
                 {appliedJobs.length}
               </span>
             )}
+          </button>
+          <button
+            className={`tab-btn ${
+              activeTab === "settings" ? "tab-active" : "tab-inactive"
+            }`}
+            onClick={() => setActiveTab("settings")}
+          >
+            Settings
           </button>
         </div>
 
@@ -1474,7 +1950,7 @@ export default function WorkerDashboard() {
                               className="cancel-btn"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleCancelApplication(job.id);
+                                setConfirmCancel(job.id);
                               }}
                             >
                               Cancel application
@@ -1487,6 +1963,177 @@ export default function WorkerDashboard() {
                 })}
               </div>
             )}
+          </div>
+        )}
+        {/* ── SETTINGS TAB ── */}
+        {activeTab === "settings" && (
+          <div>
+            <h2
+              style={{
+                fontFamily: "var(--serif)",
+                fontSize: "1.4rem",
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                marginBottom: "2rem",
+              }}
+            >
+              Settings
+            </h2>
+
+            {/* Account */}
+            <div
+              style={{
+                background: "var(--navy-card)",
+                border: "1px solid var(--navy-border)",
+                borderRadius: 16,
+                padding: "1.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "1rem",
+                }}
+              >
+                Account
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontWeight: 500,
+                      fontSize: "0.95rem",
+                      marginBottom: "0.2rem",
+                    }}
+                  >
+                    {profile?.full_name}
+                  </p>
+                  <p
+                    style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}
+                  >
+                    Worker account · Free
+                  </p>
+                </div>
+                <Link
+                  href="/worker/profile"
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--navy-border)",
+                    color: "var(--text-secondary)",
+                    padding: "0.45rem 1rem",
+                    borderRadius: 8,
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Edit profile →
+                </Link>
+              </div>
+            </div>
+
+            {/* Open to work */}
+            <div
+              style={{
+                background: "var(--navy-card)",
+                border: "1px solid var(--navy-border)",
+                borderRadius: 16,
+                padding: "1.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Open to work
+              </p>
+              <p
+                style={{
+                  color: "var(--text-secondary)",
+                  fontSize: "0.88rem",
+                  lineHeight: 1.6,
+                  fontWeight: 300,
+                  marginBottom: "1rem",
+                }}
+              >
+                When this is on, verified businesses can find your profile in
+                the talent directory and reach out to you directly. It's off by
+                default — you control when you're visible.
+              </p>
+              <OpenToWorkToggle supabase={supabase} />
+            </div>
+
+            {/* Sign out */}
+            <div
+              style={{
+                background: "rgba(248,113,113,0.04)",
+                border: "1px solid rgba(248,113,113,0.15)",
+                borderRadius: 16,
+                padding: "1.75rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "#f87171",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "1rem",
+                }}
+              >
+                Sign out
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <p
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontSize: "0.85rem",
+                    fontWeight: 300,
+                  }}
+                >
+                  Sign out of your worker account on this device.
+                </p>
+                <button
+                  onClick={() => setConfirmSignOut(true)}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(248,113,113,0.3)",
+                    color: "#f87171",
+                    padding: "0.5rem 1.25rem",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontFamily: "var(--sans)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
