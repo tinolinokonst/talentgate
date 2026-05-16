@@ -394,6 +394,8 @@ export default function BusinessDashboard() {
   const supabase = createClient();
 
   const [jobs, setJobs] = useState<any[]>([]);
+  const [jobSearch, setJobSearch] = useState("");
+  const [jobStatusFilter, setJobStatusFilter] = useState("all");
   const [business, setBusiness] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [totalApplicants, setTotalApplicants] = useState<number>(0);
@@ -507,6 +509,16 @@ export default function BusinessDashboard() {
   const completedCount = applicants.filter(
     (a: any) => a.interview_status === "completed"
   ).length;
+  const filteredJobs = jobs.filter((j: any) => {
+    const matchesSearch =
+      j.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
+      (j.location ?? "").toLowerCase().includes(jobSearch.toLowerCase()) ||
+      (j.industry ?? "").toLowerCase().includes(jobSearch.toLowerCase());
+    const matchesStatus =
+      jobStatusFilter === "all" || j.status === jobStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   const filteredApplicants = applicants.filter((app: any) => {
     if (interviewFilter === "completed")
       return app.interview_status === "completed";
@@ -1053,19 +1065,54 @@ export default function BusinessDashboard() {
         {/* ── LISTINGS TAB ── */}
         {activeTab === "listings" && (
           <div>
-            <p
+            <div
               style={{
-                fontSize: "0.72rem",
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: "1.1rem",
+                display: "flex",
+                gap: "0.75rem",
+                marginBottom: "1.25rem",
+                flexWrap: "wrap",
               }}
             >
-              Click a role to view its applicants
-            </p>
+              <input
+                type="text"
+                placeholder="Search roles..."
+                value={jobSearch}
+                onChange={(e) => setJobSearch(e.target.value)}
+                style={{
+                  flex: 1,
+                  minWidth: 200,
+                  background: "var(--navy-card)",
+                  border: "1px solid var(--navy-border)",
+                  borderRadius: 8,
+                  padding: "0.55rem 1rem",
+                  color: "var(--text-primary)",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.88rem",
+                  outline: "none",
+                }}
+              />
+              <select
+                value={jobStatusFilter}
+                onChange={(e) => setJobStatusFilter(e.target.value)}
+                style={{
+                  background: "var(--navy-card)",
+                  border: "1px solid var(--navy-border)",
+                  borderRadius: 8,
+                  padding: "0.55rem 1rem",
+                  color: "var(--text-secondary)",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.88rem",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="all">All statuses</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
 
-            {jobs.length === 0 ? (
+            {filteredJobs.length === 0 ? (
               <div
                 style={{
                   background: "var(--navy-card)",
@@ -1105,7 +1152,7 @@ export default function BusinessDashboard() {
                   overflow: "hidden",
                 }}
               >
-                {jobs.map((job: any, i: number) => (
+                {filteredJobs.map((job: any, i: number) => (
                   <div
                     key={job.id}
                     className="row-hover"
@@ -1118,7 +1165,7 @@ export default function BusinessDashboard() {
                           ? "rgba(79,124,255,0.05)"
                           : "transparent",
                       borderBottom:
-                        i < jobs.length - 1
+                        i < filteredJobs.length - 1
                           ? "1px solid var(--navy-border)"
                           : "none",
                     }}
