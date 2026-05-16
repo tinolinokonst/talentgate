@@ -53,6 +53,7 @@ export default function HowItWorks() {
           font-weight: 500; margin-bottom: 2.5rem;
         }
         .divider { height: 1px; background: linear-gradient(to right, transparent, var(--navy-border), transparent); margin: 0 0 5rem; }
+        .trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
         @media (max-width: 768px) {
           .step-row { grid-template-columns: 48px 1fr; gap: 1.25rem; }
           .trust-grid { grid-template-columns: 1fr 1fr !important; }
@@ -240,7 +241,7 @@ export default function HowItWorks() {
               step: "04",
               color: "var(--accent)",
               title: "Review AI-interviewed applicants",
-              body: "Every applicant completes a structured first-round interview with Claude — Anthropic's AI. You see their skills, their profile, and an AI-generated summary of how they performed. No CV required.",
+              body: "By the time a candidate reaches your dashboard, a first-round interview has already taken place between them and Claude. Once complete, you get a full summary, fit score, and standout moments — saving you time, money, and the pain of screening CVs.",
             },
           ].map((s) => (
             <div key={s.step} className="step-row">
@@ -448,35 +449,83 @@ export default function HowItWorks() {
           Every account on Talentgate — business or worker — is verified before
           they can interact on the platform.
         </p>
-        <div
-          className="trust-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "1rem",
-          }}
-        >
+        <div className="trust-grid">
           {[
             {
-              icon: "🏛️",
+              icon: (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              ),
               label: "Company registry check",
               color: "var(--gold-soft)",
               border: "rgba(245,158,11,0.15)",
             },
             {
-              icon: "🪪",
+              icon: (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              ),
               label: "Government ID verified",
               color: "var(--accent-soft)",
               border: "rgba(79,124,255,0.15)",
             },
             {
-              icon: "🔐",
+              icon: (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--teal)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              ),
               label: "Secure data handling",
               color: "var(--teal-soft)",
               border: "rgba(45,212,191,0.15)",
             },
             {
-              icon: "🛡️",
+              icon: (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#c084fc"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              ),
               label: "Stripe Identity powered",
               color: "rgba(192,132,252,0.1)",
               border: "rgba(192,132,252,0.15)",
@@ -492,7 +541,13 @@ export default function HowItWorks() {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: "1.75rem", marginBottom: "0.75rem" }}>
+              <div
+                style={{
+                  marginBottom: "0.75rem",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
                 {b.icon}
               </div>
               <div
