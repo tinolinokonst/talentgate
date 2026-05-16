@@ -271,23 +271,80 @@ export default function ForWorkers() {
         <div className="grid-3">
           {[
             {
-              icon: "📄",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              ),
               title: "CVs reward formatting",
               desc: "The best CV writers aren't always the best workers. The format filters on presentation, not capability.",
             },
             {
-              icon: "🚪",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
+              ),
               title: "You never get the chance",
               desc: "Most applications are screened out before a human even reads them. You don't get to show what you're actually made of.",
             },
             {
-              icon: "🔁",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 1l4 4-4 4" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <path d="M7 23l-4-4 4-4" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+              ),
               title: "Experience locks you in",
               desc: "If you don't have the exact job titles they're looking for, you're out — even if you have every skill they need.",
             },
           ].map((f) => (
             <div key={f.title} className="card">
-              <div style={{ fontSize: "1.75rem", marginBottom: "1rem" }}>
+              <div
+                style={{
+                  marginBottom: "1rem",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: "var(--gold-soft)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 {f.icon}
               </div>
               <h3
@@ -405,8 +462,8 @@ export default function ForWorkers() {
                 </svg>
               ),
               bg: "var(--accent-soft)",
-              title: "A profile built around real skills",
-              desc: "Tell businesses what you're actually good at — in your own words. No formatting required. No CV template to fill in. Just your genuine experience and strengths.",
+              title: "A profile built around real skills — not a CV",
+              desc: "You don't need a CV to apply on Talentgate. Instead, you build a profile in your own words — your skills, your experience, what you're genuinely good at. A CV is still an option if you want to upload one, but it's never required. Businesses see who you are, not a formatted document.",
             },
             {
               icon: (
