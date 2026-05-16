@@ -6,6 +6,26 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase/client";
 
+const SS = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --navy:#0a0f1e;--navy-card:#161d30;--navy-border:rgba(99,130,255,0.12);
+    --accent:#4f7cff;--accent-soft:rgba(79,124,255,0.12);
+    --teal:#2dd4bf;--green:#34d399;
+    --text-primary:#f0f4ff;--text-secondary:rgba(176,196,255,0.7);--text-muted:rgba(176,196,255,0.4);
+    --serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',-apple-system,sans-serif;
+  }
+  a{text-decoration:none;color:inherit;}
+  input,textarea,select{font-family:var(--sans);}
+  input::placeholder,textarea::placeholder{color:rgba(176,196,255,0.3);}
+  select option{background:#111827;}
+  ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(79,124,255,0.2);border-radius:3px;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  .fade{animation:fadeUp 0.4s ease forwards;}
+`;
+
 const industries = [
   "Technology",
   "Healthcare",
@@ -21,6 +41,53 @@ const industries = [
   "Other",
 ];
 
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <label
+      style={{
+        fontSize: "0.8rem",
+        color: "var(--text-muted)",
+        display: "block",
+        marginBottom: "0.6rem",
+        fontWeight: 500,
+        letterSpacing: "0.02em",
+      }}
+    >
+      {children}
+    </label>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p
+        style={{
+          fontSize: "0.68rem",
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          fontWeight: 500,
+          marginBottom: "1.25rem",
+          paddingBottom: "0.75rem",
+          borderBottom: "1px solid var(--navy-border)",
+        }}
+      >
+        {title}
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function BusinessProfile() {
   const router = useRouter();
   const supabase = createClient();
@@ -29,7 +96,6 @@ export default function BusinessProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState("");
@@ -44,13 +110,11 @@ export default function BusinessProfile() {
         router.push("/auth/login");
         return;
       }
-
       const { data: biz } = await supabase
         .from("businesses")
         .select("company_name, description, website, industry")
         .eq("profile_id", user.id)
         .single();
-
       if (biz) {
         setCompanyName(biz.company_name || "");
         setDescription(biz.description || "");
@@ -65,7 +129,6 @@ export default function BusinessProfile() {
   async function handleSave() {
     setError("");
     setSuccess(false);
-
     const result = businessProfileSchema.safeParse({
       companyName,
       description,
@@ -75,7 +138,6 @@ export default function BusinessProfile() {
       setError(result.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-
     setSaving(true);
     const {
       data: { user },
@@ -84,12 +146,10 @@ export default function BusinessProfile() {
       router.push("/auth/login");
       return;
     }
-
     const { error: updateError } = await supabase
       .from("businesses")
       .update({ company_name: companyName, description, website, industry })
       .eq("profile_id", user.id);
-
     if (updateError) {
       setError(updateError.message);
       setSaving(false);
@@ -100,63 +160,67 @@ export default function BusinessProfile() {
     setTimeout(() => setSuccess(false), 3000);
   }
 
-  const inputStyle = {
+  const inp: React.CSSProperties = {
     width: "100%",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 12,
-    padding: "0.9rem 1rem",
-    color: "#f5f5f7",
-    fontSize: "0.95rem",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid var(--navy-border)",
+    borderRadius: 10,
+    padding: "0.85rem 1rem",
+    color: "var(--text-primary)",
+    fontSize: "0.92rem",
     outline: "none",
-    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+    transition: "border-color 0.15s",
   };
 
-  const sectionLabel = {
-    fontSize: "0.72rem" as const,
-    color: "rgba(255,255,255,0.3)",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.08em",
-    marginBottom: "1.25rem",
-    paddingBottom: "0.75rem",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    display: "block",
-  };
+  const pill = (active: boolean): React.CSSProperties => ({
+    padding: "0.45rem 1rem",
+    borderRadius: 100,
+    border: `1px solid ${active ? "var(--accent)" : "var(--navy-border)"}`,
+    background: active ? "var(--accent-soft)" : "transparent",
+    color: active ? "#a5b8ff" : "var(--text-muted)",
+    fontSize: "0.82rem",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.15s",
+  });
 
   if (loading)
     return (
-      <main
+      <div
         style={{
           minHeight: "100vh",
-          background: "#000",
+          background: "var(--navy)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
+        <style>{SS}</style>
         <p
           style={{
-            color: "rgba(255,255,255,0.4)",
-            fontFamily: "-apple-system, sans-serif",
+            color: "var(--text-muted)",
+            fontFamily: "var(--sans)",
+            fontSize: "0.9rem",
           }}
         >
           Loading...
         </p>
-      </main>
+      </div>
     );
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background: "#000",
-        color: "#f5f5f7",
-        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+        background: "var(--navy)",
+        color: "var(--text-primary)",
+        fontFamily: "var(--sans)",
+        paddingBottom: "7rem",
       }}
     >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap');`}</style>
+      <style>{SS}</style>
 
-      {/* NAV */}
+      {/* ── NAV ── */}
       <nav
         style={{
           position: "sticky",
@@ -165,55 +229,83 @@ export default function BusinessProfile() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 2rem",
-          height: "52px",
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "saturate(180%) blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          padding: "0 2.5rem",
+          height: "60px",
+          background: "rgba(10,15,30,0.9)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid var(--navy-border)",
         }}
       >
-        <span
+        <Link
+          href="/"
           style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: "1.3rem",
+            fontFamily: "var(--serif)",
+            fontSize: "1.25rem",
             fontWeight: 700,
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            color: "var(--text-primary)",
           }}
         >
           Talentgate
-        </span>
+        </Link>
         <Link
           href="/business/dashboard"
           style={{
-            color: "rgba(255,255,255,0.5)",
-            textDecoration: "none",
+            color: "var(--text-muted)",
             fontSize: "0.85rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
           }}
         >
-          ← Back to dashboard
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to dashboard
         </Link>
       </nav>
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "3rem 2rem" }}>
-        <h1
+      <div
+        className="fade"
+        style={{ maxWidth: 640, margin: "0 auto", padding: "3rem 2rem" }}
+      >
+        <p
           style={{
-            fontSize: "2rem",
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            marginBottom: "0.5rem",
+            color: "var(--accent)",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: "0.4rem",
           }}
         >
           Business profile
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: "clamp(1.8rem,4vw,2.2rem)",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Edit your profile
         </h1>
         <p
           style={{
-            color: "rgba(255,255,255,0.4)",
+            color: "var(--text-secondary)",
             marginBottom: "3rem",
             lineHeight: 1.6,
+            fontWeight: 300,
           }}
         >
           Update your company information. This is what workers see when they
@@ -221,160 +313,108 @@ export default function BusinessProfile() {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "3rem" }}>
-          {/* COMPANY INFO */}
-          <div>
-            <span style={sectionLabel}>Company info</span>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "1.25rem",
-              }}
-            >
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.82rem",
-                    color: "rgba(255,255,255,0.45)",
-                    display: "block",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Company name
-                </label>
-                <input
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.82rem",
-                    color: "rgba(255,255,255,0.45)",
-                    display: "block",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Website
-                </label>
-                <input
-                  type="text"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://yourcompany.com"
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.82rem",
-                    color: "rgba(255,255,255,0.45)",
-                    display: "block",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  What does your business do?
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={5}
-                  placeholder="Brief description of your company, what you do, and the kind of people you're looking to hire..."
-                  style={{
-                    ...inputStyle,
-                    resize: "vertical" as const,
-                    lineHeight: 1.6,
-                  }}
-                />
-              </div>
+          <Section title="Company info">
+            <div>
+              <Label>Company name</Label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                style={inp}
+              />
             </div>
-          </div>
+            <div>
+              <Label>Website</Label>
+              <input
+                type="text"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://yourcompany.com"
+                style={inp}
+              />
+            </div>
+            <div>
+              <Label>What does your business do?</Label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                placeholder="Brief description of your company, what you do, and the kind of people you're looking to hire..."
+                style={{ ...inp, resize: "vertical", lineHeight: 1.7 }}
+              />
+            </div>
+          </Section>
 
-          {/* INDUSTRY */}
-          <div>
-            <span style={sectionLabel}>Industry</span>
+          <Section title="Industry">
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
               {industries.map((ind) => (
                 <button
                   key={ind}
                   onClick={() => setIndustry(ind)}
-                  style={{
-                    padding: "0.5rem 1rem",
-                    borderRadius: "980px",
-                    border: "1px solid",
-                    borderColor:
-                      industry === ind ? "#fff" : "rgba(255,255,255,0.12)",
-                    background: industry === ind ? "#fff" : "transparent",
-                    color: industry === ind ? "#000" : "rgba(255,255,255,0.6)",
-                    fontSize: "0.85rem",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-                    transition: "all 0.15s",
-                  }}
+                  style={pill(industry === ind)}
                 >
                   {ind}
                 </button>
               ))}
             </div>
-          </div>
+          </Section>
         </div>
+      </div>
 
-        {error && (
-          <div
-            style={{
-              background: "rgba(255,60,60,0.1)",
-              border: "1px solid rgba(255,60,60,0.2)",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              color: "#ff6b6b",
-              fontSize: "0.85rem",
-              marginTop: "2rem",
-            }}
-          >
-            {error}
-          </div>
-        )}
-        {success && (
-          <div
-            style={{
-              background: "rgba(60,255,120,0.08)",
-              border: "1px solid rgba(60,255,120,0.2)",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              color: "rgba(60,255,120,0.9)",
-              fontSize: "0.85rem",
-              marginTop: "2rem",
-            }}
-          >
-            Profile saved successfully.
-          </div>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving || !companyName || !description || !industry}
+      {/* ── STICKY SAVE BAR ── */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          background: "rgba(10,15,30,0.95)",
+          backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--navy-border)",
+          padding: "1rem 2.5rem",
+        }}
+      >
+        <div
           style={{
-            width: "100%",
-            marginTop: "2rem",
-            background: "#fff",
-            color: "#000",
-            padding: "0.9rem",
-            borderRadius: "980px",
-            fontWeight: 500,
-            fontSize: "0.95rem",
-            border: "none",
-            cursor: saving ? "not-allowed" : "pointer",
-            opacity: saving ? 0.6 : 1,
-            fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+            maxWidth: 640,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
           }}
         >
-          {saving ? "Saving..." : "Save changes"}
-        </button>
+          <div style={{ flex: 1 }}>
+            {error && (
+              <p style={{ color: "#f87171", fontSize: "0.82rem" }}>{error}</p>
+            )}
+            {success && (
+              <p style={{ color: "var(--green)", fontSize: "0.82rem" }}>
+                Profile saved successfully.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving || !companyName || !description || !industry}
+            style={{
+              background: saving ? "rgba(79,124,255,0.5)" : "var(--accent)",
+              color: "#fff",
+              padding: "0.75rem 2rem",
+              borderRadius: 10,
+              fontFamily: "var(--sans)",
+              fontWeight: 600,
+              fontSize: "0.92rem",
+              border: "none",
+              cursor: saving ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap",
+              transition: "background 0.2s",
+              opacity: !companyName || !description || !industry ? 0.5 : 1,
+            }}
+          >
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+        </div>
       </div>
     </main>
   );
