@@ -24,6 +24,7 @@ const SS = `
   input,textarea,select{font-family:var(--sans);}
   input::placeholder,textarea::placeholder{color:rgba(176,196,255,0.3);}
   select option{background:#111827;}
+  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
 `;
 
 const COUNTRIES: Record<string, string[]> = {
@@ -149,6 +150,10 @@ export default function WorkerProfile() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+
   const [fullName, setFullName] = useState("");
   const [currentCountry, setCurrentCountry] = useState("");
   const [currentRegion, setCurrentRegion] = useState("");
@@ -227,6 +232,64 @@ export default function WorkerProfile() {
   }
   function removeSkill(s: string) {
     setSkills(skills.filter((sk) => sk !== s));
+  }
+
+  function getCountryCode(countryName: string): string {
+    const map: Record<string, string> = {
+      "United Kingdom": "gb",
+      "United States": "us",
+      Canada: "ca",
+      Australia: "au",
+      Germany: "de",
+      France: "fr",
+      Netherlands: "nl",
+      Ireland: "ie",
+      Spain: "es",
+      Italy: "it",
+    };
+    return map[countryName] ?? "";
+  }
+
+  async function fetchCitySuggestions(query: string) {
+    if (query.length < 2) {
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+      return;
+    }
+    setCityLoading(true);
+    try {
+      const countryParam =
+        currentCountry &&
+        currentCountry !== "Remote / Anywhere" &&
+        currentCountry !== "Other"
+          ? `&countrycodes=${getCountryCode(currentCountry)}`
+          : "";
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          query
+        )}${countryParam}&format=json&addressdetails=1&limit=6&featuretype=city`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      const data = await res.json();
+      setCitySuggestions(data);
+      setShowCitySuggestions(true);
+    } catch {
+      setCitySuggestions([]);
+    } finally {
+      setCityLoading(false);
+    }
+  }
+
+  function selectCity(suggestion: any) {
+    const city =
+      suggestion.address?.city ||
+      suggestion.address?.town ||
+      suggestion.address?.village ||
+      suggestion.address?.municipality ||
+      suggestion.name;
+    setCurrentCity(city ?? suggestion.display_name.split(",")[0]);
+    setShowCitySuggestions(false);
+    setCitySuggestions([]);
   }
 
   async function handleSave() {
@@ -493,10 +556,16 @@ export default function WorkerProfile() {
               >
                 Open to work
               </p>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "var(--text-muted)",
+                  lineHeight: 1.5,
+                }}
+              >
                 {openToWork
-                  ? "Businesses can discover your profile in the talent directory."
-                  : "Enable this to appear in the talent directory for businesses."}
+                  ? "Businesses can find and contact you via the talent directory. Turn this off anytime to become invisible again."
+                  : "Off by default. Turn this on to let verified businesses find your profile and reach out to you directly. You stay in full control."}
               </p>
             </div>
             <button
@@ -577,15 +646,134 @@ export default function WorkerProfile() {
                 </select>
               </div>
             )}
-            <div>
+            <div style={{ position: "relative" }}>
               <Label>City / Town</Label>
-              <input
-                type="text"
-                value={currentCity}
-                onChange={(e) => setCurrentCity(e.target.value)}
-                placeholder="e.g. Manchester"
-                style={inp}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type="text"
+                  value={currentCity}
+                  onChange={(e) => {
+                    setCurrentCity(e.target.value);
+                    fetchCitySuggestions(e.target.value);
+                  }}
+                  onBlur={() =>
+                    setTimeout(() => setShowCitySuggestions(false), 150)
+                  }
+                  onFocus={() =>
+                    currentCity.length >= 2 &&
+                    citySuggestions.length > 0 &&
+                    setShowCitySuggestions(true)
+                  }
+                  placeholder="e.g. Manchester"
+                  style={{
+                    ...inp,
+                    paddingRight: cityLoading ? "2.5rem" : "1rem",
+                  }}
+                />
+                {cityLoading && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: "1rem",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: 14,
+                      height: 14,
+                      border: "2px solid rgba(255,255,255,0.15)",
+                      borderTopColor: "rgba(255,255,255,0.6)",
+                      borderRadius: "50%",
+                      animation: "spin 0.7s linear infinite",
+                    }}
+                  />
+                )}
+              </div>
+              {showCitySuggestions && citySuggestions.length > 0 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 4px)",
+                    left: 0,
+                    right: 0,
+                    background: "#1a2236",
+                    border: "1px solid rgba(99,130,255,0.2)",
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    zIndex: 50,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {citySuggestions.map((s, i) => {
+                    const city =
+                      s.address?.city ||
+                      s.address?.town ||
+                      s.address?.village ||
+                      s.address?.municipality ||
+                      s.name;
+                    const region = s.address?.state || s.address?.county || "";
+                    const country = s.address?.country || "";
+                    return (
+                      <div
+                        key={i}
+                        onMouseDown={() => selectCity(s)}
+                        style={{
+                          padding: "0.75rem 1rem",
+                          cursor: "pointer",
+                          borderBottom:
+                            i < citySuggestions.length - 1
+                              ? "1px solid rgba(255,255,255,0.05)"
+                              : "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.75rem",
+                          transition: "background 0.1s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background =
+                            "rgba(79,124,255,0.08)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "transparent")
+                        }
+                      >
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="rgba(176,196,255,0.35)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ flexShrink: 0 }}
+                        >
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <div>
+                          <div
+                            style={{
+                              fontSize: "0.88rem",
+                              color: "#f0f4ff",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {city}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.75rem",
+                              color: "rgba(176,196,255,0.4)",
+                              marginTop: "0.1rem",
+                            }}
+                          >
+                            {[region, country].filter(Boolean).join(", ")}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </Section>
 
