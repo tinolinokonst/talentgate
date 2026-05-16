@@ -121,6 +121,7 @@ export default function Home() {
           .grid-3 { grid-template-columns: 1fr; }
           .hero-btns { flex-direction: column; align-items: stretch !important; }
           .hide-mobile { display: none; }
+          .cv-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
         }
         .glow-dot {
           width: 6px; height: 6px;
@@ -316,6 +317,160 @@ export default function Home() {
       </section>
 
       <div className="divider" style={{ margin: "0 2.5rem 5rem" }} />
+
+      {/* ── CV SECTION ── */}
+      <section
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "0 2.5rem 5rem" }}
+      >
+        <div
+          className="cv-grid"
+          style={{
+            background: "var(--navy-card)",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 20,
+            padding: "3.5rem 3rem",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "4rem",
+            alignItems: "center",
+          }}
+        >
+          {/* Left — the problem */}
+          <div>
+            <span
+              style={{
+                color: "var(--gold)",
+                fontSize: "0.75rem",
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                display: "block",
+                marginBottom: "1rem",
+              }}
+            >
+              The problem with CVs
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--serif)",
+                fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                lineHeight: 1.2,
+                marginBottom: "1.25rem",
+              }}
+            >
+              Your best qualities don't fit on a page.
+            </h2>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "1rem",
+                lineHeight: 1.75,
+                fontWeight: 300,
+                marginBottom: "1rem",
+              }}
+            >
+              CVs reward formatting, not capability. They filter out great
+              candidates before a single conversation has happened — based on
+              job titles, degree names, and gaps that tell you nothing about
+              what someone can actually do.
+            </p>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "1rem",
+                lineHeight: 1.75,
+                fontWeight: 300,
+              }}
+            >
+              Businesses miss out on real talent. Workers never get the chance
+              to prove themselves. Everyone loses.
+            </p>
+          </div>
+
+          {/* Right — the solution */}
+          <div>
+            <span
+              style={{
+                color: "var(--teal)",
+                fontSize: "0.75rem",
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                display: "block",
+                marginBottom: "1rem",
+              }}
+            >
+              The Talentgate way
+            </span>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.25rem",
+              }}
+            >
+              {[
+                {
+                  title: "An interview that actually listens",
+                  desc: "Claude — Anthropic's AI — conducts a structured first-round interview focused on how you think, communicate, and approach real problems. Not your job history.",
+                },
+                {
+                  title: "A profile built around real skills",
+                  desc: "Workers showcase what they're genuinely good at. Businesses see the person behind the application — not just a list of previous employers.",
+                },
+                {
+                  title: "Fairer for workers, better for business",
+                  desc: "When hiring is based on actual ability, the right people get hired. It's a better outcome for everyone at the table.",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  style={{
+                    display: "flex",
+                    gap: "1rem",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "var(--teal)",
+                      flexShrink: 0,
+                      marginTop: "0.45rem",
+                    }}
+                  />
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "0.95rem",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                        marginBottom: "0.3rem",
+                      }}
+                    >
+                      {item.title}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "0.88rem",
+                        color: "var(--text-secondary)",
+                        lineHeight: 1.65,
+                        fontWeight: 300,
+                      }}
+                    >
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── FOR WORKERS ── */}
       <section
