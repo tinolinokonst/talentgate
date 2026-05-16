@@ -166,8 +166,8 @@ export default function Pricing() {
             fontWeight: 300,
           }}
         >
-          One-time setup for businesses. Always free for workers. No hidden
-          costs, no surprises.
+          Straightforward pricing for businesses. Always free for workers. No
+          hidden costs, no surprises.
         </p>
       </section>
 
@@ -328,6 +328,7 @@ export default function Pricing() {
                 textTransform: "uppercase",
                 padding: "0.25rem 0.9rem",
                 borderRadius: "0 0 8px 8px",
+                whiteSpace: "nowrap",
               }}
             >
               For businesses
@@ -347,64 +348,123 @@ export default function Pricing() {
               Business account
             </p>
 
-            <div style={{ marginBottom: "0.5rem" }}>
-              <span
-                style={{
-                  fontFamily: "var(--serif)",
-                  fontSize: "4rem",
-                  fontWeight: 700,
-                  letterSpacing: "-0.03em",
-                  lineHeight: 1,
-                  color: "var(--text-primary)",
-                }}
-              >
-                $99
-              </span>
-              <span
-                style={{
-                  color: "var(--text-muted)",
-                  fontSize: "0.9rem",
-                  marginLeft: "0.4rem",
-                }}
-              >
-                one-time
-              </span>
-            </div>
-
+            {/* Pricing breakdown */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
+                flexDirection: "column",
+                gap: "0.75rem",
                 marginBottom: "1.25rem",
               }}
             >
-              <span
+              <div
                 style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "0.4rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: "2.8rem",
+                    fontWeight: 700,
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1,
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  $99
+                </span>
+                <span
+                  style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}
+                >
+                  one-time setup
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <div
+                  style={{
+                    height: 1,
+                    width: 20,
+                    background: "var(--navy-border)",
+                  }}
+                />
+                <span
+                  style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}
+                >
+                  then
+                </span>
+                <div
+                  style={{
+                    height: 1,
+                    width: 20,
+                    background: "var(--navy-border)",
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "0.4rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: "2.8rem",
+                    fontWeight: 700,
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1,
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  $25
+                </span>
+                <span
+                  style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}
+                >
+                  /month platform access
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
                   background: "var(--gold-soft)",
                   border: "1px solid rgba(245,158,11,0.2)",
                   color: "var(--gold)",
                   fontSize: "0.75rem",
                   fontWeight: 500,
-                  padding: "0.2rem 0.7rem",
+                  padding: "0.25rem 0.75rem",
                   borderRadius: 100,
+                  width: "fit-content",
                 }}
               >
                 + $49 per role posted
-              </span>
+              </div>
             </div>
 
             <p
               style={{
                 color: "var(--text-secondary)",
-                fontSize: "0.9rem",
-                marginBottom: "2rem",
+                fontSize: "0.88rem",
+                marginBottom: "1.5rem",
                 lineHeight: 1.6,
                 fontWeight: 300,
               }}
             >
-              One-time setup fee. Get verified, then pay $49 each time you post
-              a new role. Only pay when you're actively hiring.
+              One-time setup to get verified and access the platform. Then
+              $25/month to keep your account active, plus $49 each time you post
+              a new role.
             </p>
 
             <div style={{ flex: 1, marginBottom: "2rem" }}>
@@ -418,8 +478,12 @@ export default function Pricing() {
                   desc: "Manage all your roles and applicants in one place.",
                 },
                 {
+                  title: "Talent directory access",
+                  desc: "Search and browse worker profiles by skill and location.",
+                },
+                {
                   title: "Role postings — $49 each",
-                  desc: "Pay per role when you're ready to hire. No subscription.",
+                  desc: "Pay per role when you're ready to hire. No lock-in.",
                 },
                 {
                   title: "AI-interviewed candidates",
@@ -427,11 +491,7 @@ export default function Pricing() {
                 },
                 {
                   title: "AI candidate summaries",
-                  desc: "See fit scores, traits, and standout moments for each applicant.",
-                },
-                {
-                  title: "No recurring fees",
-                  desc: "No monthly charges. Pay once to set up, then only when hiring.",
+                  desc: "Fit scores, traits, and standout moments for each applicant.",
                 },
               ].map((f) => (
                 <div key={f.title} className="feature-row">
@@ -514,19 +574,19 @@ export default function Pricing() {
               },
               {
                 q: "What does the $99 cover?",
-                a: "It covers your one-time business account setup — including verification, dashboard access, and your company profile. After that, you only pay $49 when you choose to post a role.",
+                a: "It covers your one-time business account setup — including verification, dashboard access, and your company profile. After that you pay $25/month to keep your account active.",
               },
               {
-                q: "Are there any recurring fees?",
-                a: "No. The $99 account fee is one-time. After that you only pay $49 when you choose to post a new role. No subscription, no monthly charge.",
+                q: "What does the $25/month cover?",
+                a: "The monthly fee keeps your business account active on the platform — giving you access to the hiring dashboard, talent directory, and all applicant data. You only pay $49 on top of that when you choose to post a new role.",
+              },
+              {
+                q: "Can I cancel the monthly subscription?",
+                a: "Yes, anytime. When you cancel, your account is paused at the end of the billing period. Your data is retained so you can reactivate whenever you're ready to hire again.",
               },
               {
                 q: "How long does business verification take?",
                 a: "Most businesses are verified within a few hours. We check your registration number against official company registries automatically.",
-              },
-              {
-                q: "What happens to my listings if I stop posting?",
-                a: "Your account stays active indefinitely. Listings remain live until you close them or they're filled. You're only charged when you post a new one.",
               },
               {
                 q: "How does the AI interview work?",
