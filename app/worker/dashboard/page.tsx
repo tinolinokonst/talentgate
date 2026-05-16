@@ -1345,6 +1345,7 @@ export default function WorkerDashboard() {
           interviewStatus={modalIvStatus}
           onClose={() => setSelectedJob(null)}
           onApply={() => {
+            console.log("job id:", selectedJob?.id);
             setConfirmApply(selectedJob.id);
             setSelectedJob(null);
           }}
