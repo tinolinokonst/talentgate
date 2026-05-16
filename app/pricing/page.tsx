@@ -356,7 +356,7 @@ export default function Pricing() {
                   letterSpacing: "-0.04em",
                 }}
               >
-                $39
+                $99
               </span>
               <span
                 style={{
@@ -365,7 +365,7 @@ export default function Pricing() {
                   fontWeight: 300,
                 }}
               >
-                /month
+                one-time
               </span>
             </div>
             <p
@@ -376,8 +376,8 @@ export default function Pricing() {
                 lineHeight: 1.6,
               }}
             >
-              One flat monthly fee. Post unlimited roles and access every
-              verified worker profile on the platform.
+              One-time setup fee. Get verified, post roles at $49 each, and
+              access every verified worker profile on the platform.
             </p>
 
             <div
@@ -394,8 +394,8 @@ export default function Pricing() {
                   desc: "Your company is checked against official registries.",
                 },
                 {
-                  title: "Unlimited role postings",
-                  desc: "Post as many active listings as you need.",
+                  title: "Role postings — $49 each",
+                  desc: "Pay per role when you're ready to hire. No subscription, no lock-in.",
                 },
                 {
                   title: "Full worker profiles",
@@ -508,12 +508,12 @@ export default function Pricing() {
                 a: "Yes, completely. Workers never pay anything to use Talentgate — not to sign up, not to apply, not ever.",
               },
               {
-                q: "What happens to my listings if I cancel?",
-                a: "Your listings are paused when your subscription ends. If you resubscribe, they can be reactivated immediately.",
+                q: "Are there any recurring fees?",
+                a: "No. The $99 account fee is one-time. After that you only pay $49 when you choose to post a new role.",
               },
               {
-                q: "How many roles can I post?",
-                a: "Unlimited. The $39/month fee covers as many active listings as you need.",
+                q: "How much does it cost to post a role?",
+                a: "$49 per listing. You only pay when you're actively hiring — no subscription required.",
               },
             ].map((faq, i) => (
               <div
@@ -595,7 +595,7 @@ export default function Pricing() {
               textDecoration: "none",
             }}
           >
-            Post a role — $39/mo
+            Get started — $99
           </Link>
           <Link
             href="/auth/signup?type=worker"
