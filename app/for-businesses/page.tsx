@@ -272,23 +272,81 @@ export default function ForBusinesses() {
         <div className="grid-3">
           {[
             {
-              icon: "📄",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+              ),
               title: "CVs filter on formatting",
               desc: "A well-formatted CV tells you someone knows how to write a CV. It tells you almost nothing about whether they can do the job.",
             },
             {
-              icon: "⏳",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              ),
               title: "Screening is slow and manual",
               desc: "Reading through applications one by one is time-consuming. Most businesses don't have that time — so great candidates get overlooked.",
             },
             {
-              icon: "🎭",
+              icon: (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              ),
               title: "Interviews reward performance",
               desc: "Traditional interviews favour people who are good at interviews — not necessarily people who are good at the job.",
             },
           ].map((f) => (
             <div key={f.title} className="card">
-              <div style={{ fontSize: "1.75rem", marginBottom: "1rem" }}>
+              <div
+                style={{
+                  marginBottom: "1rem",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: "var(--gold-soft)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 {f.icon}
               </div>
               <h3
@@ -364,10 +422,10 @@ export default function ForBusinesses() {
             fontWeight: 300,
           }}
         >
-          By the time a candidate reaches your dashboard, Claude has already
-          conducted a structured first-round interview. You see the summary, the
-          fit score, and the standout moments — before you spend a single minute
-          of your time.
+          By the time a candidate reaches your dashboard, a first-round
+          interview has already taken place between them and Claude. Once
+          complete, you get a full summary, fit score, and standout moments —
+          saving you time, money, and the pain of screening CVs.
         </p>
         <div className="grid-2" style={{ marginBottom: "2.5rem" }}>
           {[
@@ -540,8 +598,8 @@ export default function ForBusinesses() {
             fontWeight: 300,
           }}
         >
-          No subscription. No hidden fees. Pay once to get set up, then only
-          when you're ready to hire.
+          No hidden fees. Pay once to get set up, a small monthly fee to stay
+          active, then only $49 when you're ready to post a role.
         </p>
         <div
           style={{
@@ -561,6 +619,13 @@ export default function ForBusinesses() {
               border: "rgba(79,124,255,0.2)",
             },
             {
+              amount: "$25",
+              label: "Per month platform access",
+              color: "var(--teal)",
+              bg: "var(--teal-soft)",
+              border: "rgba(45,212,191,0.2)",
+            },
+            {
               amount: "$49",
               label: "Per role posted",
               color: "var(--gold)",
@@ -574,8 +639,8 @@ export default function ForBusinesses() {
                 background: p.bg,
                 border: `1px solid ${p.border}`,
                 borderRadius: 16,
-                padding: "2rem 3rem",
-                minWidth: 200,
+                padding: "2rem 2.5rem",
+                minWidth: 180,
               }}
             >
               <div
@@ -593,7 +658,7 @@ export default function ForBusinesses() {
               </div>
               <div
                 style={{
-                  fontSize: "0.88rem",
+                  fontSize: "0.85rem",
                   color: "var(--text-secondary)",
                   fontWeight: 300,
                 }}
