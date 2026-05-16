@@ -41,7 +41,6 @@ export default function Home() {
         .fade-up-1 { animation-delay: 0.1s; opacity: 0; }
         .fade-up-2 { animation-delay: 0.25s; opacity: 0; }
         .fade-up-3 { animation-delay: 0.4s; opacity: 0; }
-        .fade-up-4 { animation-delay: 0.55s; opacity: 0; }
         .nav-link { color: var(--text-secondary); font-size: 0.9rem; font-weight: 400; transition: color 0.2s; letter-spacing: 0.01em; }
         .nav-link:hover { color: var(--text-primary); }
         .btn-primary {
@@ -216,12 +215,8 @@ export default function Home() {
           }}
         />
 
-        <div className="fade-up fade-up-1">
-          <span className="pill">Hiring, reimagined</span>
-        </div>
-
         <h1
-          className="fade-up fade-up-2"
+          className="fade-up fade-up-1"
           style={{
             fontFamily: "var(--serif)",
             fontSize: "clamp(2.8rem, 6vw, 4.5rem)",
@@ -238,7 +233,7 @@ export default function Home() {
         </h1>
 
         <p
-          className="fade-up fade-up-3"
+          className="fade-up fade-up-2"
           style={{
             color: "var(--text-secondary)",
             fontSize: "clamp(1rem, 2vw, 1.2rem)",
@@ -253,7 +248,7 @@ export default function Home() {
         </p>
 
         <div
-          className="fade-up fade-up-4 hero-btns"
+          className="fade-up fade-up-3 hero-btns"
           style={{
             display: "flex",
             gap: "1rem",
@@ -279,7 +274,7 @@ export default function Home() {
 
         {/* Live stats bar */}
         <div
-          className="fade-up fade-up-4"
+          className="fade-up fade-up-3"
           style={{
             display: "flex",
             gap: "2.5rem",
