@@ -162,7 +162,7 @@ export default function Home() {
         >
           Talentgate
         </span>
-        <div className="hide-mobile" style={{ display: "flex", gap: "2rem" }}>
+        <div className="grid-3" style={{ maxWidth: 1060, margin: "0 auto" }}>
           <Link href="/how-it-works" className="nav-link">
             How it works
           </Link>
@@ -175,9 +175,6 @@ export default function Home() {
           <Link href="/pricing" className="nav-link">
             Pricing
           </Link>
-          <a href="#pricing" className="nav-link">
-            Pricing
-          </a>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <Link
@@ -958,8 +955,8 @@ export default function Home() {
               fontWeight: 300,
             }}
           >
-            No subscriptions. No hidden fees. Pay once to get set up, then only
-            when you're ready to hire.
+            One-time setup, then $25/month to keep your account active. Pay $49
+            per role only when you're ready to hire.
           </p>
         </div>
 
@@ -1076,6 +1073,109 @@ export default function Home() {
             >
               Create business account
             </Link>
+          </div>
+
+          {/* Card 2 — Monthly */}
+          <div
+            className="card"
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Platform access
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "0.35rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: "3rem",
+                    fontWeight: 700,
+                    color: "var(--text-primary)",
+                    lineHeight: 1,
+                  }}
+                >
+                  $25
+                </span>
+                <span
+                  style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}
+                >
+                  /month
+                </span>
+              </div>
+            </div>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.9rem",
+                lineHeight: 1.65,
+                fontWeight: 300,
+              }}
+            >
+              Keep your account active and access the full platform — talent
+              directory, dashboard, and all applicant data.
+            </p>
+            <div
+              style={{
+                borderTop: "1px solid var(--navy-border)",
+                paddingTop: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+              }}
+            >
+              {[
+                "Talent directory access",
+                "Full hiring dashboard",
+                "All applicant data & summaries",
+                "Cancel anytime",
+              ].map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.65rem",
+                  }}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--teal)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    style={{
+                      fontSize: "0.88rem",
+                      color: "var(--text-secondary)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Card 2 — Per role, featured */}
@@ -1335,7 +1435,7 @@ export default function Home() {
             </Link>
           </div>
           <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-            © 2025 Talentgate
+            © 2026 Talentgate
           </span>
         </div>
       </footer>
