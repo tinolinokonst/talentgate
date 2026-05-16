@@ -578,6 +578,116 @@ export default function BusinessDashboard() {
     >
       <style>{SS}</style>
 
+      {/* ── CONFIRM DIALOG ── */}
+      {confirmDialog && (
+        <div
+          onClick={() => setConfirmDialog(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 300,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#131c2e",
+              border: "1px solid var(--navy-border)",
+              borderRadius: 16,
+              padding: "2rem",
+              maxWidth: 400,
+              width: "100%",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--serif)",
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                marginBottom: "0.75rem",
+              }}
+            >
+              {confirmDialog.type === "delete" && "Delete this role?"}
+              {confirmDialog.type === "pause" && "Pause this role?"}
+              {confirmDialog.type === "activate" && "Activate this role?"}
+              {confirmDialog.type === "signout" && "Sign out?"}
+            </h3>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.88rem",
+                lineHeight: 1.6,
+                marginBottom: "1.5rem",
+                fontWeight: 300,
+              }}
+            >
+              {confirmDialog.type === "delete" &&
+                "This will permanently remove the role and all its applications. This can't be undone."}
+              {confirmDialog.type === "pause" &&
+                "Workers won't be able to apply to this role while it's paused. You can reactivate it at any time."}
+              {confirmDialog.type === "activate" &&
+                "This role will go live and workers will be able to apply."}
+              {confirmDialog.type === "signout" &&
+                "You'll be signed out of your business account."}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={() => setConfirmDialog(null)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--navy-border)",
+                  color: "var(--text-secondary)",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAction}
+                style={{
+                  background:
+                    confirmDialog.type === "delete"
+                      ? "rgba(248,113,113,0.15)"
+                      : "var(--accent)",
+                  border:
+                    confirmDialog.type === "delete"
+                      ? "1px solid rgba(248,113,113,0.3)"
+                      : "none",
+                  color: confirmDialog.type === "delete" ? "#f87171" : "#fff",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                }}
+              >
+                {confirmDialog.type === "delete" && "Yes, delete"}
+                {confirmDialog.type === "pause" && "Yes, pause"}
+                {confirmDialog.type === "activate" && "Yes, activate"}
+                {confirmDialog.type === "signout" && "Sign out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── APPLICANT MODAL ── */}
       {selectedApplicant && (
         <div
