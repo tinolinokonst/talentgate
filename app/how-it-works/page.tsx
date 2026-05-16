@@ -179,8 +179,8 @@ export default function HowItWorks() {
           {[
             {
               step: "01",
-              title: "Sign up and pay $39/month",
-              body: "Create your business account and subscribe for one flat monthly fee. No hidden costs, no per-listing charges. Cancel anytime.",
+              title: "Create your business account — $99",
+              body: "Pay a one-time $99 fee to get your business set up on Talentgate. This covers your verified company profile and full access to the hiring dashboard.",
             },
             {
               step: "02",
@@ -258,7 +258,7 @@ export default function HowItWorks() {
               textDecoration: "none",
             }}
           >
-            Start hiring — $39/mo
+            Start hiring — $99 to get started
           </Link>
         </div>
       </section>
