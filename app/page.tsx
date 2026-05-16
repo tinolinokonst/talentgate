@@ -163,15 +163,18 @@ export default function Home() {
           Talentgate
         </span>
         <div className="hide-mobile" style={{ display: "flex", gap: "2rem" }}>
-          <a href="#for-workers" className="nav-link">
-            For Workers
-          </a>
-          <a href="#for-businesses" className="nav-link">
-            For Businesses
-          </a>
-          <a href="#how-it-works" className="nav-link">
-            How It Works
-          </a>
+          <Link href="/how-it-works" className="nav-link">
+            How it works
+          </Link>
+          <Link href="/for-businesses" className="nav-link">
+            For businesses
+          </Link>
+          <Link href="/for-workers" className="nav-link">
+            For workers
+          </Link>
+          <Link href="/pricing" className="nav-link">
+            Pricing
+          </Link>
           <a href="#pricing" className="nav-link">
             Pricing
           </a>
