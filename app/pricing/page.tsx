@@ -4,221 +4,230 @@ export default function Pricing() {
   return (
     <main
       style={{
-        background: "#000",
         minHeight: "100vh",
-        fontFamily:
-          "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-        color: "#f5f5f7",
+        background: "#0a0f1e",
+        color: "#f0f4ff",
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
         overflowX: "hidden",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&display=swap');
-        .tg-logo {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1.4rem;
-          font-weight: 700;
-          font-style: normal;
-          letter-spacing: 0.01em;
-          text-decoration: none;
-          background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.55) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+          --navy: #0a0f1e;
+          --navy-card: #161d30;
+          --navy-border: rgba(99,130,255,0.12);
+          --accent: #4f7cff;
+          --accent-soft: rgba(79,124,255,0.12);
+          --teal: #2dd4bf;
+          --teal-soft: rgba(45,212,191,0.1);
+          --gold: #f59e0b;
+          --gold-soft: rgba(245,158,11,0.1);
+          --text-primary: #f0f4ff;
+          --text-secondary: rgba(176,196,255,0.7);
+          --text-muted: rgba(176,196,255,0.4);
+          --serif: 'Playfair Display', Georgia, serif;
+          --sans: 'DM Sans', -apple-system, sans-serif;
+        }
+        a { text-decoration: none; color: inherit; }
+        .nav-link { color: var(--text-secondary); font-size: 0.9rem; transition: color 0.2s; }
+        .nav-link:hover { color: var(--text-primary); }
+        .nav-link-active { color: var(--text-primary); font-weight: 500; }
+        .btn-primary {
+          background: var(--accent); color: #fff; padding: 0.75rem 1.75rem;
+          border-radius: 8px; font-size: 0.95rem; font-weight: 500;
+          border: none; cursor: pointer; transition: all 0.2s; display: inline-block;
+        }
+        .btn-primary:hover { background: #3d6aee; transform: translateY(-1px); }
+        .btn-outline {
+          background: transparent; color: var(--text-primary); padding: 0.75rem 1.75rem;
+          border-radius: 8px; font-size: 0.95rem; font-weight: 500;
+          border: 1px solid var(--navy-border); cursor: pointer; transition: all 0.2s; display: inline-block;
+        }
+        .btn-outline:hover { border-color: rgba(79,124,255,0.4); background: var(--accent-soft); }
+        .divider { height: 1px; background: linear-gradient(to right, transparent, var(--navy-border), transparent); }
+        .feature-row { padding: 1.1rem 0; border-top: 1px solid var(--navy-border); display: flex; gap: 0.75rem; align-items: flex-start; }
+        .faq-row { padding: 1.8rem 0; border-top: 1px solid var(--navy-border); }
+        .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) {
+          .pricing-grid { grid-template-columns: 1fr; }
+          .hide-mobile { display: none !important; }
         }
       `}</style>
 
-      {/* NAV */}
+      {/* ── NAV ── */}
       <nav
         style={{
-          position: "fixed",
+          position: "sticky",
           top: 0,
-          left: 0,
-          right: 0,
           zIndex: 100,
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          display: "flex",
           alignItems: "center",
-          padding: "0 2rem",
-          height: "52px",
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "saturate(180%) blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          justifyContent: "space-between",
+          padding: "0 2.5rem",
+          height: "60px",
+          background: "rgba(10,15,30,0.88)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid var(--navy-border)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
-          <Link
-            href="/how-it-works"
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-            }}
-          >
+        <Link
+          href="/"
+          style={{
+            fontFamily: "var(--serif)",
+            fontSize: "1.35rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Talentgate
+        </Link>
+        <div className="hide-mobile" style={{ display: "flex", gap: "2rem" }}>
+          <Link href="/how-it-works" className="nav-link">
             How it works
           </Link>
-          <Link
-            href="/pricing"
-            style={{
-              color: "#fff",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-              fontWeight: 500,
-            }}
-          >
+          <Link href="/for-businesses" className="nav-link">
+            For businesses
+          </Link>
+          <Link href="/for-workers" className="nav-link">
+            For workers
+          </Link>
+          <Link href="/pricing" className="nav-link nav-link-active">
             Pricing
           </Link>
         </div>
-        <Link href="/" className="tg-logo">
-          Talentgate
-        </Link>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "1.5rem",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <Link
             href="/auth/login"
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-            }}
+            className="btn-outline"
+            style={{ padding: "0.5rem 1.25rem", fontSize: "0.88rem" }}
           >
             Log in
           </Link>
           <Link
             href="/auth/signup"
-            style={{
-              background: "#fff",
-              color: "#000",
-              padding: "0.4rem 1rem",
-              borderRadius: "980px",
-              fontSize: "0.85rem",
-              fontWeight: 500,
-              textDecoration: "none",
-            }}
+            className="btn-primary"
+            style={{ padding: "0.5rem 1.25rem", fontSize: "0.88rem" }}
           >
             Get started
           </Link>
         </div>
       </nav>
 
-      {/* HERO */}
+      {/* ── HERO ── */}
       <section
         style={{
-          padding: "10rem 2rem 6rem",
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "7rem 2.5rem 5rem",
           textAlign: "center",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        <p
+        <span
           style={{
+            background: "var(--accent-soft)",
+            border: "1px solid rgba(79,124,255,0.2)",
+            color: "#a5b8ff",
             fontSize: "0.75rem",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase" as const,
-            color: "rgba(255,255,255,0.35)",
+            fontWeight: 500,
+            padding: "0.3rem 0.9rem",
+            borderRadius: "100px",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            display: "inline-block",
             marginBottom: "1.5rem",
           }}
         >
           Pricing
-        </p>
+        </span>
         <h1
           style={{
-            fontSize: "clamp(2.5rem, 6vw, 5rem)",
+            fontFamily: "var(--serif)",
+            fontSize: "clamp(2.8rem, 6vw, 4.5rem)",
             fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.05,
-            maxWidth: 600,
-            margin: "0 auto 1.5rem",
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+            marginBottom: "1.5rem",
           }}
         >
-          Simple.
-          <br />
-          Transparent.
+          Simple. <span style={{ color: "var(--accent)" }}>Transparent.</span>
           <br />
           Fair.
         </h1>
         <p
           style={{
-            color: "rgba(255,255,255,0.45)",
-            fontSize: "1.1rem",
+            color: "var(--text-secondary)",
+            fontSize: "clamp(1rem, 2vw, 1.2rem)",
+            lineHeight: 1.7,
             maxWidth: 480,
             margin: "0 auto",
-            lineHeight: 1.7,
             fontWeight: 300,
           }}
         >
-          One flat fee for businesses. Always free for workers. No hidden costs,
-          no surprises.
+          One-time setup for businesses. Always free for workers. No hidden
+          costs, no surprises.
         </p>
       </section>
 
-      {/* PRICING CARDS */}
+      <div className="divider" style={{ margin: "0 2.5rem 5rem" }} />
+
+      {/* ── PRICING CARDS ── */}
       <section
-        style={{ padding: "7rem 2rem", maxWidth: 860, margin: "0 auto" }}
+        style={{ maxWidth: 860, margin: "0 auto", padding: "0 2.5rem 5rem" }}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "1.5rem",
-          }}
-        >
-          {/* Worker */}
+        <div className="pricing-grid">
+          {/* Worker card */}
           <div
             style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--navy-card)",
+              border: "1px solid var(--navy-border)",
               borderRadius: 20,
-              padding: "3rem",
+              padding: "2.5rem",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <div
+            <p
               style={{
-                fontSize: "0.75rem",
-                color: "rgba(255,255,255,0.35)",
-                textTransform: "uppercase" as const,
-                letterSpacing: "0.08em",
+                fontSize: "0.72rem",
+                color: "var(--teal)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontWeight: 500,
                 marginBottom: "1.5rem",
               }}
             >
               For workers
-            </div>
+            </p>
             <div
               style={{
+                fontFamily: "var(--serif)",
                 fontSize: "4rem",
                 fontWeight: 700,
-                letterSpacing: "-0.04em",
+                letterSpacing: "-0.03em",
                 lineHeight: 1,
                 marginBottom: "0.5rem",
+                color: "var(--text-primary)",
               }}
             >
               Free
             </div>
             <p
               style={{
-                color: "rgba(255,255,255,0.4)",
+                color: "var(--text-secondary)",
                 fontSize: "0.9rem",
-                marginBottom: "2.5rem",
+                marginBottom: "2rem",
                 lineHeight: 1.6,
+                fontWeight: 300,
               }}
             >
               Finding work should never cost money. Talentgate is free for job
               seekers — forever.
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0",
-                marginBottom: "2.5rem",
-              }}
-            >
+            <div style={{ flex: 1, marginBottom: "2rem" }}>
               {[
                 {
                   title: "Verified identity badge",
@@ -237,55 +246,47 @@ export default function Pricing() {
                   desc: "Apply to as many roles as you want, no limits.",
                 },
                 {
+                  title: "AI first-round interview",
+                  desc: "Claude conducts your interview — fair, structured, no bias.",
+                },
+                {
                   title: "Application tracking",
                   desc: "See the status of every role you've applied to.",
                 },
-              ].map((f, i) => (
-                <div
-                  key={f.title}
-                  style={{
-                    padding: "1.2rem 0",
-                    borderTop:
-                      i === 0
-                        ? "1px solid rgba(255,255,255,0.06)"
-                        : "1px solid rgba(255,255,255,0.06)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.75rem",
-                      alignItems: "flex-start",
-                    }}
+              ].map((f) => (
+                <div key={f.title} className="feature-row">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--teal)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0, marginTop: 2 }}
                   >
-                    <span
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <div>
+                    <div
                       style={{
-                        color: "rgba(255,255,255,0.5)",
-                        fontSize: "0.75rem",
-                        paddingTop: 3,
+                        fontSize: "0.88rem",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                        marginBottom: "0.2rem",
                       }}
                     >
-                      ✓
-                    </span>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "0.88rem",
-                          fontWeight: 500,
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        {f.title}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.78rem",
-                          color: "rgba(255,255,255,0.35)",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {f.desc}
-                      </div>
+                      {f.title}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "var(--text-muted)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {f.desc}
                     </div>
                   </div>
                 </div>
@@ -293,169 +294,179 @@ export default function Pricing() {
             </div>
 
             <Link
-              href="/auth/signup?type=worker"
-              style={{
-                display: "block",
-                textAlign: "center" as const,
-                border: "1px solid rgba(255,255,255,0.2)",
-                color: "#fff",
-                padding: "0.9rem",
-                borderRadius: "980px",
-                fontWeight: 500,
-                fontSize: "0.9rem",
-                textDecoration: "none",
-              }}
+              href="/auth/signup?role=worker"
+              className="btn-outline"
+              style={{ textAlign: "center", fontSize: "0.9rem" }}
             >
               Create free account
             </Link>
           </div>
 
-          {/* Business */}
+          {/* Business card */}
           <div
             style={{
-              background: "#161616",
-              border: "1px solid rgba(255,255,255,0.15)",
+              background: "var(--navy-card)",
+              border: "1px solid rgba(79,124,255,0.4)",
               borderRadius: 20,
-              padding: "3rem",
-              position: "relative" as const,
+              padding: "2.5rem",
+              display: "flex",
+              flexDirection: "column",
+              position: "relative",
             }}
           >
             <div
               style={{
-                position: "absolute" as const,
-                top: "1.5rem",
-                right: "1.5rem",
-                background: "#fff",
-                color: "#000",
-                fontSize: "0.68rem",
-                fontWeight: 700,
-                padding: "0.2rem 0.7rem",
-                borderRadius: "980px",
-                letterSpacing: "0.05em",
-              }}
-            >
-              BUSINESS
-            </div>
-
-            <div
-              style={{
-                fontSize: "0.75rem",
-                color: "rgba(255,255,255,0.35)",
-                textTransform: "uppercase" as const,
-                letterSpacing: "0.08em",
-                marginBottom: "1.5rem",
+                position: "absolute",
+                top: "-1px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "var(--accent)",
+                color: "#fff",
+                fontSize: "0.7rem",
+                fontWeight: 500,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                padding: "0.25rem 0.9rem",
+                borderRadius: "0 0 8px 8px",
               }}
             >
               For businesses
             </div>
-            <div style={{ lineHeight: 1, marginBottom: "0.5rem" }}>
+
+            <p
+              style={{
+                fontSize: "0.72rem",
+                color: "var(--gold)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontWeight: 500,
+                marginBottom: "1.5rem",
+                marginTop: "0.5rem",
+              }}
+            >
+              Business account
+            </p>
+
+            <div style={{ marginBottom: "0.5rem" }}>
               <span
                 style={{
+                  fontFamily: "var(--serif)",
                   fontSize: "4rem",
                   fontWeight: 700,
-                  letterSpacing: "-0.04em",
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1,
+                  color: "var(--text-primary)",
                 }}
               >
                 $99
               </span>
               <span
                 style={{
-                  fontSize: "1rem",
-                  color: "rgba(255,255,255,0.35)",
-                  fontWeight: 300,
+                  color: "var(--text-muted)",
+                  fontSize: "0.9rem",
+                  marginLeft: "0.4rem",
                 }}
               >
                 one-time
               </span>
             </div>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.4)",
-                fontSize: "0.9rem",
-                marginBottom: "2.5rem",
-                lineHeight: 1.6,
-              }}
-            >
-              One-time setup fee. Get verified, post roles at $49 each, and
-              access every verified worker profile on the platform.
-            </p>
 
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                gap: "0",
-                marginBottom: "2.5rem",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginBottom: "1.25rem",
               }}
             >
+              <span
+                style={{
+                  background: "var(--gold-soft)",
+                  border: "1px solid rgba(245,158,11,0.2)",
+                  color: "var(--gold)",
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  padding: "0.2rem 0.7rem",
+                  borderRadius: 100,
+                }}
+              >
+                + $49 per role posted
+              </span>
+            </div>
+
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.9rem",
+                marginBottom: "2rem",
+                lineHeight: 1.6,
+                fontWeight: 300,
+              }}
+            >
+              One-time setup fee. Get verified, then pay $49 each time you post
+              a new role. Only pay when you're actively hiring.
+            </p>
+
+            <div style={{ flex: 1, marginBottom: "2rem" }}>
               {[
                 {
-                  title: "Business verification",
-                  desc: "Your company is checked against official registries.",
+                  title: "Verified company badge",
+                  desc: "Your company checked against official registries.",
+                },
+                {
+                  title: "Full hiring dashboard",
+                  desc: "Manage all your roles and applicants in one place.",
                 },
                 {
                   title: "Role postings — $49 each",
-                  desc: "Pay per role when you're ready to hire. No subscription, no lock-in.",
+                  desc: "Pay per role when you're ready to hire. No subscription.",
                 },
                 {
-                  title: "Full worker profiles",
-                  desc: "See every applicant's experience story and skills.",
+                  title: "AI-interviewed candidates",
+                  desc: "Every applicant completes a Claude-powered first-round interview.",
                 },
                 {
-                  title: "Qualification filters",
-                  desc: "Set specific requirements for each role you post.",
+                  title: "AI candidate summaries",
+                  desc: "See fit scores, traits, and standout moments for each applicant.",
                 },
                 {
-                  title: "Applicant dashboard",
-                  desc: "Manage all applications in one place.",
+                  title: "No recurring fees",
+                  desc: "No monthly charges. Pay once to set up, then only when hiring.",
                 },
-                {
-                  title: "Cancel anytime",
-                  desc: "No contracts, no lock-in. Cancel whenever you want.",
-                },
-              ].map((f, i) => (
-                <div
-                  key={f.title}
-                  style={{
-                    padding: "1.2rem 0",
-                    borderTop: "1px solid rgba(255,255,255,0.06)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.75rem",
-                      alignItems: "flex-start",
-                    }}
+              ].map((f) => (
+                <div key={f.title} className="feature-row">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--teal)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0, marginTop: 2 }}
                   >
-                    <span
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <div>
+                    <div
                       style={{
-                        color: "rgba(255,255,255,0.5)",
-                        fontSize: "0.75rem",
-                        paddingTop: 3,
+                        fontSize: "0.88rem",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                        marginBottom: "0.2rem",
                       }}
                     >
-                      ✓
-                    </span>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "0.88rem",
-                          fontWeight: 500,
-                          marginBottom: "0.2rem",
-                        }}
-                      >
-                        {f.title}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.78rem",
-                          color: "rgba(255,255,255,0.35)",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {f.desc}
-                      </div>
+                      {f.title}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "var(--text-muted)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {f.desc}
                     </div>
                   </div>
                 </div>
@@ -463,70 +474,71 @@ export default function Pricing() {
             </div>
 
             <Link
-              href="/auth/signup?type=business"
-              style={{
-                display: "block",
-                textAlign: "center" as const,
-                background: "#fff",
-                color: "#000",
-                padding: "0.9rem",
-                borderRadius: "980px",
-                fontWeight: 500,
-                fontSize: "0.9rem",
-                textDecoration: "none",
-              }}
+              href="/auth/signup?role=business"
+              className="btn-primary"
+              style={{ textAlign: "center", fontSize: "0.9rem" }}
             >
-              Start hiring
+              Get started — $99 →
             </Link>
           </div>
         </div>
 
-        {/* FAQ */}
-        <div style={{ marginTop: "6rem" }}>
+        {/* ── FAQ ── */}
+        <div style={{ marginTop: "5rem" }}>
           <h2
             style={{
-              fontSize: "1.5rem",
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(1.6rem, 3vw, 2rem)",
               fontWeight: 700,
               letterSpacing: "-0.02em",
-              marginBottom: "2.5rem",
+              marginBottom: "0.5rem",
             }}
           >
             Common questions
           </h2>
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "0.9rem",
+              marginBottom: "2.5rem",
+              fontWeight: 300,
+            }}
+          >
+            Everything you need to know before signing up.
+          </p>
+          <div>
             {[
               {
-                q: "Can I cancel my business subscription at any time?",
-                a: "Yes — cancel whenever you want with no penalty. Your account stays active until the end of your billing period.",
+                q: "Is it really free for workers?",
+                a: "Yes, completely. Workers never pay anything to use Talentgate — not to sign up, not to apply, not ever.",
+              },
+              {
+                q: "What does the $99 cover?",
+                a: "It covers your one-time business account setup — including verification, dashboard access, and your company profile. After that, you only pay $49 when you choose to post a role.",
+              },
+              {
+                q: "Are there any recurring fees?",
+                a: "No. The $99 account fee is one-time. After that you only pay $49 when you choose to post a new role. No subscription, no monthly charge.",
               },
               {
                 q: "How long does business verification take?",
                 a: "Most businesses are verified within a few hours. We check your registration number against official company registries automatically.",
               },
               {
-                q: "Is it really free for workers?",
-                a: "Yes, completely. Workers never pay anything to use Talentgate — not to sign up, not to apply, not ever.",
+                q: "What happens to my listings if I stop posting?",
+                a: "Your account stays active indefinitely. Listings remain live until you close them or they're filled. You're only charged when you post a new one.",
               },
               {
-                q: "Are there any recurring fees?",
-                a: "No. The $99 account fee is one-time. After that you only pay $49 when you choose to post a new role.",
+                q: "How does the AI interview work?",
+                a: "When a worker applies to your role, they complete a structured first-round interview with Claude — Anthropic's AI. It focuses on how they think and communicate, not their job history. You receive a full summary and fit score for each candidate.",
               },
-              {
-                q: "How much does it cost to post a role?",
-                a: "$49 per listing. You only pay when you're actively hiring — no subscription required.",
-              },
-            ].map((faq, i) => (
-              <div
-                key={faq.q}
-                style={{
-                  padding: "1.8rem 0",
-                  borderTop: "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
+            ].map((faq) => (
+              <div key={faq.q} className="faq-row">
                 <h3
                   style={{
                     fontSize: "0.95rem",
-                    fontWeight: 600,
+                    fontWeight: 500,
+                    color: "var(--text-primary)",
                     marginBottom: "0.6rem",
                   }}
                 >
@@ -534,9 +546,10 @@ export default function Pricing() {
                 </h3>
                 <p
                   style={{
-                    color: "rgba(255,255,255,0.4)",
+                    color: "var(--text-secondary)",
                     fontSize: "0.88rem",
                     lineHeight: 1.7,
+                    fontWeight: 300,
                   }}
                 >
                   {faq.a}
@@ -547,107 +560,119 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* BOTTOM CTA */}
+      {/* ── CTA ── */}
       <section
-        style={{
-          padding: "6rem 2rem",
-          textAlign: "center",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          background: "#0a0a0a",
-        }}
+        style={{ maxWidth: 1100, margin: "0 auto 5rem", padding: "0 2.5rem" }}
       >
-        <h2
-          style={{
-            fontSize: "clamp(1.8rem, 4vw, 3rem)",
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            marginBottom: "1rem",
-          }}
-        >
-          Ready to get started?
-        </h2>
-        <p
-          style={{
-            color: "rgba(255,255,255,0.4)",
-            marginBottom: "2.5rem",
-            fontSize: "0.95rem",
-          }}
-        >
-          Join Talentgate today — whether you're hiring or looking.
-        </p>
         <div
           style={{
-            display: "flex",
-            gap: "1rem",
-            justifyContent: "center",
-            flexWrap: "wrap",
+            background:
+              "linear-gradient(135deg, rgba(79,124,255,0.12) 0%, rgba(45,212,191,0.08) 100%)",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 20,
+            padding: "3.5rem 3rem",
+            textAlign: "center",
           }}
         >
-          <Link
-            href="/auth/signup?type=business"
+          <h2
             style={{
-              background: "#fff",
-              color: "#000",
-              padding: "0.85rem 2rem",
-              borderRadius: "980px",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-              textDecoration: "none",
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              marginBottom: "1rem",
             }}
           >
-            Get started — $99
-          </Link>
-          <Link
-            href="/auth/signup?type=worker"
+            Ready to get started?
+          </h2>
+          <p
             style={{
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.2)",
-              color: "#fff",
-              padding: "0.85rem 2rem",
-              borderRadius: "980px",
-              fontWeight: 500,
-              fontSize: "0.9rem",
-              textDecoration: "none",
+              color: "var(--text-secondary)",
+              maxWidth: 480,
+              margin: "0 auto 2rem",
+              lineHeight: 1.7,
+              fontWeight: 300,
             }}
           >
-            Find work — Free
-          </Link>
+            Join Talentgate today — whether you're hiring or looking for work.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Link
+              href="/auth/signup?role=business"
+              className="btn-primary"
+              style={{ fontSize: "0.95rem", padding: "0.85rem 1.75rem" }}
+            >
+              Get started — $99
+            </Link>
+            <Link
+              href="/auth/signup?role=worker"
+              className="btn-outline"
+              style={{ fontSize: "0.95rem", padding: "0.85rem 1.75rem" }}
+            >
+              Find work — Free
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* ── FOOTER ── */}
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          padding: "3rem 2rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem",
-          maxWidth: 980,
+          borderTop: "1px solid var(--navy-border)",
+          padding: "2.5rem 2.5rem",
+          maxWidth: 1100,
           margin: "0 auto",
         }}
       >
-        <span className="tg-logo">Talentgate</span>
-        <div style={{ display: "flex", gap: "2rem" }}>
-          {["Privacy Policy", "Terms of Service", "Contact"].map((l) => (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "1rem",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: "1.1rem",
+              fontWeight: 700,
+            }}
+          >
+            Talentgate
+          </span>
+          <div style={{ display: "flex", gap: "2rem" }}>
             <Link
-              key={l}
-              href="#"
-              style={{
-                color: "rgba(255,255,255,0.4)",
-                textDecoration: "none",
-                fontSize: "0.8rem",
-              }}
+              href="/auth/login"
+              style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
             >
-              {l}
+              Log in
             </Link>
-          ))}
+            <Link
+              href="/auth/signup"
+              style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
+            >
+              Sign up
+            </Link>
+            <Link
+              href="/how-it-works"
+              style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
+            >
+              How it works
+            </Link>
+          </div>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+            © 2026 Talentgate
+          </span>
         </div>
-        <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem" }}>
-          © 2026 Talentgate
-        </span>
       </footer>
     </main>
   );
