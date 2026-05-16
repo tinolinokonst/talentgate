@@ -1185,6 +1185,22 @@ export default function BusinessDashboard() {
           >
             {selectedJob ? `Applicants — ${selectedJobTitle}` : "Applicants"}
           </button>
+          <button
+            className={`tab-btn ${
+              activeTab === "talent" ? "tab-active" : "tab-inactive"
+            }`}
+            onClick={() => setActiveTab("talent")}
+          >
+            Talent directory
+          </button>
+          <button
+            className={`tab-btn ${
+              activeTab === "settings" ? "tab-active" : "tab-inactive"
+            }`}
+            onClick={() => setActiveTab("settings")}
+          >
+            Settings
+          </button>
         </div>
 
         {/* ── LISTINGS TAB ── */}
