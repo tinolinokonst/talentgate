@@ -632,6 +632,10 @@ export default function WorkerDashboard() {
   const [industryFilter, setIndustryFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
+  const [confirmApply, setConfirmApply] = useState<string | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+
   const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
   const [applicationIds, setApplicationIds] = useState<Record<string, string>>(
     {}
@@ -644,7 +648,9 @@ export default function WorkerDashboard() {
     skills: string[];
     location: string;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<"browse" | "applied">("browse");
+  const [activeTab, setActiveTab] = useState<"browse" | "applied" | "settings">(
+    "browse"
+  );
 
   // ── Role detail modal ────────────────────────────────────
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -754,14 +760,12 @@ export default function WorkerDashboard() {
       console.error("Failed to create application:", appError);
       return;
     }
-    await supabase
-      .from("interviews")
-      .insert({
-        application_id: newApp.id,
-        worker_id: user.id,
-        job_id: jobId,
-        status: "scheduled",
-      });
+    await supabase.from("interviews").insert({
+      application_id: newApp.id,
+      worker_id: user.id,
+      job_id: jobId,
+      status: "scheduled",
+    });
     setAppliedJobs((prev) => [...prev, jobId]);
     setApplicationIds((prev) => ({ ...prev, [jobId]: newApp.id }));
     setInterviewStatuses((prev) => ({ ...prev, [newApp.id]: "invited" }));
