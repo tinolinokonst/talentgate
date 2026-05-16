@@ -403,9 +403,15 @@ export default function BusinessDashboard() {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
-  const [activeTab, setActiveTab] = useState<"listings" | "applicants">(
-    "listings"
-  );
+  const [confirmDialog, setConfirmDialog] = useState<{
+    type: "pause" | "activate" | "delete" | "signout";
+    jobId?: string;
+    jobStatus?: string;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    "listings" | "applicants" | "talent" | "settings"
+  >("listings");
+
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
   const [interviewFilter, setInterviewFilter] = useState<
     "all" | "completed" | "pending"
@@ -479,29 +485,38 @@ export default function BusinessDashboard() {
   }, []);
 
   // ── Job actions ──────────────────────────────────────────
-  async function toggleJobStatus(jobId: string, currentStatus: string) {
-    const newStatus = currentStatus === "active" ? "paused" : "active";
-    await supabase
-      .from("job_listings")
-      .update({ status: newStatus })
-      .eq("id", jobId);
-    setJobs(
-      jobs.map((j: any) => (j.id === jobId ? { ...j, status: newStatus } : j))
-    );
-  }
 
-  async function deleteJob(jobId: string) {
-    await supabase.from("job_listings").delete().eq("id", jobId);
-    setJobs(jobs.filter((j: any) => j.id !== jobId));
-    if (selectedJob === jobId) {
-      setSelectedJob(null);
-      setActiveTab("listings");
+  async function confirmAction() {
+    if (!confirmDialog) return;
+    if (confirmDialog.type === "signout") {
+      await supabase.auth.signOut();
+      router.push("/");
+    } else if (confirmDialog.type === "delete" && confirmDialog.jobId) {
+      await supabase
+        .from("job_listings")
+        .delete()
+        .eq("id", confirmDialog.jobId);
+      setJobs(jobs.filter((j: any) => j.id !== confirmDialog.jobId));
+      if (selectedJob === confirmDialog.jobId) {
+        setSelectedJob(null);
+        setActiveTab("listings");
+      }
+    } else if (
+      (confirmDialog.type === "pause" || confirmDialog.type === "activate") &&
+      confirmDialog.jobId
+    ) {
+      const newStatus = confirmDialog.type === "pause" ? "paused" : "active";
+      await supabase
+        .from("job_listings")
+        .update({ status: newStatus })
+        .eq("id", confirmDialog.jobId);
+      setJobs(
+        jobs.map((j: any) =>
+          j.id === confirmDialog.jobId ? { ...j, status: newStatus } : j
+        )
+      );
     }
-  }
-
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.push("/");
+    setConfirmDialog(null);
   }
 
   // ── Derived state ────────────────────────────────────────
@@ -823,7 +838,7 @@ export default function BusinessDashboard() {
             {business?.company_name || "Profile"}
           </Link>
           <button
-            onClick={handleSignOut}
+            onClick={() => setConfirmDialog({ type: "signout" })}
             style={{
               background: "transparent",
               border: "1px solid var(--navy-border)",
@@ -1236,7 +1251,12 @@ export default function BusinessDashboard() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleJobStatus(job.id, job.status);
+                            setConfirmDialog({
+                              type:
+                                job.status === "active" ? "pause" : "activate",
+                              jobId: job.id,
+                              jobStatus: job.status,
+                            });
                           }}
                           style={{
                             background: "transparent",
@@ -1254,7 +1274,7 @@ export default function BusinessDashboard() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteJob(job.id);
+                            setConfirmDialog({ type: "delete", jobId: job.id });
                           }}
                           style={{
                             background: "transparent",
