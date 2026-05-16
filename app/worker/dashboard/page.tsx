@@ -1344,7 +1344,10 @@ export default function WorkerDashboard() {
           appId={modalAppId}
           interviewStatus={modalIvStatus}
           onClose={() => setSelectedJob(null)}
-          onApply={() => setConfirmApply(selectedJob.id)}
+          onApply={() => {
+            setConfirmApply(selectedJob.id);
+            setSelectedJob(null);
+          }}
           onCancel={() => setConfirmCancel(selectedJob.id)}
           onSchedule={() => {
             setSelectedJob(null);
