@@ -388,6 +388,264 @@ function AISummaryPanel({ summary }: { summary: any }) {
   );
 }
 
+// ── Talent Directory ───────────────────────────────────────
+function TalentDirectory({ supabase }: { supabase: any }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  async function search() {
+    if (!query.trim()) return;
+    setSearching(true);
+    setSearched(true);
+    const keywords = query.toLowerCase().split(" ").filter(Boolean);
+    const { data } = await supabase
+      .from("profiles")
+      .select(
+        "id, full_name, skills, location, country, job_type, open_to_work"
+      )
+      .eq("open_to_work", true);
+
+    const scored = (data ?? [])
+      .map((p: any) => {
+        const haystack = [
+          p.full_name,
+          ...(p.skills ?? []),
+          p.location,
+          p.country,
+          p.job_type,
+        ]
+          .join(" ")
+          .toLowerCase();
+        const matches = keywords.filter((k) => haystack.includes(k)).length;
+        return { ...p, matches };
+      })
+      .filter((p: any) => p.matches > 0)
+      .sort((a: any, b: any) => b.matches - a.matches);
+
+    setResults(scored);
+    setSearching(false);
+  }
+
+  return (
+    <div>
+      <h2
+        style={{
+          fontFamily: "var(--serif)",
+          fontSize: "1.4rem",
+          fontWeight: 700,
+          letterSpacing: "-0.02em",
+          marginBottom: "0.5rem",
+        }}
+      >
+        Talent directory
+      </h2>
+      <p
+        style={{
+          color: "var(--text-secondary)",
+          fontSize: "0.88rem",
+          fontWeight: 300,
+          marginBottom: "1.5rem",
+        }}
+      >
+        Search workers who are open to work. Match by skill, location, or job
+        type.
+      </p>
+      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem" }}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && search()}
+          placeholder="e.g. React developer London, or customer service..."
+          style={{
+            flex: 1,
+            background: "var(--navy-card)",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 8,
+            padding: "0.65rem 1rem",
+            color: "var(--text-primary)",
+            fontFamily: "var(--sans)",
+            fontSize: "0.88rem",
+            outline: "none",
+          }}
+        />
+        <button
+          onClick={search}
+          disabled={searching}
+          style={{
+            background: "var(--accent)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            padding: "0.65rem 1.5rem",
+            cursor: "pointer",
+            fontFamily: "var(--sans)",
+            fontSize: "0.88rem",
+            fontWeight: 500,
+            opacity: searching ? 0.6 : 1,
+          }}
+        >
+          {searching ? "Searching…" : "Search"}
+        </button>
+      </div>
+
+      {searched && !searching && results.length === 0 && (
+        <div
+          style={{
+            background: "var(--navy-card)",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 16,
+            padding: "3rem",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ color: "var(--text-muted)" }}>
+            No workers found matching your search.
+          </p>
+        </div>
+      )}
+
+      {results.length > 0 && (
+        <div
+          style={{
+            background: "var(--navy-card)",
+            border: "1px solid var(--navy-border)",
+            borderRadius: 16,
+            overflow: "hidden",
+          }}
+        >
+          {results.map((w: any, i: number) => (
+            <div
+              key={w.id}
+              style={{
+                padding: "1.25rem 1.5rem",
+                borderBottom:
+                  i < results.length - 1
+                    ? "1px solid var(--navy-border)"
+                    : "none",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.85rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "var(--teal-soft)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "0.8rem",
+                      fontWeight: 600,
+                      color: "var(--teal)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {(w.full_name ?? "?")
+                      .split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "0.95rem",
+                        marginBottom: "0.2rem",
+                      }}
+                    >
+                      {w.full_name}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      {[w.location, w.country, w.job_type]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                    {w.skills?.length > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "0.35rem",
+                          marginTop: "0.5rem",
+                        }}
+                      >
+                        {w.skills.slice(0, 5).map((s: string) => (
+                          <span
+                            key={s}
+                            style={{
+                              background: "var(--accent-soft)",
+                              border: "1px solid rgba(79,124,255,0.15)",
+                              color: "#a5b8ff",
+                              fontSize: "0.72rem",
+                              padding: "0.1rem 0.5rem",
+                              borderRadius: 100,
+                            }}
+                          >
+                            {s}
+                          </span>
+                        ))}
+                        {w.skills.length > 5 && (
+                          <span
+                            style={{
+                              fontSize: "0.72rem",
+                              color: "var(--text-muted)",
+                            }}
+                          >
+                            +{w.skills.length - 5} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <span
+                  style={{
+                    background: "var(--teal-soft)",
+                    color: "var(--teal)",
+                    fontSize: "0.7rem",
+                    fontWeight: 500,
+                    padding: "0.2rem 0.65rem",
+                    borderRadius: 100,
+                    border: "1px solid rgba(45,212,191,0.2)",
+                    whiteSpace: "nowrap" as const,
+                  }}
+                >
+                  Open to work
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main dashboard ─────────────────────────────────────────
 export default function BusinessDashboard() {
   const router = useRouter();
@@ -1638,6 +1896,322 @@ export default function BusinessDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+        {/* ── TALENT DIRECTORY TAB ── */}
+        {activeTab === "talent" && <TalentDirectory supabase={supabase} />}
+
+        {/* ── SETTINGS TAB ── */}
+        {activeTab === "settings" && (
+          <div>
+            <h2
+              style={{
+                fontFamily: "var(--serif)",
+                fontSize: "1.4rem",
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                marginBottom: "2rem",
+              }}
+            >
+              Settings
+            </h2>
+
+            {/* Account */}
+            <div
+              style={{
+                background: "var(--navy-card)",
+                border: "1px solid var(--navy-border)",
+                borderRadius: 16,
+                padding: "1.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "1rem",
+                }}
+              >
+                Account
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontWeight: 500,
+                      fontSize: "0.95rem",
+                      marginBottom: "0.2rem",
+                    }}
+                  >
+                    {business?.company_name}
+                  </p>
+                  <p
+                    style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}
+                  >
+                    Business account
+                  </p>
+                </div>
+                <Link
+                  href="/business/profile"
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--navy-border)",
+                    color: "var(--text-secondary)",
+                    padding: "0.45rem 1rem",
+                    borderRadius: 8,
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  Edit profile →
+                </Link>
+              </div>
+            </div>
+
+            {/* Verification */}
+            <div
+              style={{
+                background: "var(--navy-card)",
+                border: "1px solid var(--navy-border)",
+                borderRadius: 16,
+                padding: "1.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "1rem",
+                }}
+              >
+                Verification
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                {business?.verified ? (
+                  <>
+                    <span
+                      style={{
+                        background: "var(--teal-soft)",
+                        color: "var(--teal)",
+                        fontSize: "0.78rem",
+                        fontWeight: 500,
+                        padding: "0.25rem 0.75rem",
+                        borderRadius: 100,
+                        border: "1px solid rgba(45,212,191,0.2)",
+                      }}
+                    >
+                      ✓ Verified
+                    </span>
+                    <p
+                      style={{
+                        color: "var(--text-secondary)",
+                        fontSize: "0.85rem",
+                        fontWeight: 300,
+                      }}
+                    >
+                      Your business is verified and trusted by workers on the
+                      platform.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <span
+                      style={{
+                        background: "var(--gold-soft)",
+                        color: "var(--gold)",
+                        fontSize: "0.78rem",
+                        fontWeight: 500,
+                        padding: "0.25rem 0.75rem",
+                        borderRadius: 100,
+                        border: "1px solid rgba(245,158,11,0.2)",
+                      }}
+                    >
+                      Pending
+                    </span>
+                    <p
+                      style={{
+                        color: "var(--text-secondary)",
+                        fontSize: "0.85rem",
+                        fontWeight: 300,
+                      }}
+                    >
+                      Verification is in progress. This usually takes a few
+                      hours.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Billing */}
+            <div
+              style={{
+                background: "var(--navy-card)",
+                border: "1px solid var(--navy-border)",
+                borderRadius: 16,
+                padding: "1.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "1rem",
+                }}
+              >
+                Billing
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.75rem",
+                }}
+              >
+                {[
+                  {
+                    label: "Account setup",
+                    amount: "$99",
+                    note: "One-time · paid",
+                  },
+                  {
+                    label: "Platform access",
+                    amount: "$25/mo",
+                    note: "Monthly · active",
+                  },
+                  {
+                    label: "Role postings",
+                    amount: "$49",
+                    note: "Per listing posted",
+                  },
+                ].map((b) => (
+                  <div
+                    key={b.label}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "0.75rem 0",
+                      borderBottom: "1px solid var(--navy-border)",
+                    }}
+                  >
+                    <div>
+                      <p style={{ fontSize: "0.88rem", fontWeight: 500 }}>
+                        {b.label}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text-muted)",
+                          marginTop: "0.15rem",
+                        }}
+                      >
+                        {b.note}
+                      </p>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: "var(--serif)",
+                        fontSize: "1.1rem",
+                        fontWeight: 700,
+                        color: "var(--accent)",
+                      }}
+                    >
+                      {b.amount}
+                    </p>
+                  </div>
+                ))}
+                <p
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "var(--text-muted)",
+                    fontWeight: 300,
+                    marginTop: "0.25rem",
+                  }}
+                >
+                  Billing management coming soon. Contact us at
+                  billing@talentgate.com for any billing queries.
+                </p>
+              </div>
+            </div>
+
+            {/* Danger zone */}
+            <div
+              style={{
+                background: "rgba(248,113,113,0.04)",
+                border: "1px solid rgba(248,113,113,0.15)",
+                borderRadius: 16,
+                padding: "1.75rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  color: "#f87171",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "1rem",
+                }}
+              >
+                Sign out
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <p
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontSize: "0.85rem",
+                    fontWeight: 300,
+                  }}
+                >
+                  Sign out of your business account on this device.
+                </p>
+                <button
+                  onClick={() => setConfirmDialog({ type: "signout" })}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(248,113,113,0.3)",
+                    color: "#f87171",
+                    padding: "0.5rem 1.25rem",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontFamily: "var(--sans)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
