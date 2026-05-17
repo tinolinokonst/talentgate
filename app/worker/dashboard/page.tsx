@@ -1027,12 +1027,26 @@ export default function WorkerDashboard() {
       </div>
     );
 
-  {
-    {
-      /* ── CONFIRM APPLY ── */
-    }
-    {
-      confirmApply && (
+  // ── Derive modal state ────────────────────────────────────
+  const modalAppId = selectedJob ? applicationIds[selectedJob.id] : undefined;
+  const modalIvStatus = modalAppId ? interviewStatuses[modalAppId] : undefined;
+  const modalApplied = selectedJob
+    ? appliedJobs.includes(selectedJob.id)
+    : false;
+  const modalLocked = selectedJob ? interviewLocked(selectedJob.id) : false;
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "var(--navy)",
+        color: "var(--text-primary)",
+        fontFamily: "var(--sans)",
+      }}
+    >
+      <style>{SS}</style>
+
+      {confirmApply && (
         <div
           onClick={() => setConfirmApply(null)}
           style={{
@@ -1121,14 +1135,9 @@ export default function WorkerDashboard() {
             </div>
           </div>
         </div>
-      );
-    }
+      )}
 
-    {
-      /* ── CONFIRM CANCEL ── */
-    }
-    {
-      confirmCancel && (
+      {confirmCancel && (
         <div
           onClick={() => setConfirmCancel(null)}
           style={{
@@ -1217,14 +1226,9 @@ export default function WorkerDashboard() {
             </div>
           </div>
         </div>
-      );
-    }
+      )}
 
-    {
-      /* ── CONFIRM SIGN OUT ── */
-    }
-    {
-      confirmSignOut && (
+      {confirmSignOut && (
         <div
           onClick={() => setConfirmSignOut(false)}
           style={{
@@ -1315,28 +1319,7 @@ export default function WorkerDashboard() {
             </div>
           </div>
         </div>
-      );
-    }
-  }
-
-  // ── Derive modal state ────────────────────────────────────
-  const modalAppId = selectedJob ? applicationIds[selectedJob.id] : undefined;
-  const modalIvStatus = modalAppId ? interviewStatuses[modalAppId] : undefined;
-  const modalApplied = selectedJob
-    ? appliedJobs.includes(selectedJob.id)
-    : false;
-  const modalLocked = selectedJob ? interviewLocked(selectedJob.id) : false;
-
-  return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "var(--navy)",
-        color: "var(--text-primary)",
-        fontFamily: "var(--sans)",
-      }}
-    >
-      <style>{SS}</style>
+      )}
 
       {/* ── ROLE DETAIL MODAL ── */}
       {selectedJob && (
