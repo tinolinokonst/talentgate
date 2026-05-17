@@ -817,12 +817,15 @@ export default function BusinessDashboard() {
       return;
     }
 
-    const { data: biz } = await supabase
+    const { data: biz, error: bizErr } = await supabase
       .from("businesses")
       .select("company_name, verified, id")
       .eq("profile_id", user.id)
       .single();
     setBusiness(biz);
+    console.log("USER ID:", user.id);
+    console.log("BIZ:", biz);
+    console.log("BIZ ERROR:", bizErr);
     if (!biz) {
       setLoading(false);
       return;
