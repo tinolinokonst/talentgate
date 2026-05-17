@@ -86,6 +86,9 @@ export async function POST(request: NextRequest) {
     }
   );
 
+  // Sign out any existing session before creating a new one
+  await anonClient.auth.signOut();
+
   const { data: sessionData, error: sessionErr } =
     await anonClient.auth.verifyOtp({
       token_hash,
