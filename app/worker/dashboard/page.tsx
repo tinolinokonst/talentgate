@@ -1037,7 +1037,7 @@ export default function WorkerDashboard() {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 300,
+          zIndex: 500,
           background: "rgba(0,0,0,0.7)",
           backdropFilter: "blur(8px)",
           display: "flex",
@@ -1344,11 +1344,7 @@ export default function WorkerDashboard() {
           appId={modalAppId}
           interviewStatus={modalIvStatus}
           onClose={() => setSelectedJob(null)}
-          onApply={() => {
-            const jobId = selectedJob?.id;
-            setSelectedJob(null);
-            setTimeout(() => setConfirmApply(jobId ?? null), 50);
-          }}
+          onApply={() => setConfirmApply(selectedJob.id)}
           onCancel={() => setConfirmCancel(selectedJob.id)}
           onSchedule={() => {
             setSelectedJob(null);
