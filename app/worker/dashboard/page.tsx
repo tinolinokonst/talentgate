@@ -1028,293 +1028,295 @@ export default function WorkerDashboard() {
     );
 
   {
-    /* ── CONFIRM APPLY ── */
-  }
-  {
-    confirmApply && (
-      <div
-        onClick={() => setConfirmApply(null)}
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 500,
-          background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(8px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-        }}
-      >
+    {
+      /* ── CONFIRM APPLY ── */
+    }
+    {
+      confirmApply && (
         <div
-          onClick={(e) => e.stopPropagation()}
+          onClick={() => setConfirmApply(null)}
           style={{
-            background: "#131c2e",
-            border: "1px solid var(--navy-border)",
-            borderRadius: 16,
+            position: "fixed",
+            inset: 0,
+            zIndex: 500,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: "2rem",
-            maxWidth: 400,
-            width: "100%",
           }}
         >
-          <h3
-            style={{
-              fontFamily: "var(--serif)",
-              fontSize: "1.2rem",
-              fontWeight: 700,
-              marginBottom: "0.75rem",
-            }}
-          >
-            Apply for this role?
-          </h3>
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.88rem",
-              lineHeight: 1.6,
-              marginBottom: "1.5rem",
-              fontWeight: 300,
-            }}
-          >
-            You'll be taken to schedule your AI first-round interview with
-            Claude. Once scheduled, you won't be able to undo this.
-          </p>
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              display: "flex",
-              gap: "0.75rem",
-              justifyContent: "flex-end",
+              background: "#131c2e",
+              border: "1px solid var(--navy-border)",
+              borderRadius: 16,
+              padding: "2rem",
+              maxWidth: 400,
+              width: "100%",
             }}
           >
-            <button
-              onClick={() => setConfirmApply(null)}
+            <h3
               style={{
-                background: "transparent",
-                border: "1px solid var(--navy-border)",
+                fontFamily: "var(--serif)",
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                marginBottom: "0.75rem",
+              }}
+            >
+              Apply for this role?
+            </h3>
+            <p
+              style={{
                 color: "var(--text-secondary)",
-                padding: "0.5rem 1.25rem",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: "0.85rem",
+                fontSize: "0.88rem",
+                lineHeight: 1.6,
+                marginBottom: "1.5rem",
+                fontWeight: 300,
               }}
             >
-              Cancel
-            </button>
-            <button
-              onClick={() => confirmApplyAction(confirmApply)}
+              You'll be taken to schedule your AI first-round interview with
+              Claude. Once scheduled, you won't be able to undo this.
+            </p>
+            <div
               style={{
-                background: "var(--accent)",
-                color: "#fff",
-                border: "none",
-                padding: "0.5rem 1.25rem",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: "0.85rem",
-                fontWeight: 500,
+                display: "flex",
+                gap: "0.75rem",
+                justifyContent: "flex-end",
               }}
             >
-              Yes, apply
-            </button>
+              <button
+                onClick={() => setConfirmApply(null)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--navy-border)",
+                  color: "var(--text-secondary)",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmApplyAction(confirmApply)}
+                style={{
+                  background: "var(--accent)",
+                  color: "#fff",
+                  border: "none",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                }}
+              >
+                Yes, apply
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  {
-    /* ── CONFIRM CANCEL ── */
-  }
-  {
-    confirmCancel && (
-      <div
-        onClick={() => setConfirmCancel(null)}
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 300,
-          background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(8px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-        }}
-      >
+    {
+      /* ── CONFIRM CANCEL ── */
+    }
+    {
+      confirmCancel && (
         <div
-          onClick={(e) => e.stopPropagation()}
+          onClick={() => setConfirmCancel(null)}
           style={{
-            background: "#131c2e",
-            border: "1px solid var(--navy-border)",
-            borderRadius: 16,
+            position: "fixed",
+            inset: 0,
+            zIndex: 500,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: "2rem",
-            maxWidth: 400,
-            width: "100%",
           }}
         >
-          <h3
-            style={{
-              fontFamily: "var(--serif)",
-              fontSize: "1.2rem",
-              fontWeight: 700,
-              marginBottom: "0.75rem",
-            }}
-          >
-            Cancel your application?
-          </h3>
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.88rem",
-              lineHeight: 1.6,
-              marginBottom: "1.5rem",
-              fontWeight: 300,
-            }}
-          >
-            This will remove your application for this role. You can reapply
-            later if the role is still open.
-          </p>
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              display: "flex",
-              gap: "0.75rem",
-              justifyContent: "flex-end",
+              background: "#131c2e",
+              border: "1px solid var(--navy-border)",
+              borderRadius: 16,
+              padding: "2rem",
+              maxWidth: 400,
+              width: "100%",
             }}
           >
-            <button
-              onClick={() => setConfirmCancel(null)}
+            <h3
               style={{
-                background: "transparent",
-                border: "1px solid var(--navy-border)",
+                fontFamily: "var(--serif)",
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                marginBottom: "0.75rem",
+              }}
+            >
+              Cancel your application?
+            </h3>
+            <p
+              style={{
                 color: "var(--text-secondary)",
-                padding: "0.5rem 1.25rem",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: "0.85rem",
+                fontSize: "0.88rem",
+                lineHeight: 1.6,
+                marginBottom: "1.5rem",
+                fontWeight: 300,
               }}
             >
-              Keep application
-            </button>
-            <button
-              onClick={() => confirmCancelAction(confirmCancel)}
+              This will remove your application for this role. You can reapply
+              later if the role is still open.
+            </p>
+            <div
               style={{
-                background: "rgba(248,113,113,0.15)",
-                color: "#f87171",
-                border: "1px solid rgba(248,113,113,0.3)",
-                padding: "0.5rem 1.25rem",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: "0.85rem",
-                fontWeight: 500,
+                display: "flex",
+                gap: "0.75rem",
+                justifyContent: "flex-end",
               }}
             >
-              Yes, cancel
-            </button>
+              <button
+                onClick={() => setConfirmCancel(null)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--navy-border)",
+                  color: "var(--text-secondary)",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Keep application
+              </button>
+              <button
+                onClick={() => confirmCancelAction(confirmCancel)}
+                style={{
+                  background: "rgba(248,113,113,0.15)",
+                  color: "#f87171",
+                  border: "1px solid rgba(248,113,113,0.3)",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                }}
+              >
+                Yes, cancel
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  {
-    /* ── CONFIRM SIGN OUT ── */
-  }
-  {
-    confirmSignOut && (
-      <div
-        onClick={() => setConfirmSignOut(false)}
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 300,
-          background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(8px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-        }}
-      >
+    {
+      /* ── CONFIRM SIGN OUT ── */
+    }
+    {
+      confirmSignOut && (
         <div
-          onClick={(e) => e.stopPropagation()}
+          onClick={() => setConfirmSignOut(false)}
           style={{
-            background: "#131c2e",
-            border: "1px solid var(--navy-border)",
-            borderRadius: 16,
+            position: "fixed",
+            inset: 0,
+            zIndex: 500,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: "2rem",
-            maxWidth: 400,
-            width: "100%",
           }}
         >
-          <h3
-            style={{
-              fontFamily: "var(--serif)",
-              fontSize: "1.2rem",
-              fontWeight: 700,
-              marginBottom: "0.75rem",
-            }}
-          >
-            Sign out?
-          </h3>
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.88rem",
-              lineHeight: 1.6,
-              marginBottom: "1.5rem",
-              fontWeight: 300,
-            }}
-          >
-            You'll be signed out of your worker account on this device.
-          </p>
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              display: "flex",
-              gap: "0.75rem",
-              justifyContent: "flex-end",
+              background: "#131c2e",
+              border: "1px solid var(--navy-border)",
+              borderRadius: 16,
+              padding: "2rem",
+              maxWidth: 400,
+              width: "100%",
             }}
           >
-            <button
-              onClick={() => setConfirmSignOut(false)}
+            <h3
               style={{
-                background: "transparent",
-                border: "1px solid var(--navy-border)",
+                fontFamily: "var(--serif)",
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                marginBottom: "0.75rem",
+              }}
+            >
+              Sign out?
+            </h3>
+            <p
+              style={{
                 color: "var(--text-secondary)",
-                padding: "0.5rem 1.25rem",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: "0.85rem",
+                fontSize: "0.88rem",
+                lineHeight: 1.6,
+                marginBottom: "1.5rem",
+                fontWeight: 300,
               }}
             >
-              Cancel
-            </button>
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                router.push("/");
-              }}
+              You'll be signed out of your worker account on this device.
+            </p>
+            <div
               style={{
-                background: "var(--accent)",
-                color: "#fff",
-                border: "none",
-                padding: "0.5rem 1.25rem",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: "0.85rem",
-                fontWeight: 500,
+                display: "flex",
+                gap: "0.75rem",
+                justifyContent: "flex-end",
               }}
             >
-              Sign out
-            </button>
+              <button
+                onClick={() => setConfirmSignOut(false)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--navy-border)",
+                  color: "var(--text-secondary)",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  router.push("/");
+                }}
+                style={{
+                  background: "var(--accent)",
+                  color: "#fff",
+                  border: "none",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: "var(--sans)",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                }}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   // ── Derive modal state ────────────────────────────────────
